@@ -7,7 +7,7 @@ import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
 
 
-public class Rewrite implements ClassFileTransformer {
+public class Transformer implements ClassFileTransformer {
     @Override
     public byte[] transform(
             ClassLoader loader,
@@ -26,7 +26,6 @@ public class Rewrite implements ClassFileTransformer {
     }
 
     private byte[] process(byte[] classfileBuffer) {
-        ClassReader reader = new ClassReader(classfileBuffer);
-        System.err.println("actual: " + reader.getClassName());
+        return Rewriter.rewrite(new ClassReader(classfileBuffer));
     }
 }
