@@ -34,7 +34,6 @@ public class Tracker {
      * Called by the instrumentation.
      */
     public static void registerCall(String site) {
-        System.err.println("registered: " + site);
         SEEN_SET.putIfAbsent(site, PRESENT);
     }
 

@@ -29,6 +29,12 @@ public class Rewriter {
         launchpad.add(new LdcInsnNode(tag));
         launchpad.add(new MethodInsnNode(Opcodes.INVOKESTATIC, Tracker.class.getName().replace('.', '/'),
                 "registerCall", "(Ljava/lang/String;)V", false));
-        method.instructions.insertBefore(method.instructions.getFirst(), launchpad);
+
+        final AbstractInsnNode first = method.instructions.getFirst();
+        if (null == first) {
+            method.instructions.insert(launchpad);
+        } else {
+            method.instructions.insertBefore(first, launchpad);
+        }
     }
 }
