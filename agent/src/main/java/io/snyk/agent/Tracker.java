@@ -13,6 +13,18 @@ import java.util.concurrent.TimeUnit;
  * only one of us, and instantiating workers only in the right place.
  */
 public class Tracker {
+    static {
+        System.err.println("Tracker being loaded by:");
+        for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
+            System.err.println(" * " + ste);
+        }
+
+        Thread worker = new Thread(new Explainer());
+        worker.setDaemon(true);
+        worker.setName("snyk-agent");
+        worker.start();
+    }
+
     // TODO: MVP storage. This is awful.
     private static final ConcurrentHashMap<String, Object> SEEN_SET = new ConcurrentHashMap<>();
 
@@ -20,16 +32,6 @@ public class Tracker {
 
     // This is the hack a typical HashSet uses internally to adapt a map.
     private static final Object PRESENT = new Object();
-
-    private static final ScheduledExecutorService SCHEDULE = Executors.newScheduledThreadPool(1);
-
-    /**
-     * Called by reflection from the agent. Which context will we be in?
-     * TODO: Context context context.
-     */
-    public void start() {
-//        SCHEDULE.scheduleAtFixedRate(new Explainer(), 0, 1, TimeUnit.SECONDS);
-    }
 
     /**
      * Called by the instrumentation.
@@ -42,9 +44,22 @@ public class Tracker {
     private static class Explainer implements Runnable {
         @Override
         public void run() {
-            // TODO: VM doesn't seem to want to shut down even with this.
-            // TODO: Maybe it's going down too fast?
-            Thread.currentThread().setDaemon(true);
+            while (true) {
+                try {
+                    work();
+                } catch (Throwable t) {
+                    System.err.println("agent issue");
+                    t.printStackTrace();
+                }
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    return;
+                }
+            }
+        }
+
+        void work() {
             System.err.println("I've seen " + SEEN_SET.size() + " objects");
         }
     }

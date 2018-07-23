@@ -15,7 +15,7 @@ public class Interesting {
             return false;
         }
 
-        return true;
+        return !loadingClassAsName.startsWith("io/snyk/agent/");
     }
 
     static boolean interesting(MethodNode method) {
