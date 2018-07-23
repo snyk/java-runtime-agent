@@ -38,7 +38,7 @@ public class Tracker {
      */
     public static void registerCall(String site) {
         System.err.println("registered: " + site);
-        SEEN_SET.put(site, PRESENT);
+        SEEN_SET.putIfAbsent(site, PRESENT);
     }
 
     private static class Explainer implements Runnable {
