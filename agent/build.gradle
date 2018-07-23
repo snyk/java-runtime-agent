@@ -7,8 +7,16 @@ dependencies {
     compile 'org.ow2.asm:asm:6.2'
 }
 
+jar {
+    manifest {
+        attributes 'Premain-Class': 'io.snyk.agent.Entry'
+        attributes 'Can-Retransform-Classes': true
+    }
+}
+
 shadowJar {
-    baseName = 'shadow'
+    mergeServiceFiles()
+
     classifier = null
     version = null
 }
