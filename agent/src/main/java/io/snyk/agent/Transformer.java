@@ -16,7 +16,7 @@ public class Transformer implements ClassFileTransformer {
             ProtectionDomain protectionDomain,
             byte[] classfileBuffer) throws IllegalClassFormatException {
         try {
-            return process(classfileBuffer);
+            return process(className, classfileBuffer);
         } catch (Throwable t) {
             // classpath or jar clash issues are just silently eaten by the JVM,
             // make sure they're shown.
@@ -25,7 +25,11 @@ public class Transformer implements ClassFileTransformer {
         }
     }
 
-    private byte[] process(byte[] classfileBuffer) {
-        return Rewriter.rewrite(new ClassReader(classfileBuffer));
+    private byte[] process(String className, byte[] classfileBuffer) {
+        if (Interesting.interesting(className)) {
+            return Rewriter.rewrite(new ClassReader(classfileBuffer));
+        } else {
+            return classfileBuffer;
+        }
     }
 }

@@ -2,7 +2,10 @@ package io.snyk.agent;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.LdcInsnNode;
+import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 
 /**
@@ -24,6 +27,11 @@ public class Rewriter {
     }
 
     private static void rewriteMethod(String clazzInternalName, MethodNode method) {
-        System.err.println("considering " + clazzInternalName + " -- " + method.name);
+        String tag = clazzInternalName + ":" + method.name;
+        method.instructions.insertBefore(method.instructions.getFirst(),
+            new LdcInsnNode(tag));
+        method.instructions.insertBefore(method.instructions.getFirst(),
+                new MethodInsnNode(Opcodes.INVOKESTATIC, Tracker.class.getName().replace('.', '/'),
+                "registerCall", "(Ljava/lang/String;)V", false));
     }
 }
