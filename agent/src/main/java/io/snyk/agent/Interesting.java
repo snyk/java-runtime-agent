@@ -11,6 +11,10 @@ public class Interesting {
             return false;
         }
 
+        if (loadingClassAsName.startsWith("sun/")) {
+            return false;
+        }
+
         return true;
     }
 
