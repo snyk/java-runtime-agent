@@ -3,7 +3,7 @@
 ## What?
 
 We want to monitor whether an "interesting"
-method has been called "recently", with a "low overhead".
+"method" has been called "recently", with a "low overhead".
 
 This agent attempts to do this using the `javaagent` framework,
 which can rewrite classes on "load" (effectively, at startup).
@@ -42,6 +42,16 @@ Or, we could exclude:
  * Any method taking only primitive types, etc.
 
 
+## "method"
+
+Since Java 8 / Java 9, rewriting core classes seems to be
+more problematic. This needs some research.
+
+You could argue that vulnerabilities in core classes aren't
+our problem, but it would be interesting to track e.g. those
+`ProcessBuilder` calls.
+
+
 ## "recently"
 
 The plan in `node` land is to track whether a function has
@@ -62,3 +72,12 @@ important.
 
 We almost certainly want to avoid allocation on the hot path,
 as that makes users angry.
+
+The current implementation breaks every single one of these
+rules.
+
+
+## Status
+
+Pretty much everything here is demo-grade garbage. Watch out for
+code with `TODO` comments, and even more for code without comments.
