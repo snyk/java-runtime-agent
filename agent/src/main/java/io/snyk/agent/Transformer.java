@@ -15,6 +15,11 @@ public class Transformer implements ClassFileTransformer {
             Class<?> classBeingRedefined,
             ProtectionDomain protectionDomain,
             byte[] classfileBuffer) throws IllegalClassFormatException {
+        // `null` here represents the system classloader
+        // TODO: is this only going to load core classes? Who knows.
+        if (null == loader) {
+            return classfileBuffer;
+        }
         try {
             return process(className, classfileBuffer);
         } catch (Throwable t) {

@@ -16,6 +16,14 @@ public class Interesting {
             return false;
         }
 
+        if (loadingClassAsName.startsWith("com/sun/")) {
+            return false;
+        }
+
+        if (loadingClassAsName.startsWith("javax/management/")) {
+            return false;
+        }
+
         return !loadingClassAsName.startsWith("io/snyk/agent/");
     }
 
@@ -25,10 +33,17 @@ public class Interesting {
      * TODO: that the actual rewriter should be enforcing, perhaps?
      */
     static boolean interesting(MethodNode method) {
-        if (isAbstract(method.access) || isNative(method.access)) {
+        if (isAbstract(method.access)
+                || isNative(method.access)
+                || isSynthetic(method.access)) {
             return false;
         }
+
         return true;
+    }
+
+    private static boolean isSynthetic(int access) {
+        return Opcodes.ACC_SYNTHETIC == (access & Opcodes.ACC_SYNTHETIC);
     }
 
     private static boolean isAbstract(int access) {
