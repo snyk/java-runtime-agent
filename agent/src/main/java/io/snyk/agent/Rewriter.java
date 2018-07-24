@@ -87,15 +87,10 @@ public class Rewriter {
                     false));
             // stack: "name" classloader
 
-            final int addedInstructions = launchpad.size();
+            // insertBefore clears its input
+            i += launchpad.size();
 
-            // insertBefore clears its input; sigh
             insns.insertBefore(mi, launchpad);
-
-            // TODO: off-by-one.. off-by-two.. off-by-three? Surely not.
-            i += addedInstructions;
-
-            // TODO: Surely not.
         }
     }
 }
