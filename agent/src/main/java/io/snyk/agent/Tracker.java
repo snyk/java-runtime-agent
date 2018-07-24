@@ -37,8 +37,11 @@ public class Tracker {
         SEEN_SET.putIfAbsent(site, PRESENT);
     }
 
-    public static void registerCallee(String site) {
-        System.err.println("callee: " + site);
+    /**
+     * Called by the instrumentation.
+     */
+    public static void registerCallee(String site, String arg) {
+        System.err.println("callee: " + site + ":" + arg);
     }
 
 }
