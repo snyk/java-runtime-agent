@@ -62,10 +62,8 @@ public class Rewriter {
                 continue;
             }
 
-            final Type returnType = Type.getReturnType(mi.desc);
-
-
-            final String callTag = tag + ":" + mi.name + ":" + mi.desc + ":" + mi.getOpcode();
+            final String callTag = tag + ":" + ":" + mi.owner + ":"
+                    + mi.name + ":" + mi.desc + ":" + mi.getOpcode();
             final InsnList launchpad = generateRegistrationSnippet("registerCallee", callTag);
             insns.insertBefore(mi, launchpad);
 
