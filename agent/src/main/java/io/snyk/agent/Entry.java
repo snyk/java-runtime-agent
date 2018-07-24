@@ -11,6 +11,6 @@ public class Entry {
     public static void premain(
             String agentArguments,
             Instrumentation instrumentation) throws UnmodifiableClassException {
-        instrumentation.addTransformer(new Transformer(), true);
+        instrumentation.addTransformer(new Transformer(), false);
     }
 }
