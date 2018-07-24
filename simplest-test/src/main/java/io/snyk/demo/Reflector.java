@@ -7,5 +7,17 @@ public class Reflector {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
+
+        try {
+            new NewLoader().bar();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+class NewLoader extends ClassLoader {
+    void bar() throws ClassNotFoundException {
+        loadClass("bar", true);
     }
 }

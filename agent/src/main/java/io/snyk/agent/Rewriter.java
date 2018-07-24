@@ -62,23 +62,45 @@ public class Rewriter {
                 continue;
             }
 
-            if (!("loadClass".equals(mi.name)
-                    && "java/lang/ClassLoader".equals(mi.owner)
-                    && "(Ljava/lang/String;)Ljava/lang/Class;".equals(mi.desc))) {
-                // TODO: There are overloads of this method.
-                // TODO: Ignoring them is plain wrong.
+            if (!"loadClass".equals(mi.name)) {
                 continue;
             }
 
+            // we can't actually filter on `owner` here because a class could extend a class,
+            // which extends ClassLoader; we don't have that information available at transform
+            // time... Chris believes? ASM might be able to do it for us, but cause way too many
+            // classes to be loaded by the bootstrap(?) classloader, which isn't what we want at all.
+
+            // This causes the TODO section in the else block below.
+
             final String callTag = tag + ":" + mi.owner + ":"
                     + mi.name + ":" + mi.desc + ":" + mi.getOpcode();
+
             final InsnList launchpad = new InsnList();
 
-            // stack: "name" classloader
-            launchpad.add(new InsnNode(Opcodes.DUP));
-            // stack: "name" "name" classloader
+            if ("(Ljava/lang/String;)Ljava/lang/Class;".equals(mi.desc)) {
+                // stack: "name" classloader
+                launchpad.add(new InsnNode(Opcodes.DUP));
+                // stack: "name" "name" classloader
+            } else if ("(Ljava/lang/String;Z)Ljava/lang/Class;".equals(mi.desc)) {
+                // Note the "Z" here ------^ in the visually identical strings above
+                // the variant with the extra boolean arg. It's protected. Does it matter?
+
+                // stack: bool "name" classloader
+                launchpad.add(new InsnNode(Opcodes.DUP2));
+                // stack: bool "name" bool "name" classloader
+                launchpad.add(new InsnNode(Opcodes.POP));
+                // stack: "name" bool "name" classloader
+            } else {
+                // TODO: scary.. have they added a new method to ClassLoader we've missed?
+                // TODO: or, more likely, has someone named a method loadClass, and we've picked it
+                // TODO: up too greedily? Sigh.
+                continue;
+            }
+
+            // stack: "name" [original stack]
             launchpad.add(new LdcInsnNode(callTag));
-            // stack: "tag" "name" "name" classloader
+            // stack: "tag" "name" [original stack]
             launchpad.add(new MethodInsnNode(
                     Opcodes.INVOKESTATIC,
                     OUR_INTERNAL_NAME,
