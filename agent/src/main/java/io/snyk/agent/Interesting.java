@@ -1,6 +1,7 @@
 package io.snyk.agent;
 
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.MethodNode;
 
 /**
@@ -33,11 +34,25 @@ public class Interesting {
      * TODO: that the actual rewriter should be enforcing, perhaps?
      */
     static boolean interesting(MethodNode method) {
+        // `abstract` and `native` methods don't have Java code in them,
+        // so we can't add extra java code
+        // `synthetic` methods, used e.g. in generics dispatch internals,
+        // probably don't make any sense to users, and don't contain any
+        // non-generated code, so probably aren't going to usefully contain
+        // an issue. They *could* be monitored, if wanted, Chris believes.
         if (isAbstract(method.access)
                 || isNative(method.access)
                 || isSynthetic(method.access)) {
             return false;
         }
+
+        // We should expect that we don't have the full signature, just the descriptor;
+        // which isn't too bad if we're ignoring synthetic methods.
+        // Signatures which you'd think we could ignore, but probably can't:
+        //  * `void foo()`: this is the internal type of constructors, maybe exclude those?
+
+//        Type.getArgumentTypes(method.desc);
+//        Type.getReturnType(method.desc);
 
         return true;
     }
