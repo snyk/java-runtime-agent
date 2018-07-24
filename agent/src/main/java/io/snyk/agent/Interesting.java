@@ -2,6 +2,7 @@ package io.snyk.agent;
 
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 
 /**
@@ -55,6 +56,30 @@ public class Interesting {
 //        Type.getReturnType(method.desc);
 
         return true;
+    }
+
+    static boolean interesting(MethodInsnNode mi) {
+        if (!returnsClass(mi)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private static boolean returnsClass(MethodInsnNode mi) {
+        final Type returnType = Type.getReturnType(mi.desc);
+
+        // getInternalName only valid for `Object` `sort`s
+        if (Type.OBJECT != returnType.getSort()) {
+            return false;
+        }
+
+        // https://quad.pe/e/EM0TwLHCzH.png
+        switch (returnType.getInternalName()) {
+            case "java/lang/Class": return true;
+            case "java/lang/ClassLoader": return true;
+            default: return false;
+        }
     }
 
     private static boolean isSynthetic(int access) {

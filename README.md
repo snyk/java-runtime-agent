@@ -8,6 +8,7 @@ Modules:
    to identify interesting methods, and their calls.
  * `simplest-test`: the simplest hello world in the world
  * `flask-rec`: a server to listen for http posts and show the results
+ * `investigations`: some data dumps, and discussion of them
 
 
 ## Demo

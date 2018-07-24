@@ -2,6 +2,7 @@ package io.snyk.agent;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 
 /**
@@ -51,17 +52,27 @@ public class Rewriter {
         final InsnList insns = method.instructions;
         for (int i = 0; i < insns.size(); ++i) {
             final AbstractInsnNode ins = insns.get(i);
-            if (ins instanceof MethodInsnNode) {
-                final MethodInsnNode mi = (MethodInsnNode) ins;
-                final String callTag = tag + ":" + mi.name + ":" + mi.desc + ":" + mi.getOpcode();
-                final InsnList launchpad = generateRegistrationSnippet("registerCallee", callTag);
-                insns.insertBefore(mi, launchpad);
-
-                // TODO: off-by-one.. off-by-two.. off-by-three? Surely not.
-                i += launchpad.size() + 3;
-
-                // TODO: Surely not.
+            if (!(ins instanceof MethodInsnNode)) {
+                continue;
             }
+
+            final MethodInsnNode mi = (MethodInsnNode) ins;
+
+            if (!Interesting.interesting(mi)) {
+                continue;
+            }
+
+            final Type returnType = Type.getReturnType(mi.desc);
+
+
+            final String callTag = tag + ":" + mi.name + ":" + mi.desc + ":" + mi.getOpcode();
+            final InsnList launchpad = generateRegistrationSnippet("registerCallee", callTag);
+            insns.insertBefore(mi, launchpad);
+
+            // TODO: off-by-one.. off-by-two.. off-by-three? Surely not.
+            i += launchpad.size() + 3;
+
+            // TODO: Surely not.
         }
     }
 }
