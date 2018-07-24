@@ -12,7 +12,7 @@ public class AsmUtil {
     }
 
     static byte[] byteArray(ClassNode cn) {
-        final ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        final ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
         cn.accept(cw);
         return cw.toByteArray();
     }

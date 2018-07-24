@@ -40,7 +40,7 @@ public class Tracker {
     /**
      * Called by the instrumentation.
      */
-    public static void registerCallee(String site, String arg) {
+    public static void registerCallee(String arg, String site) {
         System.err.println("callee: " + site + ":" + arg);
     }
 

@@ -70,20 +70,18 @@ public class Rewriter {
                     + mi.name + ":" + mi.desc + ":" + mi.getOpcode();
             final InsnList launchpad = new InsnList();
 
-            // stack: classloader "name"
-            launchpad.add(new InsnNode(Opcodes.DUP2));
-            // stack: classloader "name" classloader "name"
-            launchpad.add(new InsnNode(Opcodes.POP));
-            // stack: "name" classloader "name"
+            // stack: "name" classloader
+            launchpad.add(new InsnNode(Opcodes.DUP));
+            // stack: "name" "name" classloader
             launchpad.add(new LdcInsnNode(callTag));
-            // stack: "tag" "name" classloader "name"
+            // stack: "tag" "name" "name" classloader
             launchpad.add(new MethodInsnNode(
                     Opcodes.INVOKESTATIC,
                     OUR_INTERNAL_NAME,
                     "registerCallee",
                     "(Ljava/lang/String;Ljava/lang/String;)V",
                     false));
-            // stack: classloader "name"
+            // stack: "name" classloader
 
             final int addedInstructions = launchpad.size();
 
