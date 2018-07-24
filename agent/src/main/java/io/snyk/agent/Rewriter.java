@@ -62,7 +62,11 @@ public class Rewriter {
                 continue;
             }
 
-            if (!("loadClass".equals(mi.name) && "java/lang/ClassLoader".equals(mi.owner))) {
+            if (!("loadClass".equals(mi.name)
+                    && "java/lang/ClassLoader".equals(mi.owner)
+                    && "(Ljava/lang/String;)Ljava/lang/Class;".equals(mi.desc))) {
+                // TODO: There are overloads of this method.
+                // TODO: Ignoring them is plain wrong.
                 continue;
             }
 
