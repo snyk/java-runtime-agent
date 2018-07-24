@@ -62,7 +62,7 @@ public class Rewriter {
                 continue;
             }
 
-            final String callTag = tag + ":" + ":" + mi.owner + ":"
+            final String callTag = tag + ":" + mi.owner + ":"
                     + mi.name + ":" + mi.desc + ":" + mi.getOpcode();
             final InsnList launchpad = generateRegistrationSnippet("registerCallee", callTag);
             insns.insertBefore(mi, launchpad);
