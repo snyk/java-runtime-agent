@@ -4,3 +4,4 @@
 .gradle/
 __pycache__
 hs_err_*
+*.swp
