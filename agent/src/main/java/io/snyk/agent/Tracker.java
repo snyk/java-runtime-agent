@@ -37,4 +37,8 @@ public class Tracker {
         SEEN_SET.putIfAbsent(site, PRESENT);
     }
 
+    public static void registerCallee(String site) {
+        System.err.println(site);
+    }
+
 }
