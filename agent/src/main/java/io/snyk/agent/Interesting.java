@@ -4,8 +4,6 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 
-import java.util.ListIterator;
-
 /**
  * Determine if a method is interesting enough to instrument.
  */
@@ -85,39 +83,38 @@ public class Interesting {
 
         if (0 == args && isGetter(method)) {
             return true;
-        } else if (1 == args && isSetter(method)) {
-            return true;
-        } else {
-            return false;
         }
 
+        if (1 == args && isSetter(method)) {
+            return true;
+        }
+
+        return false;
     }
 
     enum GetterParserState {
-        Aload0,
-        Fload,
+        ALoad0,
+        GetField,
         Return,
     }
 
     private static boolean isGetter(MethodNode method) {
-        GetterParserState state = GetterParserState.Aload0;
+        GetterParserState state = GetterParserState.ALoad0;
 
         for (AbstractInsnNode node : AsmUtil.iterable(method.instructions)) {
-            if ((node.getType() == AbstractInsnNode.LINE)
-                    || (node.getType() == AbstractInsnNode.FRAME)
-                    || (node.getType() == AbstractInsnNode.LABEL)) {
+            if (isNonsenseNode(node)) {
                 continue;
             }
 
             switch (state) {
-                case Aload0:
-                    if (node instanceof VarInsnNode && 0 == ((VarInsnNode) node).var) {
-                        state = GetterParserState.Fload;
+                case ALoad0:
+                    if (isALoad(node, 0)) {
+                        state = GetterParserState.GetField;
                         break;
                     } else {
                         return false;
                     }
-                case Fload:
+                case GetField:
                     if (node instanceof FieldInsnNode) {
                         // TODO: this matches fields of other classes. Is that a problem?
                         state = GetterParserState.Return;
@@ -132,9 +129,59 @@ public class Interesting {
         return false;
     }
 
+    enum SetterParserState {
+        ALoad0,
+        ALoad1,
+        PutField,
+        Return,
+    }
+
     private static boolean isSetter(MethodNode method) {
-        // TODO: .. copy the getter parser?
+        SetterParserState state = SetterParserState.ALoad0;
+
+        for (AbstractInsnNode node : AsmUtil.iterable(method.instructions)) {
+            if (isNonsenseNode(node)) {
+                continue;
+            }
+
+            switch (state) {
+                case ALoad0:
+                    if (isALoad(node, 0)) {
+                        state = SetterParserState.ALoad1;
+                        break;
+                    } else {
+                        return false;
+                    }
+                case ALoad1:
+                    if (isALoad(node, 1)) {
+                        state = SetterParserState.PutField;
+                        break;
+                    } else {
+                        return false;
+                    }
+                case PutField:
+                    if (node instanceof FieldInsnNode) {
+                        // TODO: this matches fields of other classes. Is that a problem?
+                        state = SetterParserState.Return;
+                        break;
+                    } else {
+                        return false;
+                    }
+                case Return:
+                    return isReturn(node);
+            }
+        }
         return false;
+    }
+
+    private static boolean isALoad(AbstractInsnNode node, int of) {
+        return node instanceof VarInsnNode && of == ((VarInsnNode) node).var;
+    }
+
+    private static boolean isNonsenseNode(AbstractInsnNode node) {
+        return (node.getType() == AbstractInsnNode.LINE)
+                || (node.getType() == AbstractInsnNode.FRAME)
+                || (node.getType() == AbstractInsnNode.LABEL);
     }
 
     private static boolean isReturn(AbstractInsnNode node) {
