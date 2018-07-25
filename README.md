@@ -25,8 +25,10 @@ java-instrumentor
 
 In a terminal, run:
 
- 1. `(cd agent && ./gradlew shadow)`
- 2. `MAVEN_OPTS="-javaagent:$(pwd)/agent/build/libs/agent.jar" (cd ../java-goof && mvn tomcat7:run)`
+```
+(cd agent && ./gradlew shadow)
+(export MAVEN_OPTS="-javaagent:$(pwd)/agent/build/libs/agent.jar" && cd ../java-goof && mvn tomcat7:run)
+```
 
 In another terminal, run:
 
@@ -34,6 +36,9 @@ In another terminal, run:
 
 (You'll need to follow the setup instructions in `flask-rec` if you haven't already,
 unless you are using the only machine in the world with a working `flask` install.)
+
+(Shell note: the `()` here are required. They prevent environment and `cd` from
+leaking back to the script. Please don't take them out.)
 
 Open these links in your browser:
 
