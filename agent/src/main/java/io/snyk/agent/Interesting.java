@@ -83,27 +83,70 @@ public class Interesting {
 
         int args = Type.getArgumentTypes(method.desc).length;
 
-        if (0 == args) {
-            final ListIterator<AbstractInsnNode> it = method.instructions.iterator();
-            while (it.hasNext()) {
-                AbstractInsnNode node;
-                do {
-                    node = it.next();
-                } while (((node.getType() == AbstractInsnNode.LINE)
-                        || (node.getType() == AbstractInsnNode.FRAME)
-                        || (node.getType() == AbstractInsnNode.LABEL))
-                        && it.hasNext());
-
-                if (node instanceof VarInsnNode) {
-                    if (0 == ((VarInsnNode) node).var) {
-                        // .. aload_0
-                    }
-                }
-            }
+        if (0 == args && isGetter(method)) {
+            return true;
+        } else if (1 == args && isSetter(method)) {
+            return true;
+        } else {
+            return false;
         }
 
-        return false;
+    }
 
+    enum GetterParserState {
+        Aload0,
+        Fload,
+        Return,
+    }
+
+    private static boolean isGetter(MethodNode method) {
+        GetterParserState state = GetterParserState.Aload0;
+
+        for (AbstractInsnNode node : AsmUtil.iterable(method.instructions)) {
+            if ((node.getType() == AbstractInsnNode.LINE)
+                    || (node.getType() == AbstractInsnNode.FRAME)
+                    || (node.getType() == AbstractInsnNode.LABEL)) {
+                continue;
+            }
+
+            switch (state) {
+                case Aload0:
+                    if (node instanceof VarInsnNode && 0 == ((VarInsnNode) node).var) {
+                        state = GetterParserState.Fload;
+                        break;
+                    } else {
+                        return false;
+                    }
+                case Fload:
+                    if (node instanceof FieldInsnNode) {
+                        // TODO: this matches fields of other classes. Is that a problem?
+                        state = GetterParserState.Return;
+                        break;
+                    } else {
+                        return false;
+                    }
+                case Return:
+                    return isReturn(node);
+            }
+        }
+        return false;
+    }
+
+    private static boolean isSetter(MethodNode method) {
+        // TODO: .. copy the getter parser?
+        return false;
+    }
+
+    private static boolean isReturn(AbstractInsnNode node) {
+        switch (node.getOpcode()) {
+            case Opcodes.RETURN: return true;
+            case Opcodes.IRETURN: return true;
+            case Opcodes.LRETURN: return true;
+            case Opcodes.FRETURN: return true;
+            case Opcodes.DRETURN: return true;
+            case Opcodes.ARETURN: return true;
+            default: return false;
+        }
     }
 
     private static boolean returnsClass(MethodInsnNode mi) {
