@@ -32,7 +32,7 @@ public class Transformer implements ClassFileTransformer {
 
     private byte[] process(String className, byte[] classfileBuffer) {
         if (Interesting.interesting(className)) {
-            return Rewriter.rewrite(new ClassReader(classfileBuffer));
+            return new Rewriter(Tracker.class).rewrite(new ClassReader(classfileBuffer));
         } else {
             return classfileBuffer;
         }
