@@ -5,7 +5,7 @@ import java.util.concurrent.Callable;
 /**
  * Loaded (dynamically) by tests. Everything is public for a reason.
  */
-public class A {
+public class A implements Callable<Number> {
     public int returnFive() {
         return 5;
     }
@@ -17,11 +17,16 @@ public class A {
     // Woo laziness.
     public native void bar();
 
-    public <T> T synthetic(T t) {
+    public <T> T localGeneric(T t) {
         return t;
     }
 
     public Callable<String> returnLambda() {
         return () -> "hello world";
+    }
+
+    @Override
+    public Number call() throws Exception {
+        return 17;
     }
 }
