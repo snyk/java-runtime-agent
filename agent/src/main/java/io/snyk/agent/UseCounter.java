@@ -1,7 +1,6 @@
 package io.snyk.agent;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * An attempt at a fast counter. To be determined if it's actually fast.
@@ -12,26 +11,25 @@ public class UseCounter {
 
     // assumptions: can only grow
     // reassignment @GuardedBy("this")
-    private final AtomicReference<int[]> counters = new AtomicReference<>(new int[1024]);
+    private volatile int[] counters = new int[1024];
 
     public synchronized int add(String s) {
         final int id = lookup.size();
         lookup.add(s);
 
-        // double-checked! Pretty sure this will have real value here
-        if (id < counters.get().length) {
+        if (id < counters.length) {
             return id;
         }
 
-        // this is also not thread safe, updates while this is running will be lost.
-        // this is really just a convenience method; we can never lose the race.
-        counters.updateAndGet(current -> Arrays.copyOf(current, current.length * 2));
+        // this is also not thread safe, will lose some(tm) updates during the copy
+        counters = Arrays.copyOf(counters, counters.length * 2);
 
         return id;
     }
 
     public synchronized Set<String> drain() {
-        int[] old = counters.getAndUpdate(current -> new int[current.length]);
+        int[] old = counters;
+        counters = new int[counters.length];
         final HashSet<String> ret = new HashSet<>();
         for (int i = 0; i < old.length; i++) {
             if (0 != old[i]) {
@@ -46,7 +44,7 @@ public class UseCounter {
         // We're trying to get some idea of how many times something was called.
         // TODO: benchmark against AtomicIntArray version
         // note: there's no AtomicBoolArray. In fact, in hotspot, there's no boolean arrays at all.
-        counters.get()[id] += 1;
+        counters[id] += 1;
     }
 }
 
