@@ -5,7 +5,7 @@ import java.util.concurrent.Callable;
 /**
  * Loaded (dynamically) by tests. Everything is public for a reason.
  */
-public class A implements Callable<Number> {
+public class TestVictim implements Callable<Number> {
     public int returnFive() {
         return 5;
     }
@@ -23,6 +23,26 @@ public class A implements Callable<Number> {
 
     public Callable<String> returnLambda() {
         return () -> "hello world";
+    }
+
+    int intField;
+
+    int getIntField() {
+        return intField;
+    }
+
+    void setIntField(int to) {
+        intField = to;
+    }
+
+    String stringField;
+
+    String getStringField() {
+        return stringField;
+    }
+
+    void setStringField(String to) {
+        stringField = to;
     }
 
     @Override

@@ -2,8 +2,9 @@ package io.snyk.agent;
 
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.MethodInsnNode;
-import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.*;
+
+import java.util.ListIterator;
 
 /**
  * Determine if a method is interesting enough to instrument.
@@ -55,6 +56,10 @@ public class Interesting {
 //        Type.getArgumentTypes(method.desc);
 //        Type.getReturnType(method.desc);
 
+        if (isAccessor(method)) {
+            return false;
+        }
+
         return true;
     }
 
@@ -64,6 +69,41 @@ public class Interesting {
         }
 
         return true;
+    }
+
+    private static boolean isAccessor(MethodNode method) {
+        if (isStatic(method.access)) {
+            return false;
+        }
+
+        // e.g. constructors, initialisers
+        if (method.name.startsWith("<")) {
+            return false;
+        }
+
+        int args = Type.getArgumentTypes(method.desc).length;
+
+        if (0 == args) {
+            final ListIterator<AbstractInsnNode> it = method.instructions.iterator();
+            while (it.hasNext()) {
+                AbstractInsnNode node;
+                do {
+                    node = it.next();
+                } while (((node.getType() == AbstractInsnNode.LINE)
+                        || (node.getType() == AbstractInsnNode.FRAME)
+                        || (node.getType() == AbstractInsnNode.LABEL))
+                        && it.hasNext());
+
+                if (node instanceof VarInsnNode) {
+                    if (0 == ((VarInsnNode) node).var) {
+                        // .. aload_0
+                    }
+                }
+            }
+        }
+
+        return false;
+
     }
 
     private static boolean returnsClass(MethodInsnNode mi) {
@@ -92,5 +132,9 @@ public class Interesting {
 
     private static boolean isNative(int access) {
         return Opcodes.ACC_NATIVE == (access & Opcodes.ACC_NATIVE);
+    }
+
+    private static boolean isStatic(int access) {
+        return Opcodes.ACC_STATIC == (access & Opcodes.ACC_STATIC);
     }
 }

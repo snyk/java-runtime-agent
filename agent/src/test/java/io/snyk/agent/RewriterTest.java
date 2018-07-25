@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class RewriterTest {
     @Test
     public void smokeTest() throws Exception {
-        final String name = A.class.getName();
+        final String name = TestVictim.class.getName();
         final byte[] bytes = new Rewriter(Tracker.class).rewrite(new ClassReader(name));
         final Class<?> clazz = new DefinerLoader().define(name, bytes);
         final Object instance = clazz.newInstance();
