@@ -22,5 +22,4 @@ public class AsmUtil {
     static Iterable<AbstractInsnNode> iterable(InsnList instructions) {
         return instructions::iterator;
     }
-
 }

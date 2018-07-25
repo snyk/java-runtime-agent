@@ -29,18 +29,11 @@ class Explainer implements Runnable {
     }
 
     void work() {
-        // TODO: Worst attempt at concurrency ever.
-        // TODO: We will miss "some" calls that occur while we're iterating.
-        // TODO: for hourly sampling, this isn't too significant
-        // TODO: Chris promises us he remembers there was a time when ConcurrentHashMap
-        // TODO: could atomically drain, but it is not to be. Must have been RUST.
-
         final StringBuilder msg = new StringBuilder();
-        for (String loc : Tracker.SEEN_SET.keySet()) {
+        for (String loc : Tracker.SEEN_SET.drain()) {
             msg.append(loc);
             msg.append('\n');
         }
-        Tracker.SEEN_SET.clear();
 
         try {
             final HttpURLConnection conn = (HttpURLConnection)new URL("http://127.0.0.1:5000/dump").openConnection();

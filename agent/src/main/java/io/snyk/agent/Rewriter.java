@@ -11,10 +11,12 @@ class Rewriter {
 
     private static final int DEFAULT_PARSING_OPTIONS = 0;
     private final String ourInternalName;
+    private final UseCounter counters;
 
     // TODO: could use an... interface here. :o
-    Rewriter(Class<?> tracker) {
+    Rewriter(Class<?> tracker, UseCounter counters) {
         this.ourInternalName = tracker.getName().replace('.', '/');
+        this.counters = counters;
     }
 
     byte[] rewrite(ClassReader reader) {
@@ -28,14 +30,18 @@ class Rewriter {
         return AsmUtil.byteArray(cn);
     }
 
-    void rewriteMethod(String clazzInternalName, MethodNode method) {
+    private void rewriteMethod(String clazzInternalName, MethodNode method) {
         final String tag = clazzInternalName + ":" + method.name;
-        addCallsTracking(method, tag);
-        addCalleeTracking(method, tag);
+        int id = counters.add(tag);
+        addCallsTracking(method, tag, id);
+        addCalleeTracking(method, id);
     }
 
-    private void addCalleeTracking(MethodNode method, String tag) {
-        final InsnList launchpad = generateRegistrationSnippet("registerCall", tag);
+    private void addCalleeTracking(MethodNode method, int id) {
+        final InsnList launchpad = new InsnList();
+        launchpad.add(new LdcInsnNode(id));
+        launchpad.add(new MethodInsnNode(Opcodes.INVOKESTATIC, ourInternalName,
+                "registerCall", "(I)V", false));
 
         final AbstractInsnNode first = method.instructions.getFirst();
         if (null == first) {
@@ -45,15 +51,7 @@ class Rewriter {
         }
     }
 
-    private InsnList generateRegistrationSnippet(String targetMethod, String tag) {
-        final InsnList launchpad = new InsnList();
-        launchpad.add(new LdcInsnNode(tag));
-        launchpad.add(new MethodInsnNode(Opcodes.INVOKESTATIC, ourInternalName,
-                targetMethod, "(Ljava/lang/String;)V", false));
-        return launchpad;
-    }
-
-    private void addCallsTracking(MethodNode method, String tag) {
+    private void addCallsTracking(MethodNode method, String tag, int id) {
         final InsnList insns = method.instructions;
         for (int i = 0; i < insns.size(); ++i) {
             final AbstractInsnNode ins = insns.get(i);

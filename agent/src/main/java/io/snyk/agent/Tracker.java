@@ -22,19 +22,13 @@ public class Tracker {
         worker.start();
     }
 
-    // TODO: MVP storage. This is awful.
-    static final ConcurrentHashMap<String, Object> SEEN_SET = new ConcurrentHashMap<>();
-
-    // TODO: Awful. No, go back and read that again.
-
-    // This is the hack a typical HashSet uses internally to adapt a map.
-    private static final Object PRESENT = new Object();
+    static final UseCounter SEEN_SET = new UseCounter();
 
     /**
      * Called by the instrumentation.
      */
-    public static void registerCall(String site) {
-        SEEN_SET.putIfAbsent(site, PRESENT);
+    public static void registerCall(int id) {
+        SEEN_SET.increment(id);
     }
 
     /**
