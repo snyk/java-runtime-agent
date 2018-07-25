@@ -23,7 +23,7 @@ public class Rewriter {
         return AsmUtil.byteArray(cn);
     }
 
-    private static void rewriteMethod(String clazzInternalName, MethodNode method) {
+    static void rewriteMethod(String clazzInternalName, MethodNode method) {
         final String tag = clazzInternalName + ":" + method.name;
         addCallsTracking(method, tag);
         addCalleeTracking(method, tag);

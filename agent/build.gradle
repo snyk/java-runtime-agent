@@ -5,6 +5,8 @@ plugins {
 
 dependencies {
     compile 'org.ow2.asm:asm-tree:6.2'
+    testCompile 'org.junit.jupiter:junit-jupiter-api:5.2.0'
+    testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.2.0'
 }
 
 jar {
@@ -19,6 +21,10 @@ shadowJar {
 
     classifier = null
     version = null
+}
+
+test {
+    useJUnitPlatform()
 }
 
 repositories {
