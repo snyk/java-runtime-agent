@@ -24,7 +24,7 @@ public class Transformer implements ClassFileTransformer {
             return classfileBuffer;
         }
         try {
-            return process(className, classfileBuffer);
+            return process(classfileBuffer);
         } catch (Throwable t) {
             // classpath or jar clash issues are just silently eaten by the JVM,
             // make sure they're shown.
@@ -33,12 +33,18 @@ public class Transformer implements ClassFileTransformer {
         }
     }
 
-    private byte[] process(String className, byte[] classfileBuffer) {
-        if (InstrumentationFilter.interestingClassName(className)) {
-            return new Rewriter(LandingZone.class, LandingZone.SEEN_SET::add)
-                    .rewrite(new ClassReader(classfileBuffer));
-        } else {
-            return classfileBuffer;
+    private byte[] process(byte[] classfileBuffer) {
+        final ClassReader reader = new ClassReader(classfileBuffer);
+
+        // grab the class name from the buffer, not using the passed-in class name,
+        // which is `null` for synthetic classes like lambdas and anonymous inner classes,
+        // it appears. I haven't seen documentation for why this would be the case.
+
+        if (!InstrumentationFilter.interestingClassName(reader.getClassName())) {
+            return null;
         }
+
+        return new Rewriter(LandingZone.class, LandingZone.SEEN_SET::add)
+                .rewrite(reader);
     }
 }

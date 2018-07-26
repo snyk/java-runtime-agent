@@ -63,7 +63,7 @@ public class Rewriter {
 
             final MethodInsnNode mi = (MethodInsnNode) ins;
 
-            if (!InstrumentationFilter.interestingCallSite(mi)) {
+            if (!InstrumentationFilter.returnsClass(mi)) {
                 continue;
             }
 
