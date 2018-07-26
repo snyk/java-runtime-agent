@@ -36,10 +36,10 @@ public class Rewriter {
         final String tag = clazzInternalName + ":" + method.name;
         int id = counters.add(tag);
         addInspectionOfLoadClassCalls(method, tag, id);
-        addInspectionOfAnyMethodEntry(method, id);
+        addInspectionOfMethodEntry(method, id);
     }
 
-    private void addInspectionOfAnyMethodEntry(MethodNode method, int id) {
+    private void addInspectionOfMethodEntry(MethodNode method, int id) {
         final InsnList launchpad = new InsnList();
         launchpad.add(new LdcInsnNode(id));
         launchpad.add(new MethodInsnNode(Opcodes.INVOKESTATIC, ourInternalName,
