@@ -25,7 +25,8 @@ to have an unmeasurable overhead.
  * `23us * 50,000 == 1.2 seconds`.
  * Hand-measuring tomcat startup sees about a 1.8 second timezone. This
     could be the synchronisation before `loadClass`, it could be optimisation
-    blockages, or it could just be measurement errors / bias. 
+    blockages, or it could just be measurement errors / bias.
+ * Original startup time is about 7 seconds, so that's a 20% slowdown. :(
 
 
 ## Tested hardware
