@@ -12,7 +12,7 @@ dependencies {
 
 jar {
     manifest {
-        attributes 'Premain-Class': 'io.snyk.agent.Entry'
+        attributes 'Premain-Class': 'io.snyk.agent.jvm.EntryPoint'
         attributes 'Can-Retransform-Classes': true
     }
 }

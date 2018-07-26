@@ -1,6 +1,6 @@
 package io.snyk.agent.logic;
 
-import io.snyk.agent.jvm.Tracker;
+import io.snyk.agent.jvm.LandingZone;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -8,7 +8,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
-public class Explainer implements Runnable {
+public class ReportingWorker implements Runnable {
     @Override
     public void run() {
         while (true) {
@@ -28,7 +28,7 @@ public class Explainer implements Runnable {
 
     void work() {
         final StringBuilder msg = new StringBuilder();
-        for (String loc : Tracker.SEEN_SET.drain()) {
+        for (String loc : LandingZone.SEEN_SET.drain()) {
             msg.append(loc);
             msg.append('\n');
         }

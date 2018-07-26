@@ -1,13 +1,15 @@
 package io.snyk.agent.jvm;
 
-import io.snyk.agent.logic.Interesting;
+import io.snyk.agent.logic.InstrumentationFilter;
 import io.snyk.agent.logic.Rewriter;
 import org.objectweb.asm.ClassReader;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
 
-
+/**
+ * Tie {@link Rewriter} and {@link LandingZone} to the JVM interface.
+ */
 public class Transformer implements ClassFileTransformer {
     @Override
     public byte[] transform(
@@ -32,8 +34,8 @@ public class Transformer implements ClassFileTransformer {
     }
 
     private byte[] process(String className, byte[] classfileBuffer) {
-        if (Interesting.interestingClassName(className)) {
-            return new Rewriter(Tracker.class, Tracker.SEEN_SET)
+        if (InstrumentationFilter.interestingClassName(className)) {
+            return new Rewriter(LandingZone.class, LandingZone.SEEN_SET)
                     .rewrite(new ClassReader(classfileBuffer));
         } else {
             return classfileBuffer;

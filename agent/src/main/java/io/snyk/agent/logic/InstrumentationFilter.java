@@ -8,7 +8,7 @@ import org.objectweb.asm.tree.*;
 /**
  * Determine if a method is interesting enough to instrument.
  */
-public class Interesting {
+public class InstrumentationFilter {
     public static boolean interestingClassName(String loadingClassAsName) {
         if (loadingClassAsName.startsWith("java/")) {
             return false;
@@ -98,7 +98,7 @@ public class Interesting {
         return iter.nextIs(node -> isALoad(node, 0))
                 // TODO: this matches fields of other classes. Is that a problem?
                 && iter.nextIs(node -> node instanceof FieldInsnNode)
-                && iter.nextIs(Interesting::isReturn);
+                && iter.nextIs(InstrumentationFilter::isReturn);
     }
 
     private static boolean isSetter(MethodNode method) {
@@ -108,7 +108,7 @@ public class Interesting {
                 && iter.nextIs(node -> isALoad(node, 1))
                 // TODO: this matches fields of other classes. Is that a problem?
                 && iter.nextIs(node -> node instanceof FieldInsnNode)
-                && iter.nextIs(Interesting::isReturn);
+                && iter.nextIs(InstrumentationFilter::isReturn);
     }
 
     private static boolean isALoad(AbstractInsnNode node, int of) {

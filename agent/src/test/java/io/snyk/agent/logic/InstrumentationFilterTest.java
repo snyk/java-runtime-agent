@@ -1,6 +1,5 @@
 package io.snyk.agent.logic;
 
-import io.snyk.agent.logic.TestVictim;
 import io.snyk.agent.util.AsmUtil;
 import org.junit.jupiter.api.Test;
 import org.objectweb.asm.ClassReader;
@@ -9,11 +8,11 @@ import org.objectweb.asm.tree.MethodNode;
 
 import java.util.NoSuchElementException;
 
-import static io.snyk.agent.logic.Interesting.interestingMethod;
+import static io.snyk.agent.logic.InstrumentationFilter.interestingMethod;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class InterestingTest {
+class InstrumentationFilterTest {
     @Test
     void methodsOfVictim() throws Exception {
         final String name = TestVictim.class.getName();

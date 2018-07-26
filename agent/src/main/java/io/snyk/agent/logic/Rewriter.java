@@ -1,6 +1,5 @@
 package io.snyk.agent.logic;
 
-import io.snyk.agent.logic.Interesting;
 import io.snyk.agent.util.AsmUtil;
 import io.snyk.agent.util.UseCounter;
 import org.objectweb.asm.ClassReader;
@@ -15,7 +14,7 @@ public class Rewriter {
     private final String ourInternalName;
     private final UseCounter counters;
 
-    // This Class<?> must implement the same "static interface" as Tracker.class.
+    // This Class<?> must implement the same "static interface" as LandingZone.class.
     // There's no way to express this in Java. The marked public static methods must
     // exist.
     public Rewriter(Class<?> tracker, UseCounter counters) {
@@ -26,7 +25,7 @@ public class Rewriter {
     public byte[] rewrite(ClassReader reader) {
         final ClassNode cn = AsmUtil.parse(reader);
         for (MethodNode method : cn.methods) {
-            if (Interesting.interestingMethod(method)) {
+            if (InstrumentationFilter.interestingMethod(method)) {
                 rewriteMethod(cn.name, method);
             }
         }
@@ -64,7 +63,7 @@ public class Rewriter {
 
             final MethodInsnNode mi = (MethodInsnNode) ins;
 
-            if (!Interesting.interestingCallSite(mi)) {
+            if (!InstrumentationFilter.interestingCallSite(mi)) {
                 continue;
             }
 

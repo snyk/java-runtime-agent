@@ -6,7 +6,7 @@ import org.objectweb.asm.tree.InsnList;
 import java.util.ListIterator;
 import java.util.function.Predicate;
 
-import static io.snyk.agent.logic.Interesting.isNonsenseNode;
+import static io.snyk.agent.logic.InstrumentationFilter.isNonsenseNode;
 
 public class InsnIter {
 
