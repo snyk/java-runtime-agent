@@ -16,9 +16,21 @@ public class RewritePerformance {
     // this is "protected" by the @Scope annotation on the class,
     // don't fiddle with it.
     private byte[] classBlackHole = getTestBytes();
+    private ClassReader classReaderBlackHole = new ClassReader(classBlackHole);
+
+    @Benchmark
+    public String justLoadName() {
+        return new ClassReader(classBlackHole).getClassName();
+    }
 
     @Benchmark
     public byte[] justRewrite() {
+        return new Rewriter(LandingZone.class, LandingZone.SEEN_SET::add)
+                .rewrite(classReaderBlackHole);
+    }
+
+    @Benchmark
+    public byte[] loadBoth() {
         return new Rewriter(LandingZone.class, LandingZone.SEEN_SET::add)
                 .rewrite(new ClassReader(classBlackHole));
     }
