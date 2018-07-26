@@ -25,7 +25,8 @@ public class Rewriter {
 
     public byte[] rewrite(ClassReader reader) {
         final ClassNode cn = AsmUtil.parse(reader);
-        for (MethodNode method : cn.methods) {
+        // casting for 5.2 compat; fixed in ASM 6
+        for (MethodNode method : (Iterable<MethodNode>) cn.methods) {
             if (InstrumentationFilter.interestingMethod(method)) {
                 rewriteMethod(cn.name, method);
             }

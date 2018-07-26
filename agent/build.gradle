@@ -1,13 +1,17 @@
 plugins {
     id 'com.github.johnrengelman.shadow' version '2.0.4'
+    id 'me.champeau.gradle.jmh' version '0.4.7'
     id 'java'
 }
 
 dependencies {
-    compile 'org.ow2.asm:asm-tree:6.2'
+    // using 5.2, not 6.2, here for compatibility with JMH;
+    // super dumb for production
+    compile 'org.ow2.asm:asm-tree:5.2'
     testCompile 'com.google.guava:guava:25.1-jre'
     testCompile 'org.junit.jupiter:junit-jupiter-api:5.2.0'
     testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.2.0'
+    jmh 'com.google.guava:guava:25.1-jre'
 }
 
 jar {
@@ -26,6 +30,16 @@ shadowJar {
 
 test {
     useJUnitPlatform()
+}
+
+jmh {
+    // severely limit the time benchmarks take to run
+    fork = 1
+    iterations = 1
+    warmupIterations = 1
+
+    // allow us to use test classes during the benchmark, hopefully not rewritten
+    includeTests = true
 }
 
 repositories {

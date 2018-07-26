@@ -6,6 +6,7 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import static io.snyk.agent.logic.InstrumentationFilter.interestingMethod;
@@ -27,7 +28,8 @@ class InstrumentationFilterTest {
     }
 
     private MethodNode findMethod(ClassNode node, String name) throws NoSuchElementException {
-        return node.methods.stream()
+        // casting for 5.2 compat; fixed in ASM 6
+        return ((List<MethodNode>)node.methods).stream()
                 .filter(method -> name.equals(method.name))
                 .findFirst()
                 .get();
