@@ -28,15 +28,14 @@ public class LandingZone {
     /**
      * Called by the instrumentation.
      */
-    public static void registerCall(int id) {
+    public static void registerMethodEntry(int id) {
         SEEN_SET.increment(id);
     }
 
     /**
      * Called by the instrumentation.
      */
-    public static void registerCallee(String arg, String site) {
-        System.err.println("callee: " + site + ":" + arg);
+    public static void registerLoadClass(String arg, int id) {
+        SEEN_SET.loadClassCall(id, arg);
     }
-
 }

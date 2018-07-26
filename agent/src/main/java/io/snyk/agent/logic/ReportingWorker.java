@@ -1,6 +1,7 @@
 package io.snyk.agent.logic;
 
 import io.snyk.agent.jvm.LandingZone;
+import io.snyk.agent.util.UseCounter;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -28,10 +29,19 @@ public class ReportingWorker implements Runnable {
 
     void work() {
         final StringBuilder msg = new StringBuilder();
-        for (String loc : LandingZone.SEEN_SET.drain()) {
+        final UseCounter.Drain drain = LandingZone.SEEN_SET.drain();
+        for (String loc : drain.methodEntries) {
             msg.append(loc);
             msg.append('\n');
         }
+
+        drain.loadClasses.forEach((caller, loaded) -> {
+            msg.append(caller);
+            loaded.forEach(arg -> {
+                msg.append(' ');
+                msg.append(arg);
+            });
+        });
 
         try {
             final HttpURLConnection conn = (HttpURLConnection)new URL("http://127.0.0.1:5000/dump").openConnection();

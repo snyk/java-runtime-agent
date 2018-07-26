@@ -13,12 +13,14 @@ public class RewriterTest {
     @Test
     public void smokeTest() throws Exception {
         final String name = TestVictim.class.getName();
-        final byte[] bytes = new Rewriter(TestTracker.class, TestTracker.SEEN_SET).rewrite(new ClassReader(name));
+        final byte[] bytes = new Rewriter(TestTracker.class, TestTracker.SEEN_SET::add)
+                .rewrite(new ClassReader(name));
         final Class<?> clazz = new DefinerLoader().define(name, bytes);
         final Object instance = clazz.newInstance();
         assertEquals(5, clazz.getDeclaredMethod("returnFive").invoke(instance));
         assertEquals(Sets.newHashSet(
-                "io/snyk/agent/TestVictim:<init>",
-                "io/snyk/agent/TestVictim:returnFive"), TestTracker.SEEN_SET.drain());
+                "io/snyk/agent/logic/TestVictim:<init>",
+                "io/snyk/agent/logic/TestVictim:returnFive"),
+                TestTracker.SEEN_SET.drain().methodEntries);
     }
 }

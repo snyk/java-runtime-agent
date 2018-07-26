@@ -10,6 +10,13 @@ import org.objectweb.asm.tree.*;
  */
 public class InstrumentationFilter {
     public static boolean interestingClassName(String loadingClassAsName) {
+        // TODO: ... why is this null? When is it null? The docs seem to
+        // TODO: imply that it's always null, which is clearly not the case.
+        // TODO: default to instrumenting.. what if we instrument ourselves?
+        if (null == loadingClassAsName) {
+            return true;
+        }
+
         if (loadingClassAsName.startsWith("java/")) {
             return false;
         }

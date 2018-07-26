@@ -35,7 +35,7 @@ public class Transformer implements ClassFileTransformer {
 
     private byte[] process(String className, byte[] classfileBuffer) {
         if (InstrumentationFilter.interestingClassName(className)) {
-            return new Rewriter(LandingZone.class, LandingZone.SEEN_SET)
+            return new Rewriter(LandingZone.class, LandingZone.SEEN_SET::add)
                     .rewrite(new ClassReader(classfileBuffer));
         } else {
             return classfileBuffer;

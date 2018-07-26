@@ -8,14 +8,14 @@ public class TestTracker {
     /**
      * Called by the instrumentation.
      */
-    public static void registerCall(int id) {
+    public static void registerMethodEntry(int id) {
         SEEN_SET.increment(id);
     }
 
     /**
      * Called by the instrumentation.
      */
-    public static void registerCallee(String arg, String site) {
+    public static void registerLoadClass(String arg, String site) {
         System.err.println("callee: " + site + ":" + arg);
     }
 

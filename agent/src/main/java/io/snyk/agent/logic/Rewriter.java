@@ -1,10 +1,11 @@
 package io.snyk.agent.logic;
 
 import io.snyk.agent.util.AsmUtil;
-import io.snyk.agent.util.UseCounter;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
+
+import java.util.function.ToIntFunction;
 
 /**
  * perform rewrites of classes
@@ -12,14 +13,14 @@ import org.objectweb.asm.tree.*;
 public class Rewriter {
 
     private final String ourInternalName;
-    private final UseCounter counters;
+    private final ToIntFunction<String> allocateNewId;
 
     // This Class<?> must implement the same "static interface" as LandingZone.class.
     // There's no way to express this in Java. The marked public static methods must
     // exist.
-    public Rewriter(Class<?> tracker, UseCounter counters) {
+    public Rewriter(Class<?> tracker, ToIntFunction<String> allocateNewId) {
         this.ourInternalName = tracker.getName().replace('.', '/');
-        this.counters = counters;
+        this.allocateNewId = allocateNewId;
     }
 
     public byte[] rewrite(ClassReader reader) {
@@ -34,16 +35,15 @@ public class Rewriter {
 
     private void rewriteMethod(String clazzInternalName, MethodNode method) {
         final String tag = clazzInternalName + ":" + method.name;
-        int id = counters.add(tag);
-        addInspectionOfLoadClassCalls(method, tag, id);
-        addInspectionOfMethodEntry(method, id);
+        addInspectionOfLoadClassCalls(method, tag);
+        addInspectionOfMethodEntry(method, tag);
     }
 
-    private void addInspectionOfMethodEntry(MethodNode method, int id) {
+    private void addInspectionOfMethodEntry(MethodNode method, String methodLocation) {
         final InsnList launchpad = new InsnList();
-        launchpad.add(new LdcInsnNode(id));
+        launchpad.add(new LdcInsnNode(allocateNewId.applyAsInt(methodLocation)));
         launchpad.add(new MethodInsnNode(Opcodes.INVOKESTATIC, ourInternalName,
-                "registerCall", "(I)V", false));
+                "registerMethodEntry", "(I)V", false));
 
         final AbstractInsnNode first = method.instructions.getFirst();
         if (null == first) {
@@ -53,7 +53,7 @@ public class Rewriter {
         }
     }
 
-    private void addInspectionOfLoadClassCalls(MethodNode method, String tag, int id) {
+    private void addInspectionOfLoadClassCalls(MethodNode method, String methodLocation) {
         final InsnList insns = method.instructions;
         for (int i = 0; i < insns.size(); ++i) {
             final AbstractInsnNode ins = insns.get(i);
@@ -78,7 +78,7 @@ public class Rewriter {
 
             // This causes the TODO section in the else block below.
 
-            final String callTag = tag + ":" + mi.owner + ":"
+            final String callTag = methodLocation + ":" + mi.owner + ":"
                     + mi.name + ":" + mi.desc + ":" + mi.getOpcode();
 
             final InsnList launchpad = new InsnList();
@@ -104,13 +104,13 @@ public class Rewriter {
             }
 
             // stack: "name" [original stack]
-            launchpad.add(new LdcInsnNode(callTag));
-            // stack: "tag" "name" [original stack]
+            launchpad.add(new LdcInsnNode(allocateNewId.applyAsInt(callTag)));
+            // stack: tag "name" [original stack]
             launchpad.add(new MethodInsnNode(
                     Opcodes.INVOKESTATIC,
                     ourInternalName,
-                    "registerCallee",
-                    "(Ljava/lang/String;Ljava/lang/String;)V",
+                    "registerLoadClass",
+                    "(Ljava/lang/String;I)V",
                     false));
             // stack: "name" classloader
 

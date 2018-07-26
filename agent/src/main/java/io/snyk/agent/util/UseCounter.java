@@ -1,9 +1,6 @@
 package io.snyk.agent.util;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
 /**
@@ -16,6 +13,14 @@ public class UseCounter {
     // assumptions: can only grow
     // reassignment @GuardedBy("this")
     private volatile AtomicIntegerArray counters = new AtomicIntegerArray(1024);
+
+    // @GuardedBy("this")
+    private HashMap<Integer, HashSet<String>> loadClassCalls = new HashMap<>();
+
+    public static class Drain {
+        public final Set<String> methodEntries = new HashSet<>();
+        public final HashMap<String, HashSet<String>> loadClasses = new HashMap<>();
+    }
 
     public synchronized int add(String s) {
         final int id = lookup.size();
@@ -37,21 +42,31 @@ public class UseCounter {
         return id;
     }
 
-    public synchronized Set<String> drain() {
+    public synchronized Drain drain() {
+        final Drain ret = new Drain();
+
         // this is not truly loss-free, but I believe it would be in practice?
         // the reassignment happens-before we observe any of the values in our backup
         final AtomicIntegerArray old = counters;
         counters = new AtomicIntegerArray(counters.length());
-        final HashSet<String> ret = new HashSet<>();
         for (int i = 0; i < old.length(); i++) {
             if (0 != old.get(i)) {
-                ret.add(lookup.get(i));
+                ret.methodEntries.add(lookup.get(i));
             }
         }
+
+        loadClassCalls.forEach((id, names) ->
+                ret.loadClasses.put(lookup.get(id), names));
+        loadClassCalls.clear();
+
         return ret;
     }
 
     public void increment(int id) {
         counters.getAndIncrement(id);
+    }
+
+    public synchronized void loadClassCall(int id, String arg) {
+        loadClassCalls.computeIfAbsent(id, underscore -> new HashSet<>()).add(arg);
     }
 }
