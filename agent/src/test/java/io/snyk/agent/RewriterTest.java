@@ -17,8 +17,3 @@ public class RewriterTest {
     }
 }
 
-class DefinerLoader extends ClassLoader {
-    Class<?> define(String name, byte[] bytes) {
-        return this.defineClass(name, bytes, 0, bytes.length);
-    }
-}
