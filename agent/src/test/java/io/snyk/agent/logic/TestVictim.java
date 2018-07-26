@@ -1,4 +1,4 @@
-package io.snyk.agent;
+package io.snyk.agent.logic;
 
 import java.util.concurrent.Callable;
 

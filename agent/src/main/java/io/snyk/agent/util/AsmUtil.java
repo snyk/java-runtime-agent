@@ -1,4 +1,4 @@
-package io.snyk.agent;
+package io.snyk.agent.util;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -16,13 +16,13 @@ public class AsmUtil {
         throw new IllegalStateException();
     }
 
-    static ClassNode parse(ClassReader reader) {
+    public static ClassNode parse(ClassReader reader) {
         final ClassNode cn = new ClassNode();
         reader.accept(cn, DEFAULT_PARSING_OPTIONS);
         return cn;
     }
 
-    static byte[] byteArray(ClassNode cn) {
+    public static byte[] byteArray(ClassNode cn) {
         final ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         cn.accept(cw);
         return cw.toByteArray();

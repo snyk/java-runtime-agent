@@ -1,6 +1,7 @@
-package io.snyk.agent;
+package io.snyk.agent.jvm;
 
-import java.util.concurrent.ConcurrentHashMap;
+import io.snyk.agent.logic.Explainer;
+import io.snyk.agent.util.UseCounter;
 
 /**
  * Track work done by callers.
@@ -22,7 +23,7 @@ public class Tracker {
         worker.start();
     }
 
-    static final UseCounter SEEN_SET = new UseCounter();
+    public static final UseCounter SEEN_SET = new UseCounter();
 
     /**
      * Called by the instrumentation.

@@ -1,5 +1,6 @@
-package io.snyk.agent;
+package io.snyk.agent.logic;
 
+import io.snyk.agent.util.InsnIter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
@@ -8,7 +9,7 @@ import org.objectweb.asm.tree.*;
  * Determine if a method is interesting enough to instrument.
  */
 public class Interesting {
-    static boolean interestingClassName(String loadingClassAsName) {
+    public static boolean interestingClassName(String loadingClassAsName) {
         if (loadingClassAsName.startsWith("java/")) {
             return false;
         }
@@ -61,7 +62,7 @@ public class Interesting {
         return true;
     }
 
-    static boolean interestingCallSite(MethodInsnNode mi) {
+    public static boolean interestingCallSite(MethodInsnNode mi) {
         if (!returnsClass(mi)) {
             return false;
         }
@@ -114,7 +115,7 @@ public class Interesting {
         return node instanceof VarInsnNode && of == ((VarInsnNode) node).var;
     }
 
-    static boolean isNonsenseNode(AbstractInsnNode node) {
+    public static boolean isNonsenseNode(AbstractInsnNode node) {
         return (node.getType() == AbstractInsnNode.LINE)
                 || (node.getType() == AbstractInsnNode.FRAME)
                 || (node.getType() == AbstractInsnNode.LABEL);

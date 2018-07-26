@@ -1,9 +1,10 @@
-package io.snyk.agent;
+package io.snyk.agent.jvm;
 
+import io.snyk.agent.logic.Interesting;
+import io.snyk.agent.logic.Rewriter;
 import org.objectweb.asm.ClassReader;
 
 import java.lang.instrument.ClassFileTransformer;
-import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
 
 
@@ -14,7 +15,7 @@ public class Transformer implements ClassFileTransformer {
             String className,
             Class<?> classBeingRedefined,
             ProtectionDomain protectionDomain,
-            byte[] classfileBuffer) throws IllegalClassFormatException {
+            byte[] classfileBuffer) {
         // `null` here represents the system classloader
         // TODO: is this only going to load core classes? Who knows.
         if (null == loader) {
@@ -32,7 +33,8 @@ public class Transformer implements ClassFileTransformer {
 
     private byte[] process(String className, byte[] classfileBuffer) {
         if (Interesting.interestingClassName(className)) {
-            return new Rewriter(Tracker.class, Tracker.SEEN_SET).rewrite(new ClassReader(classfileBuffer));
+            return new Rewriter(Tracker.class, Tracker.SEEN_SET)
+                    .rewrite(new ClassReader(classfileBuffer));
         } else {
             return classfileBuffer;
         }

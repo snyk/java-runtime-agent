@@ -1,4 +1,4 @@
-package io.snyk.agent;
+package io.snyk.agent.util;
 
 import java.util.ArrayList;
 import java.util.HashSet;

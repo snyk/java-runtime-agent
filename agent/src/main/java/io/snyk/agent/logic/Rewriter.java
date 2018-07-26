@@ -1,5 +1,8 @@
-package io.snyk.agent;
+package io.snyk.agent.logic;
 
+import io.snyk.agent.logic.Interesting;
+import io.snyk.agent.util.AsmUtil;
+import io.snyk.agent.util.UseCounter;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
@@ -7,7 +10,7 @@ import org.objectweb.asm.tree.*;
 /**
  * perform rewrites of classes
  */
-class Rewriter {
+public class Rewriter {
 
     private final String ourInternalName;
     private final UseCounter counters;
@@ -15,12 +18,12 @@ class Rewriter {
     // This Class<?> must implement the same "static interface" as Tracker.class.
     // There's no way to express this in Java. The marked public static methods must
     // exist.
-    Rewriter(Class<?> tracker, UseCounter counters) {
+    public Rewriter(Class<?> tracker, UseCounter counters) {
         this.ourInternalName = tracker.getName().replace('.', '/');
         this.counters = counters;
     }
 
-    byte[] rewrite(ClassReader reader) {
+    public byte[] rewrite(ClassReader reader) {
         final ClassNode cn = AsmUtil.parse(reader);
         for (MethodNode method : cn.methods) {
             if (Interesting.interestingMethod(method)) {
@@ -33,11 +36,11 @@ class Rewriter {
     private void rewriteMethod(String clazzInternalName, MethodNode method) {
         final String tag = clazzInternalName + ":" + method.name;
         int id = counters.add(tag);
-        addCallsTracking(method, tag, id);
-        addCalleeTracking(method, id);
+        addInspectionOfLoadClassCalls(method, tag, id);
+        addInspectionOfAnyMethodEntry(method, id);
     }
 
-    private void addCalleeTracking(MethodNode method, int id) {
+    private void addInspectionOfAnyMethodEntry(MethodNode method, int id) {
         final InsnList launchpad = new InsnList();
         launchpad.add(new LdcInsnNode(id));
         launchpad.add(new MethodInsnNode(Opcodes.INVOKESTATIC, ourInternalName,
@@ -51,7 +54,7 @@ class Rewriter {
         }
     }
 
-    private void addCallsTracking(MethodNode method, String tag, int id) {
+    private void addInspectionOfLoadClassCalls(MethodNode method, String tag, int id) {
         final InsnList insns = method.instructions;
         for (int i = 0; i < insns.size(); ++i) {
             final AbstractInsnNode ins = insns.get(i);

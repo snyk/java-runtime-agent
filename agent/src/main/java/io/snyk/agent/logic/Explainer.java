@@ -1,16 +1,14 @@
-package io.snyk.agent;
+package io.snyk.agent.logic;
 
-import java.io.File;
+import io.snyk.agent.jvm.Tracker;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 
-class Explainer implements Runnable {
+public class Explainer implements Runnable {
     @Override
     public void run() {
         while (true) {

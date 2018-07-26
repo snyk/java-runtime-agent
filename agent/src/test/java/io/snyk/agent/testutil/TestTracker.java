@@ -1,7 +1,9 @@
-package io.snyk.agent;
+package io.snyk.agent.testutil;
+
+import io.snyk.agent.util.UseCounter;
 
 public class TestTracker {
-    static final UseCounter SEEN_SET = new UseCounter();
+    public static final UseCounter SEEN_SET = new UseCounter();
 
     /**
      * Called by the instrumentation.
