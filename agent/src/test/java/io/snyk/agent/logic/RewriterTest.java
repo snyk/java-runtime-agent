@@ -2,8 +2,6 @@ package io.snyk.agent.logic;
 
 
 import com.google.common.collect.Sets;
-import io.snyk.agent.logic.Rewriter;
-import io.snyk.agent.logic.TestVictim;
 import io.snyk.agent.testutil.DefinerLoader;
 import io.snyk.agent.testutil.TestTracker;
 import org.junit.jupiter.api.Test;
