@@ -9,21 +9,21 @@ import org.objectweb.asm.tree.*;
  */
 class Rewriter {
 
-    private static final int DEFAULT_PARSING_OPTIONS = 0;
     private final String ourInternalName;
     private final UseCounter counters;
 
-    // TODO: could use an... interface here. :o
+    // This Class<?> must implement the same "static interface" as Tracker.class.
+    // There's no way to express this in Java. The marked public static methods must
+    // exist.
     Rewriter(Class<?> tracker, UseCounter counters) {
         this.ourInternalName = tracker.getName().replace('.', '/');
         this.counters = counters;
     }
 
     byte[] rewrite(ClassReader reader) {
-        final ClassNode cn = new ClassNode();
-        reader.accept(cn, DEFAULT_PARSING_OPTIONS);
+        final ClassNode cn = AsmUtil.parse(reader);
         for (MethodNode method : cn.methods) {
-            if (Interesting.interesting(method)) {
+            if (Interesting.interestingMethod(method)) {
                 rewriteMethod(cn.name, method);
             }
         }
@@ -61,7 +61,7 @@ class Rewriter {
 
             final MethodInsnNode mi = (MethodInsnNode) ins;
 
-            if (!Interesting.interesting(mi)) {
+            if (!Interesting.interestingCallSite(mi)) {
                 continue;
             }
 

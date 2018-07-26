@@ -8,7 +8,7 @@ import org.objectweb.asm.tree.*;
  * Determine if a method is interesting enough to instrument.
  */
 public class Interesting {
-    static boolean interesting(String loadingClassAsName) {
+    static boolean interestingClassName(String loadingClassAsName) {
         if (loadingClassAsName.startsWith("java/")) {
             return false;
         }
@@ -33,7 +33,7 @@ public class Interesting {
      * TODO: This is actually mandatory, as it enforces some asserts
      * TODO: that the actual rewriter should be enforcing, perhaps?
      */
-    static boolean interesting(MethodNode method) {
+    static boolean interestingMethod(MethodNode method) {
         // `abstract` and `native` methods don't have Java code in them,
         // so we can't add extra java code
         // `synthetic` methods, used e.g. in generics dispatch internals,
@@ -61,7 +61,7 @@ public class Interesting {
         return true;
     }
 
-    static boolean interesting(MethodInsnNode mi) {
+    static boolean interestingCallSite(MethodInsnNode mi) {
         if (!returnsClass(mi)) {
             return false;
         }

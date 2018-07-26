@@ -31,7 +31,7 @@ public class Transformer implements ClassFileTransformer {
     }
 
     private byte[] process(String className, byte[] classfileBuffer) {
-        if (Interesting.interesting(className)) {
+        if (Interesting.interestingClassName(className)) {
             return new Rewriter(Tracker.class, Tracker.SEEN_SET).rewrite(new ClassReader(classfileBuffer));
         } else {
             return classfileBuffer;
