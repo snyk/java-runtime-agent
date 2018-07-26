@@ -5,6 +5,7 @@ plugins {
 
 dependencies {
     compile 'org.ow2.asm:asm-tree:6.2'
+    testCompile 'com.google.guava:guava:25.1-jre'
     testCompile 'org.junit.jupiter:junit-jupiter-api:5.2.0'
     testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.2.0'
 }

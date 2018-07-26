@@ -1,6 +1,7 @@
 package io.snyk.agent;
 
 
+import com.google.common.collect.Sets;
 import org.junit.jupiter.api.Test;
 import org.objectweb.asm.ClassReader;
 
@@ -14,6 +15,8 @@ public class RewriterTest {
         final Class<?> clazz = new DefinerLoader().define(name, bytes);
         final Object instance = clazz.newInstance();
         assertEquals(5, clazz.getDeclaredMethod("returnFive").invoke(instance));
+        assertEquals(Sets.newHashSet(
+                "io/snyk/agent/TestVictim:<init>",
+                "io/snyk/agent/TestVictim:returnFive"), TestTracker.SEEN_SET.drain());
     }
 }
-
