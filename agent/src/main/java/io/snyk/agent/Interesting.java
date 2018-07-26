@@ -91,94 +91,30 @@ public class Interesting {
 
         return false;
     }
-
-    enum GetterParserState {
-        ALoad0,
-        GetField,
-        Return,
-    }
-
     private static boolean isGetter(MethodNode method) {
-        GetterParserState state = GetterParserState.ALoad0;
+        final InsnIter iter = new InsnIter(method.instructions);
 
-        for (AbstractInsnNode node : AsmUtil.iterable(method.instructions)) {
-            if (isNonsenseNode(node)) {
-                continue;
-            }
-
-            switch (state) {
-                case ALoad0:
-                    if (isALoad(node, 0)) {
-                        state = GetterParserState.GetField;
-                        break;
-                    } else {
-                        return false;
-                    }
-                case GetField:
-                    if (node instanceof FieldInsnNode) {
-                        // TODO: this matches fields of other classes. Is that a problem?
-                        state = GetterParserState.Return;
-                        break;
-                    } else {
-                        return false;
-                    }
-                case Return:
-                    return isReturn(node);
-            }
-        }
-        return false;
-    }
-
-    enum SetterParserState {
-        ALoad0,
-        ALoad1,
-        PutField,
-        Return,
+        return iter.nextIs(node -> isALoad(node, 0))
+                // TODO: this matches fields of other classes. Is that a problem?
+                && iter.nextIs(node -> node instanceof FieldInsnNode)
+                && iter.nextIs(Interesting::isReturn);
     }
 
     private static boolean isSetter(MethodNode method) {
-        SetterParserState state = SetterParserState.ALoad0;
+        final InsnIter iter = new InsnIter(method.instructions);
 
-        for (AbstractInsnNode node : AsmUtil.iterable(method.instructions)) {
-            if (isNonsenseNode(node)) {
-                continue;
-            }
-
-            switch (state) {
-                case ALoad0:
-                    if (isALoad(node, 0)) {
-                        state = SetterParserState.ALoad1;
-                        break;
-                    } else {
-                        return false;
-                    }
-                case ALoad1:
-                    if (isALoad(node, 1)) {
-                        state = SetterParserState.PutField;
-                        break;
-                    } else {
-                        return false;
-                    }
-                case PutField:
-                    if (node instanceof FieldInsnNode) {
-                        // TODO: this matches fields of other classes. Is that a problem?
-                        state = SetterParserState.Return;
-                        break;
-                    } else {
-                        return false;
-                    }
-                case Return:
-                    return isReturn(node);
-            }
-        }
-        return false;
+        return iter.nextIs(node -> isALoad(node, 0))
+                && iter.nextIs(node -> isALoad(node, 1))
+                // TODO: this matches fields of other classes. Is that a problem?
+                && iter.nextIs(node -> node instanceof FieldInsnNode)
+                && iter.nextIs(Interesting::isReturn);
     }
 
     private static boolean isALoad(AbstractInsnNode node, int of) {
         return node instanceof VarInsnNode && of == ((VarInsnNode) node).var;
     }
 
-    private static boolean isNonsenseNode(AbstractInsnNode node) {
+    static boolean isNonsenseNode(AbstractInsnNode node) {
         return (node.getType() == AbstractInsnNode.LINE)
                 || (node.getType() == AbstractInsnNode.FRAME)
                 || (node.getType() == AbstractInsnNode.LABEL);
