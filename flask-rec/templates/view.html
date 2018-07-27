@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+<head>
+    <title>Snyk: {{ vm }}</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+          crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"
+            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+            crossorigin="anonymous"></script>
+    <script src="/static/view.js"></script>
+    <style type="text/css">
+        .row {
+            margin-top: 2em;
+        }
+
+        img {
+            max-width: 360px;
+        }
+
+        .basic th,
+        .basic td {
+            border: 1px solid #e1edff;
+            padding: 6px 12px;
+        }
+
+        .basic tbody tr:nth-child(odd) td {
+            background-color: #f4fbff;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h1>Snyk monitoring for {{ vm }}</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-6">
+            <h2>Basic info</h2>
+            <table class="basic">
+                <tr><td>First seen</td><td>{{ first_seen }}Z</td></tr>
+                <tr><td>Last update</td><td id="last-update">Loading...</td></tr>
+                <tr><td>Agent version</td><td>TODO</td></tr>
+                <tr><td>JVM version</td><td>TODO</td></tr>
+                <tr><td>Total events</td><td id="total-events">Loading...</td></tr>
+            </table>
+        </div>
+        <div class="col-6">
+            <h2>Activity</h2>
+            <img src="/static/graph.png">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-6">
+            <h2>Recent new calls</h2>
+            <ul id="recent-called">
+                <li>Loading..</li>
+            </ul>
+        </div>
+        <div class="col-6">
+            <h2>Recently loaded</h2>
+            <ul id="recent-loaded">
+                <li>Loading..</li>
+            </ul>
+        </div>
+    </div>
+    <input type="hidden" name="vm" id="vm" value="{{ vm }}"/>
+</body>
+</html>

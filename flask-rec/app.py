@@ -2,7 +2,7 @@ import collections
 from datetime import datetime
 from typing import Iterable, List, Tuple, Dict
 
-from flask import Flask, request, Response
+from flask import Flask, request, Response, render_template, abort, jsonify
 
 app = Flask(__name__)
 
@@ -21,13 +21,6 @@ class Messages:
         self.load_classes = load_classes
 
 
-# class Event:
-#     def __init__(self, code: str, site: str, args: Optional[str]):
-#         self.code = code
-#         self.site = site
-#         self.args = args
-
-
 VmName = str
 
 # type: Dict[VmName, VmInfo]
@@ -35,8 +28,8 @@ database = collections.defaultdict(VmInfo)
 
 
 @app.route('/')
-def hello_world():
-    return 'Hello, World!'
+def index():
+    return render_template('index.html', vms=sorted(database.keys()))
 
 
 @app.route('/dump', methods=['PUT'])
@@ -45,8 +38,34 @@ def dump():
     return 'cheers'
 
 
-@app.route('/report')
-def report():
+@app.route('/view/<vm>/')
+def view_vm(vm: str):
+    if vm not in database:
+        abort(404)
+
+    messages = database[vm].messages
+
+    first_seen = messages[-1][0]
+
+    return render_template('view.html', vm=vm, first_seen=first_seen)
+
+
+@app.route('/view/<vm>/data')
+def view_vm_data(vm: str):
+    if vm not in database:
+        abort(404)
+
+    messages = database[vm].messages
+    when, _ = messages[0]
+
+    return jsonify({
+        'last_update': when,
+        'total_events': len(messages),
+    })
+
+
+@app.route('/export-latest')
+def export_latest():
     def dump():
         for whom, info in database.items():
             yield '\n\n##### vm: {}\n'.format(whom)
@@ -97,4 +116,4 @@ def save(lines: Iterable[str]):
         raise Exception('no source information')
 
     when = datetime.utcnow()
-    database[vm_info].messages.append((when, Messages(method_entries, load_classes)))
+    database[vm_info].messages.insert(0, (when, Messages(method_entries, load_classes)))
