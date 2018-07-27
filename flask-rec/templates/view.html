@@ -65,8 +65,8 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-6">
-            <h2>Recent new calls</h2>
+        <div class="col-lg-6">
+            <h2>Recent calls</h2>
             <table class="narrow">
                 <tr>
                     <th>class</th>
@@ -75,11 +75,16 @@
                 <tbody id="recent-called"></tbody>
             </table>
         </div>
-        <div class="col-6">
+        <div class="col-lg-6">
             <h2>Recently loaded</h2>
-            <ul id="recent-loaded">
-                <li>Loading..</li>
-            </ul>
+            <table class="narrow">
+                <tr>
+                    <th>loaded</th>
+                    <th>loaded by class</th>
+                    <th>loaded by method</th>
+                </tr>
+                <tbody id="recent-loaded"></tbody>
+            </table>
         </div>
     </div>
     <input type="hidden" name="vm" id="vm" value="{{ vm }}"/>
