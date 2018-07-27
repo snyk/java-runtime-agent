@@ -60,7 +60,9 @@ def report():
                 yield '\n\n  ### {}: dynamic loading\n'.format(when)
 
                 for parts in messages.load_classes:
-                    yield '    * {}\n'.format(parts)
+                    yield '    * {}\n'.format(parts[0])
+                    for part in sorted(parts[1:]):
+                        yield '      - {}\n'.format(part)
 
     return Response(dump(), mimetype='text/plain')
 
