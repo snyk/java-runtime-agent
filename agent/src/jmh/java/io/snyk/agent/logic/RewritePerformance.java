@@ -2,7 +2,9 @@ package io.snyk.agent.logic;
 
 import com.google.common.io.ByteStreams;
 import io.snyk.agent.jvm.LandingZone;
+import io.snyk.agent.util.AsmUtil;
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.tree.ClassNode;
 import org.openjdk.jmh.annotations.*;
 
 import java.io.IOException;
@@ -21,6 +23,16 @@ public class RewritePerformance {
     @Benchmark
     public String justLoadName() {
         return new ClassReader(classBlackHole).getClassName();
+    }
+
+    @Benchmark
+    public ClassNode justParse() {
+        return AsmUtil.parse(new ClassReader(classBlackHole));
+    }
+
+    @Benchmark
+    public byte[] parseAndSave() {
+        return AsmUtil.byteArray(AsmUtil.parse(new ClassReader(classBlackHole)));
     }
 
     @Benchmark
