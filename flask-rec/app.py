@@ -1,6 +1,7 @@
 import collections
+import itertools
 from datetime import datetime
-from typing import Iterable, List, Tuple, Dict
+from typing import Iterable, List, Tuple, Dict, Iterator
 
 from flask import Flask, request, Response, render_template, abort, jsonify
 
@@ -58,10 +59,37 @@ def view_vm_data(vm: str):
     messages = database[vm].messages
     when, _ = messages[0]
 
+    MAX_ITEMS = 1000
+
     return jsonify({
         'last_update': when,
         'total_events': len(messages),
+        'newest_method_entries': list(itertools.islice(newest_method_entries(messages), MAX_ITEMS)),
+        'newest_dynamic_loads': list(itertools.islice(newest_dynamic_loads(messages), MAX_ITEMS)),
     })
+
+
+def newest_method_entries(data: Iterable[Tuple[datetime, Messages]]) -> Iterator[str]:
+    for when, messages in data:
+        for entry in messages.method_entries:
+            _, clazz, name = entry.split(':')
+            yield ':'.join([de_native(clazz), name, when.isoformat(' ')])
+
+
+def newest_dynamic_loads(data: Iterable[Tuple[datetime, Messages]]) -> Iterator[str]:
+    for when, messages in data:
+        for event in messages.load_classes:
+            _, loaded_from_class, loaded_from_method, loader_class, loader_name, loader_desc, _ = event[0].split(':')
+            loaded_from_class = de_native(loaded_from_class)
+            loader_class = de_native(loader_class)
+            for child in sorted(event[1:]):
+                _, name = child.split(':')
+                yield ':'.join([loaded_from_class, loaded_from_method, loader_class, loader_name, loader_desc, name,
+                                when.isoformat(' ')])
+
+
+def de_native(clazz):
+    return clazz.replace('/', '.')
 
 
 @app.route('/export-latest')

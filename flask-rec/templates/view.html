@@ -25,13 +25,24 @@
             padding: 6px 12px;
         }
 
+        .narrow th,
+        .narrow td {
+            border: 1px solid #e1edff;
+            padding: 2px 2px;
+        }
+
         .basic tbody tr:nth-child(odd) td {
             background-color: #f4fbff;
         }
+
+        .narrow tbody tr:nth-child(odd) td {
+            background-color: #f4fbff;
+        }
+
     </style>
 </head>
 <body>
-<div class="container">
+<div class="container-fluid">
     <div class="row">
         <div class="col-12">
             <h1>Snyk monitoring for {{ vm }}</h1>
@@ -56,9 +67,13 @@
     <div class="row">
         <div class="col-6">
             <h2>Recent new calls</h2>
-            <ul id="recent-called">
-                <li>Loading..</li>
-            </ul>
+            <table class="narrow">
+                <tr>
+                    <th>class</th>
+                    <th>method</th>
+                </tr>
+                <tbody id="recent-called"></tbody>
+            </table>
         </div>
         <div class="col-6">
             <h2>Recently loaded</h2>
