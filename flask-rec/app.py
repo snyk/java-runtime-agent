@@ -1,12 +1,37 @@
+import collections
 from datetime import datetime
-from typing import Set, Iterable, List, Tuple
+from typing import Iterable, List, Tuple, Dict
 
 from flask import Flask, request, Response
 
 app = Flask(__name__)
 
-# type: List[Tuple[datetime, Set[str]]]
-world_state = []
+MethodEntryLine = str
+LoadClassLine = List[str]
+
+
+class VmInfo:
+    def __init__(self):
+        self.messages = []  # type: List[Tuple[datetime, Messages]]
+
+
+class Messages:
+    def __init__(self, method_entries: List[MethodEntryLine], load_classes: List[LoadClassLine]):
+        self.method_entries = method_entries
+        self.load_classes = load_classes
+
+
+# class Event:
+#     def __init__(self, code: str, site: str, args: Optional[str]):
+#         self.code = code
+#         self.site = site
+#         self.args = args
+
+
+VmName = str
+
+# type: Dict[VmName, VmInfo]
+database = collections.defaultdict(VmInfo)
 
 
 @app.route('/')
@@ -23,17 +48,51 @@ def dump():
 @app.route('/report')
 def report():
     def dump():
-        for when, what in world_state[:min(10, len(world_state))]:
-            yield '\n\n### {} ###\n'.format(when)
-            if 0 == len(what):
-                yield ' *** NOTHING ***'
-                continue
+        for whom, info in database.items():
+            yield '\n\n##### vm: {}\n'.format(whom)
 
-            for line in sorted(what):
-                yield ' * {}\n'.format(line)
+            for when, messages in info.messages[:min(10, len(info.messages))]:
+                yield '\n\n  ### {}: called methods\n'.format(when)
+
+                for line in sorted(messages.method_entries):
+                    yield '    * {}\n'.format(line)
+
+                yield '\n\n  ### {}: dynamic loading\n'.format(when)
+
+                for parts in messages.load_classes:
+                    yield '    * {}\n'.format(parts)
 
     return Response(dump(), mimetype='text/plain')
 
 
 def save(lines: Iterable[str]):
-    world_state.insert(0, (datetime.utcnow(), set(line for line in lines if 0 != len(line))))
+    method_entries = []
+    load_classes = []
+    vm_info = None
+    hostname = None
+    for line in lines:
+        spaced = line.split(' ')
+        if 0 == len(spaced):
+            continue
+        first = spaced[0]
+        if first.startswith('v:'):
+            vm_info = first[2:]
+        elif first.startswith('h:'):
+            hostname = first[2:]
+        elif first.startswith('e:'):
+            method_entries.append(first)
+        elif first.startswith('c:'):
+            load_classes.append(spaced)
+        else:
+            raise Exception('invalid prefix: ' + first)
+
+    if vm_info:
+        if hostname and not vm_info.endswith(hostname):
+            vm_info += '@' + hostname
+    elif hostname:
+        vm_info = 'unknown@' + hostname
+    else:
+        raise Exception('no source information')
+
+    when = datetime.utcnow()
+    database[vm_info].messages.append((when, Messages(method_entries, load_classes)))
