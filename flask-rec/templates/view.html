@@ -39,6 +39,11 @@
             background-color: #f4fbff;
         }
 
+        .tabler {
+            max-height: 50em;
+            overflow-y: scroll;
+        }
+
     </style>
 </head>
 <body>
@@ -67,15 +72,31 @@
     <div class="row">
         <div class="col-lg-6">
             <h2>Recent calls</h2>
-            <table class="narrow">
-                <tr>
-                    <th>class</th>
-                    <th>method</th>
-                </tr>
-                <tbody id="recent-called"></tbody>
-            </table>
+            <div class="tabler">
+                <table class="narrow">
+                    <tr>
+                        <th>class</th>
+                        <th>method</th>
+                    </tr>
+                    <tbody id="recent-called"></tbody>
+                </table>
+            </div>
         </div>
         <div class="col-lg-6">
+            <h2>Recent new calls</h2>
+            <div class="tabler">
+                <table class="narrow">
+                    <tr>
+                        <th>class</th>
+                        <th>method</th>
+                    </tr>
+                    <tbody id="recent-new-called"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
             <h2>Recently loaded</h2>
             <table class="narrow">
                 <tr>

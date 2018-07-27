@@ -35,6 +35,20 @@ function apply_data(vm, data) {
         recent_called.append(tr);
     }
 
+    var recent_new_called = $('#recent-new-called');
+    recent_new_called.empty();
+    for (var line of data.newest_seen_method_entries) {
+        var parts = line.split(':', 2);
+
+        var tr = $('<tr>');
+
+        for (var part of parts) {
+            tr.append($('<td>').html(process_name(part)));
+        }
+
+        recent_new_called.append(tr);
+    }
+
     var recent_called = $('#recent-loaded');
     recent_called.empty();
     for (var line of data.newest_dynamic_loads) {

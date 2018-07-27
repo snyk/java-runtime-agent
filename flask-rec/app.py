@@ -1,7 +1,7 @@
 import collections
 import itertools
 from datetime import datetime
-from typing import Iterable, List, Tuple, Dict, Iterator
+from typing import Iterable, List, Tuple, Dict, Iterator, TypeVar
 
 from flask import Flask, request, Response, render_template, abort, jsonify
 
@@ -66,7 +66,28 @@ def view_vm_data(vm: str):
         'total_events': len(messages),
         'newest_method_entries': list(itertools.islice(newest_method_entries(messages), MAX_ITEMS)),
         'newest_dynamic_loads': list(itertools.islice(newest_dynamic_loads(messages), MAX_ITEMS)),
+        'newest_seen_method_entries': discovery_order(method_entries_in_seen_order(messages))[-MAX_ITEMS:]
     })
+
+
+T = TypeVar('T')
+
+
+def discovery_order(it: Iterator[T]) -> List[T]:
+    seen = set()
+    ret = list()
+    for val in it:
+        if val in seen:
+            continue
+        ret.append(val)
+        seen.add(val)
+    return list(reversed(ret))
+
+
+def method_entries_in_seen_order(data: List[Tuple[datetime, Messages]]) -> Iterator[str]:
+    for _, messages in reversed(data):
+        for entry in sorted(messages.method_entries):
+            yield entry[2:]
 
 
 def newest_method_entries(data: Iterable[Tuple[datetime, Messages]]) -> Iterator[str]:

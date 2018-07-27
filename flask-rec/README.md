@@ -22,3 +22,12 @@ In this case, `.venv/bin/flask run` can be used, instead of the last line.
 ## Default url:
 
 [http://localhost:5000/](http://localhost:5000/)
+
+
+## jquery and python??
+
+Yeah, I feel you. No, I didn't think it was a good idea when I started.
+No, it wasn't a good idea.
+
+I wanted something working on someone else's mac in under a day.
+What would you have done?
