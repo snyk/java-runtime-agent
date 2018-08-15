@@ -1,6 +1,11 @@
 This is a super dumb http server to accept posted data, and
 redisplay it.
 
+## Deprecated
+
+This project doesn't work anymore, the data format has changed and
+this hasn't been updated.
+
 ## Setup instructions
 
 I recommend using virtualenv. I hate it too. System packages for flask

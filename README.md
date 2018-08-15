@@ -27,22 +27,11 @@ In a terminal, run:
 
 ```
 (cd agent && ./gradlew shadow)
-(export MAVEN_OPTS="-javaagent:$(pwd)/agent/build/libs/agent.jar" && cd ../java-goof && mvn tomcat7:run)
+(export MAVEN_OPTS="-javaagent:$(pwd)/agent/build/libs/agent.jar=file:$(pwd)/agent/snyk.properties" && cd ../java-goof && mvn tomcat7:run)
 ```
-
-In another terminal, run:
-
- 1. `(cd flask-rec && flask run)`
-
-(You'll need to follow the setup instructions in `flask-rec` if you haven't already,
-unless you are using the only machine in the world with a working `flask` install.)
 
 (Shell note: the `()` here are required. They prevent environment and `cd` from
 leaking back to the script. Please don't take them out.)
 
-Open these links in your browser:
-
- 1. http://localhost:8080
- 2. http://localhost:5000/report
-
-Port numbers are hardcoded, sorry.
+This will post to `homebase`. `homebase` will then hang, because it validates data on output,
+not input, and the data we're sending it is invalid.
