@@ -95,22 +95,27 @@ public class ReportingWorker implements Runnable {
                 Json.appendString(msg, arg);
                 msg.append(",");
             });
-            popTrailingCommaIfPresent(msg);
+            trimRightCommaSpacing(msg);
             msg.append("]}},");
         });
 
-        popTrailingCommaIfPresent(msg);
+        trimRightCommaSpacing(msg);
         msg.append("\n]}");
         return msg.toString();
     }
 
-    static void popTrailingCommaIfPresent(StringBuilder msg) {
+    static void trimRightCommaSpacing(StringBuilder msg) {
         if (0 == msg.length()) {
             return;
         }
 
-        if (msg.charAt(msg.length() - 1) == ',') {
-            msg.setLength(msg.length() - 1);
+        while (0 != msg.length()) {
+            final char last = msg.charAt(msg.length() - 1);
+            if (Character.isWhitespace(last) || ',' == last) {
+                msg.setLength(msg.length() - 1);
+            } else {
+                break;
+            }
         }
     }
 

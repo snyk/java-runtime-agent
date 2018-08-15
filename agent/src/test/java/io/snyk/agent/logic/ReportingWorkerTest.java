@@ -2,9 +2,7 @@ package io.snyk.agent.logic;
 
 import com.google.common.collect.Sets;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import com.google.gson.internal.Streams;
-import com.google.gson.internal.bind.JsonTreeReader;
 import com.google.gson.stream.JsonReader;
 import io.snyk.agent.util.UseCounter;
 import org.junit.jupiter.api.Test;
@@ -55,14 +53,21 @@ class ReportingWorkerTest {
     @Test
     void popTrailingComma() {
         final StringBuilder sb = new StringBuilder("hello,");
-        ReportingWorker.popTrailingCommaIfPresent(sb);
+        ReportingWorker.trimRightCommaSpacing(sb);
+        assertEquals("hello", sb.toString());
+    }
+
+    @Test
+    void popTrailingSpacesComma() {
+        final StringBuilder sb = new StringBuilder("hello  , ");
+        ReportingWorker.trimRightCommaSpacing(sb);
         assertEquals("hello", sb.toString());
     }
 
     @Test
     void popTrailingCommaAbsent() {
         final StringBuilder sb = new StringBuilder("hello");
-        ReportingWorker.popTrailingCommaIfPresent(sb);
+        ReportingWorker.trimRightCommaSpacing(sb);
         assertEquals("hello", sb.toString());
     }
 }
