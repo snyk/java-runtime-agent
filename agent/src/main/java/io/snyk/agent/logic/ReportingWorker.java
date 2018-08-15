@@ -1,5 +1,6 @@
 package io.snyk.agent.logic;
 
+import io.snyk.agent.jvm.EntryPoint;
 import io.snyk.agent.jvm.LandingZone;
 import io.snyk.agent.util.Json;
 import io.snyk.agent.util.UseCounter;
@@ -27,7 +28,9 @@ public class ReportingWorker implements Runnable {
         }
         while (true) {
             try {
-                work();
+                if (null != EntryPoint.CONFIG) {
+                    work(EntryPoint.CONFIG);
+                }
             } catch (Throwable t) {
                 System.err.println("agent issue");
                 t.printStackTrace();
@@ -40,10 +43,10 @@ public class ReportingWorker implements Runnable {
         }
     }
 
-    private void work() {
+    private void work(Config config) {
         final StringBuilder msg = new StringBuilder(4096);
         msg.append("{\"projectId\":");
-        Json.appendString(msg, hostName + "//" + vmName);
+        Json.appendString(msg, config.projectId);
         msg.append(", \"hostName\":");
         Json.appendString(msg, hostName);
         msg.append(", \"vmName\":");
@@ -80,9 +83,9 @@ public class ReportingWorker implements Runnable {
             final byte[] bytes = msg.toString().getBytes(StandardCharsets.UTF_8);
 
             final HttpURLConnection conn = (HttpURLConnection)
-                    new URL("http://127.0.0.1:8000/api/v1/beacon").openConnection();
+                    new URL(config.urlPrefix + "/api/v1/beacon").openConnection();
             conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "text/plain charset=utf-8");
+            conn.setRequestProperty("Content-Type", "application/json");
             conn.setFixedLengthStreamingMode(bytes.length);
             conn.setDoOutput(true);
             try (final OutputStream body = conn.getOutputStream()) {
