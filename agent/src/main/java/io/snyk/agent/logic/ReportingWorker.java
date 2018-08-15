@@ -1,6 +1,7 @@
 package io.snyk.agent.logic;
 
 import io.snyk.agent.jvm.LandingZone;
+import io.snyk.agent.util.Json;
 import io.snyk.agent.util.UseCounter;
 
 import java.io.*;
@@ -41,35 +42,45 @@ public class ReportingWorker implements Runnable {
 
     private void work() {
         final StringBuilder msg = new StringBuilder(4096);
-        msg.append("h:");
-        msg.append(hostName);
-        msg.append('\n');
-
-        msg.append("v:");
-        msg.append(vmName);
-        msg.append('\n');
+        msg.append("{\"projectId\":");
+        Json.appendString(msg, hostName + "//" + vmName);
+        msg.append(", \"hostName\":");
+        Json.appendString(msg, hostName);
+        msg.append(", \"vmName\":");
+        Json.appendString(msg, vmName);
+        msg.append(", \"eventsToSend\":[\n");
 
         final UseCounter.Drain drain = LandingZone.SEEN_SET.drain();
         for (String loc : drain.methodEntries) {
-            msg.append("e:");
-            msg.append(loc);
-            msg.append('\n');
+            msg.append("{\"info\":{");
+            msg.append("\"methodName\":");
+            Json.appendString(msg, loc);
+            msg.append(",\"moduleInfo\":{\"java\": true}");
+            msg.append("}},\n");
         }
 
         drain.loadClasses.forEach((caller, loaded) -> {
-            msg.append("c:");
-            msg.append(caller);
+            msg.append("{\"info\":{");
+            msg.append("\"methodName\":");
+            Json.appendString(msg, caller);
+            msg.append(",\"moduleInfo\":{\"java\": true}");
+            msg.append(", \"args\":[");
             loaded.forEach(arg -> {
-                msg.append(" a:");
-                msg.append(arg);
+                msg.append("  ");
+                Json.appendString(msg, arg);
+                msg.append(",\n");
             });
-            msg.append('\n');
+            msg.append("\"\"]"); // pure laziness around trailing comma
+            msg.append("}},");
         });
+
+        msg.append("\n{}]}"); // pure laziness around trailing comma
 
         try {
             final byte[] bytes = msg.toString().getBytes(StandardCharsets.UTF_8);
 
-            final HttpURLConnection conn = (HttpURLConnection) new URL("http://127.0.0.1:5000/dump").openConnection();
+            final HttpURLConnection conn = (HttpURLConnection)
+                    new URL("http://127.0.0.1:5000/api/v1/beacon").openConnection();
             conn.setRequestMethod("PUT");
             conn.setRequestProperty("Content-Type", "text/plain charset=utf-8");
             conn.setFixedLengthStreamingMode(bytes.length);
