@@ -80,8 +80,8 @@ public class ReportingWorker implements Runnable {
             final byte[] bytes = msg.toString().getBytes(StandardCharsets.UTF_8);
 
             final HttpURLConnection conn = (HttpURLConnection)
-                    new URL("http://127.0.0.1:5000/api/v1/beacon").openConnection();
-            conn.setRequestMethod("PUT");
+                    new URL("http://127.0.0.1:8000/api/v1/beacon").openConnection();
+            conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "text/plain charset=utf-8");
             conn.setFixedLengthStreamingMode(bytes.length);
             conn.setDoOutput(true);
