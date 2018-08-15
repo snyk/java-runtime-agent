@@ -93,7 +93,7 @@ public class ReportingWorker implements Runnable {
             loaded.forEach(arg -> {
                 msg.append("\n  ");
                 Json.appendString(msg, arg);
-                msg.append(",\n");
+                msg.append(",");
             });
             popTrailingCommaIfPresent(msg);
             msg.append("]}},");
