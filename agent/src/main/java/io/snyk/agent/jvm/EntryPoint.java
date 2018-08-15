@@ -1,7 +1,6 @@
 package io.snyk.agent.jvm;
 
 import io.snyk.agent.logic.Config;
-import io.snyk.agent.logic.ReportingWorker;
 
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
