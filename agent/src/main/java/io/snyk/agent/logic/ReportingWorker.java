@@ -29,7 +29,7 @@ public class ReportingWorker implements Runnable {
         while (true) {
             try {
                 if (null != EntryPoint.CONFIG) {
-                    work(EntryPoint.CONFIG);
+                    work(EntryPoint.CONFIG, LandingZone.SEEN_SET.drain());
                 }
             } catch (Throwable t) {
                 System.err.println("agent issue");
@@ -43,41 +43,8 @@ public class ReportingWorker implements Runnable {
         }
     }
 
-    private void work(Config config) {
-        final StringBuilder msg = new StringBuilder(4096);
-        msg.append("{\"projectId\":");
-        Json.appendString(msg, config.projectId);
-        msg.append(", \"hostName\":");
-        Json.appendString(msg, hostName);
-        msg.append(", \"vmName\":");
-        Json.appendString(msg, vmName);
-        msg.append(", \"eventsToSend\":[\n");
-
-        final UseCounter.Drain drain = LandingZone.SEEN_SET.drain();
-        for (String loc : drain.methodEntries) {
-            msg.append("{\"info\":{");
-            msg.append("\"methodName\":");
-            Json.appendString(msg, loc);
-            msg.append(",\"moduleInfo\":{\"java\": true}");
-            msg.append("}},\n");
-        }
-
-        drain.loadClasses.forEach((caller, loaded) -> {
-            msg.append("{\"info\":{");
-            msg.append("\"methodName\":");
-            Json.appendString(msg, caller);
-            msg.append(",\"moduleInfo\":{\"java\": true}");
-            msg.append(", \"args\":[");
-            loaded.forEach(arg -> {
-                msg.append("  ");
-                Json.appendString(msg, arg);
-                msg.append(",\n");
-            });
-            msg.append("\"\"]"); // pure laziness around trailing comma
-            msg.append("}},");
-        });
-
-        msg.append("\n{}]}"); // pure laziness around trailing comma
+    void work(Config config, UseCounter.Drain drain) {
+        final CharSequence msg = serialiseState(drain, config.projectId);
 
         try {
             final byte[] bytes = msg.toString().getBytes(StandardCharsets.UTF_8);
@@ -96,6 +63,54 @@ public class ReportingWorker implements Runnable {
         } catch (IOException e) {
             System.err.println("snyk explainer");
             e.printStackTrace();
+        }
+    }
+
+    String serialiseState(UseCounter.Drain drain, String projectId) {
+        final StringBuilder msg = new StringBuilder(4096);
+        msg.append("{\"projectId\":");
+        Json.appendString(msg, projectId);
+        msg.append(", \"hostName\":");
+        Json.appendString(msg, hostName);
+        msg.append(", \"vmName\":");
+        Json.appendString(msg, vmName);
+        msg.append(", \"eventsToSend\":[\n");
+
+        for (String loc : drain.methodEntries) {
+            msg.append("{\"info\":{");
+            msg.append("\"methodName\":");
+            Json.appendString(msg, loc);
+            msg.append(",\"moduleInfo\":{\"java\": true}");
+            msg.append("}},\n");
+        }
+
+        drain.loadClasses.forEach((caller, loaded) -> {
+            msg.append("{\"info\":{");
+            msg.append("\"methodName\":");
+            Json.appendString(msg, caller);
+            msg.append(",\"moduleInfo\":{\"java\": true}");
+            msg.append(",\"args\":[");
+            loaded.forEach(arg -> {
+                msg.append("\n  ");
+                Json.appendString(msg, arg);
+                msg.append(",\n");
+            });
+            popTrailingCommaIfPresent(msg);
+            msg.append("]}},");
+        });
+
+        popTrailingCommaIfPresent(msg);
+        msg.append("\n]}");
+        return msg.toString();
+    }
+
+    static void popTrailingCommaIfPresent(StringBuilder msg) {
+        if (0 == msg.length()) {
+            return;
+        }
+
+        if (msg.charAt(msg.length() - 1) == ',') {
+            msg.setLength(msg.length() - 1);
         }
     }
 

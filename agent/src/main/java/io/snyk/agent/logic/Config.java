@@ -9,7 +9,7 @@ public class Config {
     public final String filter;
     public final String urlPrefix;
 
-    private Config(String projectId, String filter, String urlPrefix) {
+    Config(String projectId, String filter, String urlPrefix) {
         this.projectId = null != projectId ? projectId : "no-project-id-provided";
         this.filter = filter;
         this.urlPrefix = null != urlPrefix ? urlPrefix : "http://localhost:8000";
