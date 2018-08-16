@@ -57,13 +57,23 @@ i.e. is there no other namespacing in node?
 
 Java code is ALWAYS in a method.
 
-A method ALWAYS has a `className`, and FREQUENTLY has a `methodName`. (think lambdas, implementation details)
+A method ALWAYS has a `className`, and FREQUENTLY has a `methodName`. 
+ (think lambdas, implementation details)
 
-TYPICALLY a `className` allows you to find the library, but not the version.
+A `methodName` FREQUENTLY isn't unique within a `className`, due to overloads,
+ you must include the signature.
+
+TYPICALLY a `className` allows you to find the maven `artifact`, but not the version.
 
 A `className` is ALWAYS loaded by a `ClassLoader`, who TYPICALLY don't have useful names.
 
 A `className` is TYPICALLY loaded from a `URL`, which is TYPICALLY a `jar file`.
+
+A `className` isn't unique within a process. You can have multiple different classes (loaded
+ by different `ClassLoader`s) with the same `className`. e.g. two webapps running in Tomcat,
+ one could have one version of `org.log4j.Logger`, and another webapp could have a different
+ version. We can/will rewrite each independently, but can't map from `className` back to class/jar
+ reliably.
 
 A `jar file` SOMETIMES has Maven metadata in, including zero-or-more
  `artifactGroup`, `artifactName` and `artifactVersion`s.
