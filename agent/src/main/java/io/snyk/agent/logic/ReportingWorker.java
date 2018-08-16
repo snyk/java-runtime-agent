@@ -1,6 +1,5 @@
 package io.snyk.agent.logic;
 
-import io.snyk.agent.jvm.EntryPoint;
 import io.snyk.agent.jvm.LandingZone;
 import io.snyk.agent.util.Json;
 import io.snyk.agent.util.UseCounter;
@@ -16,6 +15,11 @@ import java.util.Optional;
 public class ReportingWorker implements Runnable {
     private final String vmName = ManagementFactory.getRuntimeMXBean().getName();
     private final String hostName = computeHostName();
+    private final Config config;
+
+    public ReportingWorker(Config config) {
+        this.config = config;
+    }
 
     @Override
     public void run() {
@@ -28,9 +32,7 @@ public class ReportingWorker implements Runnable {
         }
         while (true) {
             try {
-                if (null != EntryPoint.CONFIG) {
-                    work(EntryPoint.CONFIG, LandingZone.SEEN_SET.drain());
-                }
+                work(LandingZone.SEEN_SET.drain());
             } catch (Throwable t) {
                 System.err.println("agent issue");
                 t.printStackTrace();
@@ -43,8 +45,8 @@ public class ReportingWorker implements Runnable {
         }
     }
 
-    void work(Config config, UseCounter.Drain drain) {
-        final CharSequence msg = serialiseState(drain, config.projectId);
+    void work(UseCounter.Drain drain) {
+        final CharSequence msg = serialiseState(drain);
 
         try {
             final byte[] bytes = msg.toString().getBytes(StandardCharsets.UTF_8);
@@ -66,10 +68,10 @@ public class ReportingWorker implements Runnable {
         }
     }
 
-    String serialiseState(UseCounter.Drain drain, String projectId) {
+    String serialiseState(UseCounter.Drain drain) {
         final StringBuilder msg = new StringBuilder(4096);
         msg.append("{\"projectId\":");
-        Json.appendString(msg, projectId);
+        Json.appendString(msg, config.projectId);
         msg.append(", \"hostName\":");
         Json.appendString(msg, hostName);
         msg.append(", \"vmName\":");

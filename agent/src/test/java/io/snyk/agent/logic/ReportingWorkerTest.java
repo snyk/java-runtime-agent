@@ -14,10 +14,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ReportingWorkerTest {
 
+    public static final Config NULL_CONFIG = new Config(null, null, null);
+
     JsonElement toJson(Consumer<UseCounter.Drain> drainer) {
         final UseCounter.Drain drain = new UseCounter.Drain();
         drainer.accept(drain);
-        final String json = new ReportingWorker().serialiseState(drain, "project-id");
+        final String json = new ReportingWorker(NULL_CONFIG).serialiseState(drain);
 
         // this weird dance is important; half of the methods turn leniency back on for you,
         // and we really care

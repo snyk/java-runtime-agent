@@ -1,6 +1,8 @@
 package io.snyk.agent.jvm;
 
+import io.snyk.agent.logic.ClassSource;
 import io.snyk.agent.logic.Config;
+import io.snyk.agent.logic.ReportingWorker;
 
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
@@ -9,8 +11,6 @@ import java.lang.instrument.UnmodifiableClassException;
  * The entry point for the agent. Load and install our plugins.
  */
 public class EntryPoint {
-    public static Config CONFIG;
-
     public static void premain(
             String agentArguments,
             Instrumentation instrumentation) throws UnmodifiableClassException {
@@ -18,10 +18,15 @@ public class EntryPoint {
             throw new IllegalStateException("expected file:[path to config file]");
         }
 
-        CONFIG = Config.fromFile(agentArguments.substring("file:".length()));
+        final Config config = Config.fromFile(agentArguments.substring("file:".length()));
 
-        System.err.println("snyk-agent: loading config complete, projectId:" + CONFIG.projectId);
+        System.err.println("snyk-agent: loading config complete, projectId:" + config.projectId);
 
-        instrumentation.addTransformer(new Transformer(), false);
+        final Thread worker = new Thread(new ReportingWorker(config));
+        worker.setDaemon(true);
+        worker.setName("snyk-agent");
+        worker.start();
+
+        instrumentation.addTransformer(new Transformer(new ClassSource()), false);
     }
 }

@@ -16,11 +16,6 @@ public class LandingZone {
         for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
             System.err.println(" * " + ste);
         }
-
-        Thread worker = new Thread(new ReportingWorker());
-        worker.setDaemon(true);
-        worker.setName("snyk-agent");
-        worker.start();
     }
 
     public static final UseCounter SEEN_SET = new UseCounter();
