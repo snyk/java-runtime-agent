@@ -19,6 +19,7 @@
    * e.g. `http://localhost/foo.jar`
    * e.g. `jar:file:/usr/share/maven/lib/guava.jar!/com/google/common/collect/NullsLastOrdering.class`
    * e.g. `null`
+ * crc32c checksum for the source file?
  * identifier for the method (ignoring lambdas / synthetics)
    * e.g. `getPath`
    * e.g. `org.apache.catalina.core.ContainerBase#getMappingObject(Ljava.lang.Object;, int, int)` (stick to the `fourSignature`?)
@@ -67,6 +68,10 @@ A `className` is TYPICALLY loaded from a `URL`, which is TYPICALLY a `jar file`.
 A `jar file` SOMETIMES has Maven metadata in, including zero-or-more
  `artifactGroup`, `artifactName` and `artifactVersion`s.
 
+Info we ALWAYS have available:
+
+ * the list of instructions in a method, similar to an `AST` but probably more stable
+ * the bytes in the class file itself, quite stable as most people use binary distribution
 
 Info we TYPICALLY have available:
 
