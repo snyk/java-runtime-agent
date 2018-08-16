@@ -49,34 +49,48 @@ public class Config {
             final String key = splitUp[0];
             final String value = splitUp[1];
 
-            final String filterName;
-
             if ("projectId".equals(key)) {
                 projectId = value;
-            } else if ("urlPrefix".equals(key)) {
-                urlPrefix = value;
-            } else if (hasPrefix(key, "filterArtifact", filters, o -> o.artifact = value)) {
-                // TODO: there'll be a better way todo this in the morning, I bet.
-            } else if (hasPrefix(key, "filterVersion", filters, o -> o.version = value)) {
-            } else if (hasPrefix(key, "filterPaths", filters, o -> o.addPathsFrom(value))) {
-            } else {
-                System.err.println("snyk-agent: unrecognised key: " + key);
+                continue;
             }
+
+            if ("urlPrefix".equals(key)) {
+                urlPrefix = value;
+                continue;
+            }
+
+            if (key.startsWith("filter.")) {
+                final String[] parts = key.split("\\.", 3);
+                if (3 != parts.length) {
+                    System.err.println("snyk-agent: invalid filter. key: " + key);
+                    continue;
+                }
+
+                final String filterName = parts[1];
+                final String filterCommand = parts[2];
+
+                final Filter filter = filters.computeIfAbsent(filterName, Filter::new);
+
+                switch (filterCommand) {
+                    case "artifact":
+                        filter.artifact = value;
+                        break;
+                    case "version":
+                        filter.version = value;
+                        break;
+                    case "paths":
+                        filter.addPathsFrom(value);
+                        break;
+                    default:
+                        System.err.println("snyk-agent: unrecognised filter command: " + key);
+                }
+
+                continue;
+            }
+
+            System.err.println("snyk-agent: unrecognised key: " + key);
         }
 
         return new Config(projectId, filters, urlPrefix);
-    }
-
-    private static boolean hasPrefix(String from,
-                                     String prefix,
-                                     Map<String, Filter> filters,
-                                     Consumer<Filter> updateFilter) {
-        if (!from.startsWith(prefix)) {
-            return false;
-        }
-
-        updateFilter.accept(filters.computeIfAbsent(from.substring(prefix.length()), name -> new Filter(name)));
-
-        return true;
     }
 }
