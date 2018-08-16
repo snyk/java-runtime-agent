@@ -1,11 +1,16 @@
 package io.snyk.agent.logic;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.stream.Collectors;
 import java.util.zip.ZipError;
 
 public class ClassSource {
@@ -34,10 +39,9 @@ public class ClassSource {
                     final JarURLConnection jarConn = (JarURLConnection) conn;
                     return jarInfoMap.computeIfAbsent(jarConn.getJarFileURL().toString(), jarUrl -> {
                         try {
-                            System.err.println(jarUrl);
-                            System.err.println("manifest: " + jarConn.getManifest().getEntries());
+                            System.err.println(jarUrl + ": " + extractPoms(jarConn.getJarFile()));
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            throw new IllegalStateException(e);
                         }
 
                         return "";
@@ -50,4 +54,38 @@ public class ClassSource {
 
         return url.toString();
     }
+
+    private Set<Map<String, String>> extractPoms(JarFile jarFile) throws IOException {
+        final Set<Map<String, String>> foundPoms = new HashSet<>();
+        final Enumeration<JarEntry> entries = jarFile.entries();
+        while (entries.hasMoreElements()) {
+            final JarEntry entry = entries.nextElement();
+            if (entry.isDirectory()) {
+                continue;
+            }
+
+            final String name = entry.getName();
+            if (!name.startsWith("META-INF/maven/")) {
+                continue;
+            }
+
+            if (!name.endsWith("/pom.properties")) {
+                continue;
+            }
+
+            final Properties props = new Properties();
+            try (InputStream is = jarFile.getInputStream(entry)) {
+                props.load(is);
+            }
+
+            final Map<String, String> asMap = props.entrySet()
+                    .stream()
+                    .collect(Collectors.toMap(t -> String.valueOf(t.getKey()), t -> String.valueOf(t.getValue())));
+
+            foundPoms.add(asMap);
+        }
+
+        return foundPoms;
+    }
+
 }
