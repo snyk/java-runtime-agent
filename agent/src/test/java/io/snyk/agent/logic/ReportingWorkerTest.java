@@ -19,7 +19,7 @@ class ReportingWorkerTest {
     JsonElement toJson(Consumer<UseCounter.Drain> drainer) {
         final UseCounter.Drain drain = new UseCounter.Drain();
         drainer.accept(drain);
-        final String json = new ReportingWorker(NULL_CONFIG).serialiseState(drain);
+        final String json = new ReportingWorker(NULL_CONFIG, new ClassSource()).serialiseState(drain);
 
         // this weird dance is important; half of the methods turn leniency back on for you,
         // and we really care

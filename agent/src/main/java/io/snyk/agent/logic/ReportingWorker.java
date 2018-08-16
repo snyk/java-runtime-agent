@@ -16,9 +16,11 @@ public class ReportingWorker implements Runnable {
     private final String vmName = ManagementFactory.getRuntimeMXBean().getName();
     private final String hostName = computeHostName();
     private final Config config;
+    private final ClassSource classSource;
 
-    public ReportingWorker(Config config) {
+    public ReportingWorker(Config config, ClassSource classSource) {
         this.config = config;
+        this.classSource = classSource;
     }
 
     @Override

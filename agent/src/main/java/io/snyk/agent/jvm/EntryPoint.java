@@ -22,11 +22,13 @@ public class EntryPoint {
 
         System.err.println("snyk-agent: loading config complete, projectId:" + config.projectId);
 
-        final Thread worker = new Thread(new ReportingWorker(config));
+        final ClassSource classSource = new ClassSource();
+
+        final Thread worker = new Thread(new ReportingWorker(config, classSource));
         worker.setDaemon(true);
         worker.setName("snyk-agent");
         worker.start();
 
-        instrumentation.addTransformer(new Transformer(new ClassSource()), false);
+        instrumentation.addTransformer(new Transformer(classSource), false);
     }
 }
