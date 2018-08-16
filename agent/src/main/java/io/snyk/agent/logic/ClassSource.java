@@ -1,5 +1,7 @@
 package io.snyk.agent.logic;
 
+import io.snyk.agent.util.Crc32c;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.JarURLConnection;
@@ -16,7 +18,7 @@ import java.util.zip.ZipError;
 public class ClassSource {
     private final ConcurrentMap<String, String> jarInfoMap = new ConcurrentHashMap<>();
 
-    public void observe(ClassLoader loader, String className) {
+    public void observe(ClassLoader loader, String className, byte[] classfileBuffer) {
         try {
             final URL url = loader.getResource(className + ".class");
             if (null == url) {
@@ -25,7 +27,9 @@ public class ClassSource {
                 return;
             }
 
-            locator(url);
+            int crc = Crc32c.process(classfileBuffer);
+
+            String found = locator(url);
         } catch (Exception | ZipError e) {
             e.printStackTrace();
         }

@@ -53,7 +53,7 @@ public class Transformer implements ClassFileTransformer {
             return null;
         }
 
-        classSource.observe(loader, className);
+        classSource.observe(loader, className, classfileBuffer);
 
         return new Rewriter(LandingZone.class, LandingZone.SEEN_SET::add)
                 .rewrite(reader);
