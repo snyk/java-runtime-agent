@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class FilterTest {
 
     @Test
-    void testAllInArtfiact() {
+    void testAllInArtifact() {
         final Filter filter = new Filter("foo",
                 Optional.of("io.snyk:snyk-agent"),
                 Optional.empty(),
