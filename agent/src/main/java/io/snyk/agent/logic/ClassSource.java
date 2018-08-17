@@ -1,6 +1,7 @@
 package io.snyk.agent.logic;
 
 import io.snyk.agent.util.Crc32c;
+import io.snyk.agent.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,13 +18,18 @@ import java.util.zip.ZipError;
 
 public class ClassSource {
     private final ConcurrentMap<String, String> jarInfoMap = new ConcurrentHashMap<>();
+    private final Log log;
+
+    public ClassSource(Log log) {
+        this.log = log;
+    }
 
     public void observe(ClassLoader loader, String className, byte[] classfileBuffer) {
         try {
             final URL url = loader.getResource(className + ".class");
             if (null == url) {
                 // so.. synthetics? Maybe?
-                System.err.println("couldn't load " + className);
+                log.warn("couldn't load " + className);
                 return;
             }
 
@@ -43,7 +49,7 @@ public class ClassSource {
                     final JarURLConnection jarConn = (JarURLConnection) conn;
                     return jarInfoMap.computeIfAbsent(jarConn.getJarFileURL().toString(), jarUrl -> {
                         try {
-                            System.err.println(jarUrl + ": " + extractPoms(jarConn.getJarFile()));
+                            log.info(jarUrl + ": " + extractPoms(jarConn.getJarFile()));
                         } catch (IOException e) {
                             throw new IllegalStateException(e);
                         }
@@ -51,7 +57,7 @@ public class ClassSource {
                         return "";
                     });
                 } else {
-                    System.err.println("snyk-agent: not a jar file: " + url);
+                    log.info("not a jar file: " + url);
                 }
             }
         }

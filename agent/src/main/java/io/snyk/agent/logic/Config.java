@@ -1,5 +1,7 @@
 package io.snyk.agent.logic;
 
+import io.snyk.agent.util.Log;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -62,7 +64,7 @@ public class Config {
             if (key.startsWith("filter.")) {
                 final String[] parts = key.split("\\.", 3);
                 if (3 != parts.length) {
-                    System.err.println("snyk-agent: invalid filter. key: " + key);
+                    Log.loading("invalid filter. key: " + key);
                     continue;
                 }
 
@@ -82,13 +84,13 @@ public class Config {
                         filter.addPathsFrom(value);
                         break;
                     default:
-                        System.err.println("snyk-agent: unrecognised filter command: " + key);
+                        Log.loading("unrecognised filter command: " + key);
                 }
 
                 continue;
             }
 
-            System.err.println("snyk-agent: unrecognised key: " + key);
+            Log.loading("unrecognised key: " + key);
         }
 
         return new Config(projectId, filters, urlPrefix);

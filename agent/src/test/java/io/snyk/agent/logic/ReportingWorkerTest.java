@@ -4,13 +4,14 @@ import com.google.common.collect.Sets;
 import com.google.gson.JsonElement;
 import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonReader;
+import io.snyk.agent.util.Log;
 import io.snyk.agent.util.UseCounter;
 import org.junit.jupiter.api.Test;
 
 import java.io.StringReader;
 import java.util.function.Consumer;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ReportingWorkerTest {
 
@@ -19,7 +20,9 @@ class ReportingWorkerTest {
     JsonElement toJson(Consumer<UseCounter.Drain> drainer) {
         final UseCounter.Drain drain = new UseCounter.Drain();
         drainer.accept(drain);
-        final String json = new ReportingWorker(NULL_CONFIG, new ClassSource()).serialiseState(drain);
+        final String json = new ReportingWorker(new Log(),
+                NULL_CONFIG,
+                new ClassSource(new Log())).serialiseState(drain);
 
         // this weird dance is important; half of the methods turn leniency back on for you,
         // and we really care

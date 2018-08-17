@@ -2,6 +2,7 @@ package io.snyk.agent.logic;
 
 import io.snyk.agent.jvm.LandingZone;
 import io.snyk.agent.util.Json;
+import io.snyk.agent.util.Log;
 import io.snyk.agent.util.UseCounter;
 
 import java.io.*;
@@ -15,10 +16,12 @@ import java.util.Optional;
 public class ReportingWorker implements Runnable {
     private final String vmName = ManagementFactory.getRuntimeMXBean().getName();
     private final String hostName = computeHostName();
+    private final Log log;
     private final Config config;
     private final ClassSource classSource;
 
-    public ReportingWorker(Config config, ClassSource classSource) {
+    public ReportingWorker(Log log, Config config, ClassSource classSource) {
+        this.log = log;
         this.config = config;
         this.classSource = classSource;
     }
@@ -36,7 +39,7 @@ public class ReportingWorker implements Runnable {
             try {
                 work(LandingZone.SEEN_SET.drain());
             } catch (Throwable t) {
-                System.err.println("agent issue");
+                log.warn("agent issue");
                 t.printStackTrace();
             }
             try {
@@ -65,7 +68,7 @@ public class ReportingWorker implements Runnable {
             conn.getInputStream().close();
             conn.disconnect();
         } catch (IOException e) {
-            System.err.println("snyk explainer");
+            log.warn("reporting");
             e.printStackTrace();
         }
     }

@@ -3,6 +3,7 @@ package io.snyk.agent.jvm;
 import io.snyk.agent.logic.ClassSource;
 import io.snyk.agent.logic.Config;
 import io.snyk.agent.logic.ReportingWorker;
+import io.snyk.agent.util.Log;
 
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
@@ -18,13 +19,15 @@ public class EntryPoint {
             throw new IllegalStateException("expected file:[path to config file]");
         }
 
+        final Log log = new Log();
+
         final Config config = Config.fromFile(agentArguments.substring("file:".length()));
 
-        System.err.println("snyk-agent: loading config complete, projectId:" + config.projectId);
+        log.info("loading config complete, projectId:" + config.projectId);
 
-        final ClassSource classSource = new ClassSource();
+        final ClassSource classSource = new ClassSource(log);
 
-        final Thread worker = new Thread(new ReportingWorker(config, classSource));
+        final Thread worker = new Thread(new ReportingWorker(log, config, classSource));
         worker.setDaemon(true);
         worker.setName("snyk-agent");
         worker.start();
