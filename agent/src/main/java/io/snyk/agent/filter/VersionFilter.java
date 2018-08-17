@@ -4,13 +4,16 @@ import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * A stub implementation that only supports "'major' version is less than"
+ */
 public class VersionFilter implements Predicate<String> {
 
     private static final Pattern LESS_THAN_SINGLE_NUMBER = Pattern.compile("<(\\d+)");
 
     private final long major;
 
-    private VersionFilter(long major) {
+    VersionFilter(long major) {
         this.major = major;
     }
 

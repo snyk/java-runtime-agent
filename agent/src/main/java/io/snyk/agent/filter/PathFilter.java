@@ -1,15 +1,14 @@
 package io.snyk.agent.filter;
 
+import java.util.Optional;
 import java.util.function.Predicate;
 
 public class PathFilter implements Predicate<String> {
     private final String className;
     private final boolean classNameIsPrefix;
+    private final Optional<String> methodName;
 
-    // @Nullable
-    private final String methodName;
-
-    private PathFilter(String className, boolean classNameIsPrefix, String methodName) {
+    private PathFilter(String className, boolean classNameIsPrefix, Optional<String> methodName) {
         this.className = className;
         this.classNameIsPrefix = classNameIsPrefix;
         this.methodName = methodName;
@@ -17,12 +16,12 @@ public class PathFilter implements Predicate<String> {
 
     public static PathFilter parse(String expression) {
         final String[] classMethod = expression.split("#");
-        final String methodName;
+        final Optional<String> methodName;
         if (1 == classMethod.length) {
             // no method specification
-            methodName = null;
+            methodName = Optional.empty();
         } else if (2 == classMethod.length) {
-            methodName = classMethod[1];
+            methodName = Optional.of(classMethod[1]);
         } else {
             throw new IllegalStateException("multiple hashes in expression: " + expression);
         }
@@ -59,8 +58,8 @@ public class PathFilter implements Predicate<String> {
             }
         }
 
-        if (null != methodName) {
-            if (!actualMethodName.equals(methodName)) {
+        if (methodName.isPresent()) {
+            if (!actualMethodName.equals(methodName.get())) {
                 return false;
             }
         }
