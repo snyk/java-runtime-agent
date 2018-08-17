@@ -49,7 +49,7 @@ public class Transformer implements ClassFileTransformer {
         // it appears. I haven't seen documentation for why this would be the case.
 
         final String className = reader.getClassName();
-        if (!InstrumentationFilter.interestingClassName(className)) {
+        if (!InstrumentationFilter.bannedClassName(className)) {
             return null;
         }
 

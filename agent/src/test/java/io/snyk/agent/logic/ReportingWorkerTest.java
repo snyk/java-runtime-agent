@@ -9,13 +9,14 @@ import io.snyk.agent.util.UseCounter;
 import org.junit.jupiter.api.Test;
 
 import java.io.StringReader;
+import java.util.Collections;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ReportingWorkerTest {
 
-    public static final Config NULL_CONFIG = new Config(null, null, null);
+    public static final Config NULL_CONFIG = new Config(null, Collections.emptyList(), null);
 
     JsonElement toJson(Consumer<UseCounter.Drain> drainer) {
         final UseCounter.Drain drain = new UseCounter.Drain();

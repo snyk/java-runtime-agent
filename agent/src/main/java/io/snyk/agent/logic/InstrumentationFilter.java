@@ -9,7 +9,7 @@ import org.objectweb.asm.tree.*;
  * Determine if a method is interesting enough to instrument.
  */
 public class InstrumentationFilter {
-    public static boolean interestingClassName(String loadingClassAsName) {
+    public static boolean bannedClassName(String loadingClassAsName) {
         if (loadingClassAsName.startsWith("java/")) {
             return false;
         }
@@ -34,7 +34,7 @@ public class InstrumentationFilter {
      * TODO: This is actually mandatory, as it enforces some asserts
      * TODO: that the actual rewriter should be enforcing, perhaps?
      */
-    static boolean interestingMethod(MethodNode method) {
+    static boolean bannedMethod(MethodNode method) {
         // `abstract` and `native` methods don't have Java code in them,
         // so we can't add extra java code
         // `synthetic` methods, used e.g. in generics dispatch internals,

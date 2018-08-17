@@ -5,19 +5,16 @@ import io.snyk.agent.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.JarURLConnection;
-import java.net.URL;
-import java.net.URLConnection;
+import java.net.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.stream.Collectors;
 import java.util.zip.ZipError;
 
 public class ClassSource {
-    private final ConcurrentMap<String, String> jarInfoMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<URI, Set<String>> jarInfoMap = new ConcurrentHashMap<>();
     private final Log log;
 
     public ClassSource(Log log) {
@@ -35,38 +32,53 @@ public class ClassSource {
 
             int crc = Crc32c.process(classfileBuffer);
 
-            String found = locator(url);
+            sourceUri(url);
         } catch (Exception | ZipError e) {
+
+            log.warn("couldn't process an input");
             e.printStackTrace();
         }
     }
 
-    private String locator(URL url) throws IOException {
-        switch (url.getProtocol()) {
-            case "jar": {
-                final URLConnection conn = url.openConnection();
-                if (conn instanceof JarURLConnection) {
-                    final JarURLConnection jarConn = (JarURLConnection) conn;
-                    return jarInfoMap.computeIfAbsent(jarConn.getJarFileURL().toString(), jarUrl -> {
-                        try {
-                            log.info(jarUrl + ": " + extractPoms(jarConn.getJarFile()));
-                        } catch (IOException e) {
-                            throw new IllegalStateException(e);
-                        }
+    /**
+     * Process a URL down to our guess as to where the thing actually came from,
+     * and maybe cache some information about that thing for later.
+     */
+    private URI sourceUri(URL url) throws IOException, URISyntaxException {
+        if ("jar".equals(url.getProtocol())) {
 
-                        return "";
-                    });
-                } else {
-                    log.info("not a jar file: " + url);
-                }
+            final URLConnection conn = url.openConnection();
+
+            if (conn instanceof JarURLConnection) {
+                final JarURLConnection jarConn = (JarURLConnection) conn;
+                final URI jarUri = jarConn.getJarFileURL().toURI();
+
+                // we could have this as an actual cache; I like the idea of processing it asap,
+                // just in case it vanishes before we try to report, or if the urlConnection is
+                // broken or managed or something like that later
+                jarInfoMap.computeIfAbsent(jarUri, _jarUrl -> {
+                    // this function may be called multiple times in parallel;
+                    // inefficient but not important
+                    try {
+                        return extractMavenLocators(jarConn.getJarFile());
+                    } catch (IOException e) {
+                        log.warn("looked like a jar file we couldn't process it: " + url);
+                        e.printStackTrace();
+                        return null;
+                    }
+                });
+
+                return jarUri;
             }
+
+            log.warn("looked like a jar file but it wasn't one when we opened it: " + url);
         }
 
-        return url.toString();
+        return url.toURI();
     }
 
-    private Set<Map<String, String>> extractPoms(JarFile jarFile) throws IOException {
-        final Set<Map<String, String>> foundPoms = new HashSet<>();
+    private Set<String> extractMavenLocators(JarFile jarFile) throws IOException {
+        final Set<String> foundPoms = new HashSet<>();
         final Enumeration<JarEntry> entries = jarFile.entries();
         while (entries.hasMoreElements()) {
             final JarEntry entry = entries.nextElement();
@@ -88,14 +100,15 @@ public class ClassSource {
                 props.load(is);
             }
 
-            final Map<String, String> asMap = props.entrySet()
-                    .stream()
-                    .collect(Collectors.toMap(t -> String.valueOf(t.getKey()), t -> String.valueOf(t.getValue())));
+            final String groupId = props.getProperty("groupId");
+            final String artifactId = props.getProperty("artifactId");
+            final String version = props.getProperty("version");
 
-            foundPoms.add(asMap);
+            if (null != groupId && null != artifactId && null != version) {
+                foundPoms.add(groupId + ":" + artifactId + ":" + version);
+            }
         }
 
         return foundPoms;
     }
-
 }

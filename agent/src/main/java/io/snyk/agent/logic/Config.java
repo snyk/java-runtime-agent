@@ -8,15 +8,16 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class Config {
     public final String projectId;
-    public final Map<String, Filter.Builder> filter;
+    public final Iterable<Filter> filters;
     public final String urlPrefix;
 
-    Config(String projectId, Map<String, Filter.Builder> filter, String urlPrefix) {
+    Config(String projectId, Iterable<Filter> filters, String urlPrefix) {
         this.projectId = null != projectId ? projectId : "no-project-id-provided";
-        this.filter = filter;
+        this.filters = filters;
         this.urlPrefix = null != urlPrefix ? urlPrefix : "http://localhost:8000";
     }
 
@@ -93,6 +94,8 @@ public class Config {
             Log.loading("unrecognised key: " + key);
         }
 
-        return new Config(projectId, filters, urlPrefix);
+        return new Config(projectId,
+                filters.values().stream().map(Filter.Builder::build).collect(Collectors.toList()),
+                urlPrefix);
     }
 }

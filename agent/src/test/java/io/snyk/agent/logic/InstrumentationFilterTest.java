@@ -9,7 +9,7 @@ import org.objectweb.asm.tree.MethodNode;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import static io.snyk.agent.logic.InstrumentationFilter.interestingMethod;
+import static io.snyk.agent.logic.InstrumentationFilter.bannedMethod;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -18,13 +18,13 @@ class InstrumentationFilterTest {
     void methodsOfVictim() throws Exception {
         final String name = TestVictim.class.getName();
         final ClassNode node = AsmUtil.parse(new ClassReader(name));
-        assertFalse(interestingMethod(findMethod(node, "getStringField")));
-        assertFalse(interestingMethod(findMethod(node, "getIntField")));
-        assertFalse(interestingMethod(findMethod(node, "setStringField")));
-        assertFalse(interestingMethod(findMethod(node, "setIntField")));
-        assertTrue(interestingMethod(findMethod(node, "call")));
-        assertTrue(interestingMethod(findMethod(node, "localGeneric")));
-        assertTrue(interestingMethod(findMethod(node, "returnLambda")));
+        assertFalse(bannedMethod(findMethod(node, "getStringField")));
+        assertFalse(bannedMethod(findMethod(node, "getIntField")));
+        assertFalse(bannedMethod(findMethod(node, "setStringField")));
+        assertFalse(bannedMethod(findMethod(node, "setIntField")));
+        assertTrue(bannedMethod(findMethod(node, "call")));
+        assertTrue(bannedMethod(findMethod(node, "localGeneric")));
+        assertTrue(bannedMethod(findMethod(node, "returnLambda")));
     }
 
     private MethodNode findMethod(ClassNode node, String name) throws NoSuchElementException {

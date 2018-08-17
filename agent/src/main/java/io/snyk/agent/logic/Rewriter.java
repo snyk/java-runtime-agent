@@ -27,7 +27,7 @@ public class Rewriter {
         final ClassNode cn = AsmUtil.parse(reader);
         // casting for 5.2 compat; fixed in ASM 6
         for (MethodNode method : (Iterable<MethodNode>) cn.methods) {
-            if (InstrumentationFilter.interestingMethod(method)) {
+            if (InstrumentationFilter.bannedMethod(method)) {
                 rewriteMethod(cn.name, method);
             }
         }
