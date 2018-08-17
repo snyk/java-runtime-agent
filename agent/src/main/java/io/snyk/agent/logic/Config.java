@@ -1,5 +1,6 @@
 package io.snyk.agent.logic;
 
+import io.snyk.agent.filter.Filter;
 import io.snyk.agent.util.Log;
 
 import java.io.File;
@@ -10,10 +11,10 @@ import java.util.Map;
 
 public class Config {
     public final String projectId;
-    public final Map<String, FilterBuilder> filter;
+    public final Map<String, Filter.Builder> filter;
     public final String urlPrefix;
 
-    Config(String projectId, Map<String, FilterBuilder> filter, String urlPrefix) {
+    Config(String projectId, Map<String, Filter.Builder> filter, String urlPrefix) {
         this.projectId = null != projectId ? projectId : "no-project-id-provided";
         this.filter = filter;
         this.urlPrefix = null != urlPrefix ? urlPrefix : "http://localhost:8000";
@@ -29,7 +30,7 @@ public class Config {
 
     private static Config fromLines(Iterable<String> lines) {
         String projectId = null;
-        Map<String, FilterBuilder> filters = new HashMap<>();
+        Map<String, Filter.Builder> filters = new HashMap<>();
         String urlPrefix = null;
 
         // this looks awfully like a .properties file. Maybe it could be a .properties file?
@@ -70,7 +71,7 @@ public class Config {
                 final String filterName = parts[1];
                 final String filterCommand = parts[2];
 
-                final FilterBuilder filter = filters.computeIfAbsent(filterName, FilterBuilder::new);
+                final Filter.Builder filter = filters.computeIfAbsent(filterName, Filter.Builder::new);
 
                 switch (filterCommand) {
                     case "artifact":

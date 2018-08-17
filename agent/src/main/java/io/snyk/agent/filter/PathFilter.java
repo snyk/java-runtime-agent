@@ -1,4 +1,4 @@
-package io.snyk.agent.logic;
+package io.snyk.agent.filter;
 
 import java.util.function.Predicate;
 

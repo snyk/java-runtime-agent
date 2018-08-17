@@ -1,5 +1,6 @@
-package io.snyk.agent.logic;
+package io.snyk.agent.filter;
 
+import io.snyk.agent.filter.PathFilter;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -8,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class PathFilterTest {
 
     @Test
-    public void testMatching() {
+    void testMatching() {
         final PathFilter fooBarExplicit = PathFilter.parse("io.snyk.Foo#bar");
         assertTrue(fooBarExplicit.test("io.snyk.Foo#bar"));
         assertFalse(fooBarExplicit.test("io.snyk.quux.Foo#bar"));
