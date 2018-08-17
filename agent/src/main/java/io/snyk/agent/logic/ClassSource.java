@@ -6,7 +6,10 @@ import io.snyk.agent.util.Log;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.*;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.jar.JarEntry;
@@ -21,23 +24,48 @@ public class ClassSource {
         this.log = log;
     }
 
-    public void observe(ClassLoader loader, String className, byte[] classfileBuffer) {
+    public void observe(final ClassLoader loader, final String className, final byte[] classfileBuffer) {
         try {
-            final URL url = loader.getResource(className + ".class");
+            final URL url = walkUpName(loader, className);
             if (null == url) {
-                // so.. synthetics? Maybe?
-                log.warn("couldn't load " + className);
                 return;
             }
 
-            int crc = Crc32c.process(classfileBuffer);
-
-            sourceUri(url);
+            final int crc = Crc32c.process(classfileBuffer);
+            final URI uri = sourceUri(url);
         } catch (Exception | ZipError e) {
-
             log.warn("couldn't process an input");
             e.printStackTrace();
         }
+    }
+
+    // So, this isn't super reliable.
+    // Who knows what code is going to be in:
+    // org/apache/maven/cli/configuration/SettingsXmlConfigurationProcessor$$FastClassByGuice$
+    // Seems better than nothing, though? At least we'll find an approximate jar,
+    // which might have the metadata for the thing that generated the class
+    private URL walkUpName(final ClassLoader loader, final String className) {
+        String shortenedName = className;
+        URL url;
+
+        while (true) {
+            url = loader.getResource(shortenedName + ".class");
+
+            if (null != url) {
+                break;
+            }
+
+            final int pos = shortenedName.lastIndexOf('$');
+            if (-1 == pos) {
+                // so.. synthetics? Maybe?
+                log.warn("couldn't load " + className);
+                return null;
+            }
+
+            shortenedName = shortenedName.substring(0, pos);
+        }
+
+        return url;
     }
 
     /**
@@ -77,6 +105,10 @@ public class ClassSource {
         return url.toURI();
     }
 
+    /**
+     * Walk through a jar file and find META-INF/maven/.../pom.properties, and turn
+     * them back into locators ("org.apache.commons:commons-lang:1.0").
+     */
     private Set<String> extractMavenLocators(JarFile jarFile) throws IOException {
         final Set<String> foundPoms = new HashSet<>();
         final Enumeration<JarEntry> entries = jarFile.entries();
