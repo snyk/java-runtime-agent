@@ -7,14 +7,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Consumer;
 
 public class Config {
     public final String projectId;
-    public final Map<String, Filter> filter;
+    public final Map<String, FilterBuilder> filter;
     public final String urlPrefix;
 
-    Config(String projectId, Map<String, Filter> filter, String urlPrefix) {
+    Config(String projectId, Map<String, FilterBuilder> filter, String urlPrefix) {
         this.projectId = null != projectId ? projectId : "no-project-id-provided";
         this.filter = filter;
         this.urlPrefix = null != urlPrefix ? urlPrefix : "http://localhost:8000";
@@ -30,7 +29,7 @@ public class Config {
 
     private static Config fromLines(Iterable<String> lines) {
         String projectId = null;
-        Map<String, Filter> filters = new HashMap<>();
+        Map<String, FilterBuilder> filters = new HashMap<>();
         String urlPrefix = null;
 
         // this looks awfully like a .properties file. Maybe it could be a .properties file?
@@ -71,7 +70,7 @@ public class Config {
                 final String filterName = parts[1];
                 final String filterCommand = parts[2];
 
-                final Filter filter = filters.computeIfAbsent(filterName, Filter::new);
+                final FilterBuilder filter = filters.computeIfAbsent(filterName, FilterBuilder::new);
 
                 switch (filterCommand) {
                     case "artifact":
