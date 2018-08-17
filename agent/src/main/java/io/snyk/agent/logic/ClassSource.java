@@ -17,6 +17,7 @@ import java.util.jar.JarFile;
 import java.util.zip.ZipError;
 
 public class ClassSource {
+    // URL is a bad map key. A really bad map key.
     private final ConcurrentMap<URI, Set<String>> jarInfoMap = new ConcurrentHashMap<>();
     private final Log log;
 
@@ -24,19 +25,22 @@ public class ClassSource {
         this.log = log;
     }
 
-    public void observe(final ClassLoader loader, final String className, final byte[] classfileBuffer) {
+    public String findSourceInfo(final ClassLoader loader, final String className, final byte[] classfileBuffer) {
         try {
             final URL url = walkUpName(loader, className);
             if (null == url) {
-                return;
+                return className;
             }
 
             final int crc = Crc32c.process(classfileBuffer);
             final URI uri = sourceUri(url);
+
+            return String.format("%08x:%s", crc, uri);
         } catch (Exception | ZipError e) {
             log.warn("couldn't process an input");
             e.printStackTrace();
         }
+        return "?:?";
     }
 
     // So, this isn't super reliable.

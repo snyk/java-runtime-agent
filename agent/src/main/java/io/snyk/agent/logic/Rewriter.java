@@ -14,13 +14,15 @@ public class Rewriter {
 
     private final String ourInternalName;
     private final ToIntFunction<String> allocateNewId;
+    private final String sourceLocation;
 
     // This Class<?> must implement the same "static interface" as LandingZone.class.
     // There's no way to express this in Java. The marked public static methods must
     // exist.
-    public Rewriter(Class<?> tracker, ToIntFunction<String> allocateNewId) {
+    public Rewriter(Class<?> tracker, ToIntFunction<String> allocateNewId, String sourceLocation) {
         this.ourInternalName = tracker.getName().replace('.', '/');
         this.allocateNewId = allocateNewId;
+        this.sourceLocation = sourceLocation;
     }
 
     public byte[] rewrite(ClassReader reader) {
@@ -35,7 +37,7 @@ public class Rewriter {
     }
 
     private void rewriteMethod(String clazzInternalName, MethodNode method) {
-        final String tag = clazzInternalName + ":" + method.name;
+        final String tag = clazzInternalName + ":" + method.name + ":" + sourceLocation;
         addInspectionOfLoadClassCalls(method, tag);
         addInspectionOfMethodEntry(method, tag);
     }
@@ -79,8 +81,9 @@ public class Rewriter {
 
             // This causes the TODO section in the else block below.
 
-            final String callTag = methodLocation + ":" + mi.owner + ":"
-                    + mi.name + ":" + mi.desc + ":" + mi.getOpcode();
+            final String callTag =  mi.owner + ":"
+                    + mi.name + ":" + mi.desc + ":" + mi.getOpcode() + ":"
+                    + methodLocation;
 
             final InsnList launchpad = new InsnList();
 

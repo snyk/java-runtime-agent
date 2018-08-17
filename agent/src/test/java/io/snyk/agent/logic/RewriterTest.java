@@ -13,7 +13,7 @@ public class RewriterTest {
     @Test
     public void smokeTest() throws Exception {
         final String name = TestVictim.class.getName();
-        final byte[] bytes = new Rewriter(TestTracker.class, TestTracker.SEEN_SET::add)
+        final byte[] bytes = new Rewriter(TestTracker.class, TestTracker.SEEN_SET::add, "13371337:tests")
                 .rewrite(new ClassReader(name));
         final Class<?> clazz = new DefinerLoader().define(name, bytes);
         final Object instance = clazz.newInstance();

@@ -51,10 +51,12 @@ public class ReportingWorker implements Runnable {
     }
 
     void work(UseCounter.Drain drain) {
-        final CharSequence msg = serialiseState(drain);
+        final String msg = serialiseState(drain);
+
+        log.info("reporting: " + msg);
 
         try {
-            final byte[] bytes = msg.toString().getBytes(StandardCharsets.UTF_8);
+            final byte[] bytes = msg.getBytes(StandardCharsets.UTF_8);
 
             final HttpURLConnection conn = (HttpURLConnection)
                     new URL(config.urlPrefix + "/api/v1/beacon").openConnection();
@@ -68,7 +70,7 @@ public class ReportingWorker implements Runnable {
             conn.getInputStream().close();
             conn.disconnect();
         } catch (IOException e) {
-            log.warn("reporting");
+            log.warn("reporting failed");
             e.printStackTrace();
         }
     }
