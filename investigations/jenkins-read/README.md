@@ -1,3 +1,5 @@
+## SECURITY-914 / CVE-2018-1999002
+
 Python script: exploit
 
 https://snyk.io/vuln/SNYK-JAVA-ORGJENKINSCIMAIN-32434
@@ -28,4 +30,11 @@ Called by (eventually): https://github.com/stapler/stapler/blob/8e9679b08c36a2f0
 Will be hit any time jenkins serves a static file?
 
 Vulnerable if Stapler is being used at all?
+
+
+
+## SECURITY-897 / CVE-2018-1999001
+
+Exploitable if this line is reached, but unfortunately it's not a method
+https://github.com/jenkinsci/jenkins/blame/7d29d4df37ae5602fed41430e8a67eedbe76889f/core/src/main/java/hudson/model/User.java#L478
 
