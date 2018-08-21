@@ -8,10 +8,13 @@ import io.snyk.agent.util.UseCounter;
 import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ReportingWorker implements Runnable {
     private final String vmName = ManagementFactory.getRuntimeMXBean().getName();
@@ -86,18 +89,35 @@ public class ReportingWorker implements Runnable {
         msg.append(", \"eventsToSend\":[\n");
 
         for (String loc : drain.methodEntries) {
-            msg.append("{\"info\":{");
-            msg.append("\"methodName\":");
-            Json.appendString(msg, loc);
-            msg.append(",\"moduleInfo\":{\"java\": true}");
-            msg.append("}},\n");
+            final String[] parts = loc.split(":", 4);
+            final String className = parts[0];
+            final String methodName = parts[1];
+            final String classCrc32c = parts[2];
+            final String sourceUrl = parts[3];
+            final URI sourceUri = URI.create(sourceUrl);
+            msg.append("{\"methodEntry\":{");
+            msg.append("\"className\":");
+            Json.appendString(msg, className);
+            msg.append(",\"methodName\":");
+            Json.appendString(msg, methodName);
+            msg.append(",\"classCrc32c\":");
+            Json.appendString(msg, classCrc32c);
+            msg.append(",\"sourceUri\":");
+            Json.appendString(msg, sourceUrl);
+            msg.append(",\"jarInfo\":[");
+            for (String jarInfo : classSource.infoFor(sourceUri)
+                    .stream().sorted().collect(Collectors.toList())) {
+                Json.appendString(msg, jarInfo);
+                msg.append(",");
+            }
+            trimRightCommaSpacing(msg);
+            msg.append("]}},\n");
         }
 
         drain.loadClasses.forEach((caller, loaded) -> {
-            msg.append("{\"info\":{");
-            msg.append("\"methodName\":");
+            msg.append("{\"loadClass\":{");
+            msg.append("\"from\":");
             Json.appendString(msg, caller);
-            msg.append(",\"moduleInfo\":{\"java\": true}");
             msg.append(",\"args\":[");
             loaded.forEach(arg -> {
                 msg.append("\n  ");

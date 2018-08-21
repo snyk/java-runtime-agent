@@ -6,10 +6,7 @@ import io.snyk.agent.util.Log;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.*;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.jar.JarEntry;
@@ -29,7 +26,7 @@ public class ClassSource {
         try {
             final URL url = walkUpName(loader, className);
             if (null == url) {
-                return className;
+                return className + ":????????:unknown:";
             }
 
             final int crc = Crc32c.process(classfileBuffer);
@@ -41,6 +38,10 @@ public class ClassSource {
             e.printStackTrace();
         }
         return "?:?";
+    }
+
+    public Set<String> infoFor(URI sourceUri) {
+        return jarInfoMap.getOrDefault(sourceUri, Collections.emptySet());
     }
 
     // So, this isn't super reliable.
@@ -141,7 +142,7 @@ public class ClassSource {
             final String version = props.getProperty("version");
 
             if (null != groupId && null != artifactId && null != version) {
-                foundPoms.add(groupId + ":" + artifactId + ":" + version);
+                foundPoms.add("maven:" + groupId + ":" + artifactId + ":" + version);
             }
         }
 
