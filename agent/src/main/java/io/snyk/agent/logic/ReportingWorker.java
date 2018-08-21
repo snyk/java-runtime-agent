@@ -12,6 +12,7 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -86,6 +87,8 @@ public class ReportingWorker implements Runnable {
         Json.appendString(msg, hostName);
         msg.append(", \"vmName\":");
         Json.appendString(msg, vmName);
+        msg.append(", \"timestamp\":");
+        Json.appendString(msg, Instant.now().toString());
         msg.append(", \"eventsToSend\":[\n");
 
         for (String loc : drain.methodEntries) {
