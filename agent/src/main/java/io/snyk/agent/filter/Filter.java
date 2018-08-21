@@ -2,10 +2,7 @@ package io.snyk.agent.filter;
 
 import io.snyk.agent.util.Log;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -58,7 +55,7 @@ public class Filter {
         }
     }
 
-    public boolean testArtifacts(Log log, List<String> artifacts) {
+    public boolean testArtifacts(Log log, Collection<String> artifacts) {
         if (!artifact.isPresent() || artifacts.isEmpty()) {
             return true;
         }
@@ -79,6 +76,14 @@ public class Filter {
         final boolean result = matching.findAny().isPresent();
         log.info("filter: " + this.name + ": artifact: " + artifact + ": " + result);
         return result;
+    }
+
+    public boolean testClassName(Log log, String className) {
+        if (pathFilters.isEmpty()) {
+            return true;
+        }
+
+        return pathFilters.stream().anyMatch(filter -> filter.testClass(className));
     }
 
     public boolean testPath(Log log, String path) {

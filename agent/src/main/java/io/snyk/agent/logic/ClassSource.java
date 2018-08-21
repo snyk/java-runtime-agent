@@ -82,7 +82,7 @@ public class ClassSource {
             this.extra = extra;
         }
 
-        public String toInfo() {
+        public String toLocation() {
             return String.format("%08x:%s", crc, uri);
         }
     }

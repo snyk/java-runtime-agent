@@ -42,26 +42,24 @@ public class PathFilter implements Predicate<String> {
         return new PathFilter(className, classNameIsPrefix, methodName);
     }
 
+    public boolean testClass(final String actualClassName) {
+        return classNameIsPrefix
+                ? actualClassName.startsWith(className)
+                : actualClassName.equals(className);
+    }
+
     @Override
     public boolean test(final String input) {
         final String[] parts = input.split("#|\\(", 3);
         final String actualClassName = parts[0];
         final String actualMethodName = parts[1];
 
-        if (classNameIsPrefix) {
-            if (!actualClassName.startsWith(className)) {
-                return false;
-            }
-        } else {
-            if (!actualClassName.equals(className)) {
-                return false;
-            }
+        if (!testClass(actualClassName)) {
+            return false;
         }
 
         if (methodName.isPresent()) {
-            if (!actualMethodName.equals(methodName.get())) {
-                return false;
-            }
+            return actualMethodName.equals(methodName.get());
         }
 
         return true;

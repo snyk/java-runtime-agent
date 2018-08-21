@@ -1,9 +1,11 @@
 package io.snyk.agent.jvm;
 
+import io.snyk.agent.filter.Filter;
 import io.snyk.agent.logic.ClassSource;
 import io.snyk.agent.logic.Config;
 import io.snyk.agent.logic.InstrumentationFilter;
 import io.snyk.agent.logic.Rewriter;
+import io.snyk.agent.util.Log;
 import org.objectweb.asm.ClassReader;
 
 import java.lang.instrument.ClassFileTransformer;
@@ -14,10 +16,12 @@ import java.security.ProtectionDomain;
  */
 public class Transformer implements ClassFileTransformer {
 
+    private final Log log;
     private final Config config;
     private final ClassSource classSource;
 
-    public Transformer(Config config, ClassSource classSource) {
+    public Transformer(Log log, Config config, ClassSource classSource) {
+        this.log = log;
         this.config = config;
         this.classSource = classSource;
     }
@@ -57,9 +61,14 @@ public class Transformer implements ClassFileTransformer {
         }
 
         final ClassSource.ExtraInfo info = classSource.findSourceInfo(loader, className, classfileBuffer);
-        final String sourceLocation = info.toInfo();
 
-        return new Rewriter(LandingZone.class, LandingZone.SEEN_SET::add, sourceLocation)
+        if (!config.filters.isEmpty() &&
+                config.filters.stream()
+                        .noneMatch(f -> f.testArtifacts(log, info.extra) && f.testClassName(log, className))) {
+            return null;
+        }
+
+        return new Rewriter(LandingZone.class, LandingZone.SEEN_SET::add, info.toLocation())
                 .rewrite(reader);
     }
 }
