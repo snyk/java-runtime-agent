@@ -1,6 +1,7 @@
 package io.snyk.agent.jvm;
 
 import io.snyk.agent.logic.ClassSource;
+import io.snyk.agent.logic.Config;
 import io.snyk.agent.logic.InstrumentationFilter;
 import io.snyk.agent.logic.Rewriter;
 import org.objectweb.asm.ClassReader;
@@ -13,9 +14,11 @@ import java.security.ProtectionDomain;
  */
 public class Transformer implements ClassFileTransformer {
 
+    private final Config config;
     private final ClassSource classSource;
 
-    public Transformer(ClassSource classSource) {
+    public Transformer(Config config, ClassSource classSource) {
+        this.config = config;
         this.classSource = classSource;
     }
 

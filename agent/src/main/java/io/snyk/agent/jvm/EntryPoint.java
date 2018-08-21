@@ -32,6 +32,6 @@ public class EntryPoint {
         worker.setName("snyk-agent");
         worker.start();
 
-        instrumentation.addTransformer(new Transformer(classSource), false);
+        instrumentation.addTransformer(new Transformer(config, classSource), false);
     }
 }

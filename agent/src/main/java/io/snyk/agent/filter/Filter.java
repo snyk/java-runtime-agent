@@ -1,5 +1,7 @@
 package io.snyk.agent.filter;
 
+import io.snyk.agent.util.Log;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -56,30 +58,37 @@ public class Filter {
         }
     }
 
-    public boolean test(List<String> artifacts, String path) {
-        if (artifact.isPresent() && !artifacts.isEmpty()) {
-            // if we have any artifacts mentioned in the jar,
-            // then one of them must be our filter
-            final String artifact = this.artifact.get() + ":";
-            Stream<String> matching = artifacts.stream().filter(a -> a.startsWith(artifact));
-
-            if (version.isPresent()) {
-                final VersionFilter vf = version.get();
-                matching = matching.filter(art -> {
-                    final String[] parts = art.split(":", 3);
-                    return vf.test(parts[2]);
-                });
-            }
-
-            if (!matching.findAny().isPresent()) {
-                return false;
-            }
-        }
-
-        if (pathFilters.isEmpty()) {
+    public boolean testArtifacts(Log log, List<String> artifacts) {
+        if (!artifact.isPresent() || artifacts.isEmpty()) {
             return true;
         }
 
-        return pathFilters.stream().anyMatch(filter -> filter.test(path));
+        // if we have any artifacts mentioned in the jar,
+        // then one of them must be our filter
+        final String artifact = this.artifact.get() + ":";
+        Stream<String> matching = artifacts.stream().filter(a -> a.startsWith(artifact));
+
+        if (version.isPresent()) {
+            final VersionFilter vf = version.get();
+            matching = matching.filter(art -> {
+                final String[] parts = art.split(":", 3);
+                return vf.test(parts[2]);
+            });
+        }
+
+        final boolean result = matching.findAny().isPresent();
+        log.info("filter: " + this.name + ": artifact: " + artifact + ": " + result);
+        return result;
+    }
+
+    public boolean testPath(Log log, String path) {
+        if (pathFilters.isEmpty()) {
+            log.info("filter: " + this.name + ": path: " + path + ": no filters");
+            return true;
+        }
+
+        final boolean result = pathFilters.stream().anyMatch(filter -> filter.test(path));
+        log.info("filter: " + this.name + ": path: " + path + ": " + result);
+        return result;
     }
 }

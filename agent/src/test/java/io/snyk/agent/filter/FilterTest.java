@@ -1,5 +1,6 @@
 package io.snyk.agent.filter;
 
+import io.snyk.agent.util.Log;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -18,11 +19,11 @@ class FilterTest {
                 Optional.empty(),
                 Collections.emptyList());
 
-        assertTrue(filter.test(Collections.emptyList(), "foo.bar.Baz#quux()"),
+        assertTrue(filter.testArtifacts(new Log(), Collections.emptyList()),
                 "a class that we know nothing about the heritage of");
-        assertTrue(filter.test(Collections.singletonList("io.snyk:snyk-agent:3.0"), "foo.bar.Baz#quux()"),
+        assertTrue(filter.testArtifacts(new Log(), Collections.singletonList("io.snyk:snyk-agent:3.0")),
                 "a class in the right artifact");
-        assertTrue(filter.test(Arrays.asList("io.snyk:snyk-agent:3.0", "foo.bar:baz:1.0"), "foo.bar.Baz#quux()"),
+        assertTrue(filter.testArtifacts(new Log(), Arrays.asList("io.snyk:snyk-agent:3.0", "foo.bar:baz:1.0")),
                 "a class in the right artifact");
     }
 
@@ -33,16 +34,17 @@ class FilterTest {
                 Optional.of(new VersionFilter(3)),
                 Collections.emptyList());
 
-        assertTrue(filter.test(Collections.emptyList(), "foo.bar.Baz#quux()"),
+        assertTrue(filter.testArtifacts(new Log(), Collections.emptyList()),
                 "a class that we know nothing about the heritage of");
-        assertTrue(filter.test(Collections.singletonList("io.snyk:snyk-agent:2.0"), "foo.bar.Baz#quux()"),
+        assertTrue(filter.testArtifacts(new Log(), Collections.singletonList("io.snyk:snyk-agent:2.0")),
                 "a version which is too old");
-        assertFalse(filter.test(Collections.singletonList("io.snyk:snyk-agent:3.0"), "foo.bar.Baz#quux()"),
+        assertFalse(filter.testArtifacts(new Log(), Collections.singletonList("io.snyk:snyk-agent:3.0")),
                 "a new enough version");
-        assertFalse(filter.test(Collections.singletonList("io.snyk:snyk-agent:4.0"), "foo.bar.Baz#quux()"),
+        assertFalse(filter.testArtifacts(new Log(), Collections.singletonList("io.snyk:snyk-agent:4.0")),
                 "a new enough version");
 
-        assertTrue(filter.test(Arrays.asList("io.snyk:snyk-agent:4.0", "io.snyk:snyk-agent:2.0"), "foo.bar.Baz#quux()"),
+        assertTrue(filter.testArtifacts(new Log(),
+                Arrays.asList("io.snyk:snyk-agent:4.0", "io.snyk:snyk-agent:2.0")),
                 "a newer and older version both included");
     }
 }

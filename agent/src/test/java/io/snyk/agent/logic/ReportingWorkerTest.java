@@ -36,10 +36,10 @@ class ReportingWorkerTest {
     void serialiseWeirdListSizesCorrectly() {
         toJson(drain -> {
         });
-        toJson(drain -> drain.methodEntries.add("foo"));
+        toJson(drain -> drain.methodEntries.add("foo:bar:baz:quux"));
         toJson(drain -> {
-            drain.methodEntries.add("foo");
-            drain.methodEntries.add("bar");
+            drain.methodEntries.add("foo:bar:baz:quux");
+            drain.methodEntries.add("bar:bar:baz:quux");
         });
 
         toJson(drain -> drain.loadClasses.put("foo", Sets.newHashSet()));
