@@ -56,7 +56,8 @@ public class Transformer implements ClassFileTransformer {
             return null;
         }
 
-        final String sourceLocation = classSource.findSourceInfo(loader, className, classfileBuffer);
+        final ClassSource.ExtraInfo info = classSource.findSourceInfo(loader, className, classfileBuffer);
+        final String sourceLocation = info.toInfo();
 
         return new Rewriter(LandingZone.class, LandingZone.SEEN_SET::add, sourceLocation)
                 .rewrite(reader);

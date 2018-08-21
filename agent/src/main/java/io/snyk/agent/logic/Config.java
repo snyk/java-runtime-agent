@@ -7,15 +7,16 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Config {
     public final String projectId;
-    public final Iterable<Filter> filters;
+    public final List<Filter> filters;
     public final String urlPrefix;
 
-    Config(String projectId, Iterable<Filter> filters, String urlPrefix) {
+    Config(String projectId, List<Filter> filters, String urlPrefix) {
         this.projectId = null != projectId ? projectId : "no-project-id-provided";
         this.filters = filters;
         this.urlPrefix = null != urlPrefix ? urlPrefix : "http://localhost:8000";

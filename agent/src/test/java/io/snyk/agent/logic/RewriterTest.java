@@ -9,12 +9,12 @@ import org.objectweb.asm.ClassReader;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class RewriterTest {
+class RewriterTest {
 
-    public static final String TEST_LOCATION = "13371337:tests";
+    private static final String TEST_LOCATION = "13371337:tests";
 
     @Test
-    public void smokeTest() throws Exception {
+    void smokeTest() throws Exception {
         final String name = TestVictim.class.getName();
         final byte[] bytes = new Rewriter(TestTracker.class, TestTracker.SEEN_SET::add, TEST_LOCATION)
                 .rewrite(new ClassReader(name));

@@ -22,22 +22,21 @@ public class ClassSource {
         this.log = log;
     }
 
-    public String findSourceInfo(final ClassLoader loader, final String className, final byte[] classfileBuffer) {
+    public ExtraInfo findSourceInfo(final ClassLoader loader, final String className, final byte[] classfileBuffer) {
         try {
             final URL url = walkUpName(loader, className);
             if (null == url) {
-                return className + ":????????:unknown:";
+                return new ExtraInfo(URI.create("unknown-class:" + className), Collections.emptySet());
             }
 
-            final int crc = Crc32c.process(classfileBuffer);
-            final URI uri = sourceUri(url);
-
-            return String.format("%08x:%s", crc, uri);
+            final ExtraInfo info = sourceUri(url);
+            info.crc = Crc32c.process(classfileBuffer);
+            return info;
         } catch (Exception | ZipError e) {
             log.warn("couldn't process an input");
             e.printStackTrace();
         }
-        return "?:?";
+        return new ExtraInfo(URI.create("unknown-error:" + className), Collections.emptySet());
     }
 
     public Set<String> infoFor(URI sourceUri) {
@@ -73,11 +72,26 @@ public class ClassSource {
         return url;
     }
 
+    public static class ExtraInfo {
+        public final URI uri;
+        public final Set<String> extra;
+        int crc = 0;
+
+        ExtraInfo(URI uri, Set<String> extra) {
+            this.uri = uri;
+            this.extra = extra;
+        }
+
+        public String toInfo() {
+            return String.format("%08x:%s", crc, uri);
+        }
+    }
+
     /**
      * Process a URL down to our guess as to where the thing actually came from,
      * and maybe cache some information about that thing for later.
      */
-    private URI sourceUri(URL url) throws IOException, URISyntaxException {
+    private ExtraInfo sourceUri(URL url) throws IOException, URISyntaxException {
         if ("jar".equals(url.getProtocol())) {
 
             final URLConnection conn = url.openConnection();
@@ -89,7 +103,7 @@ public class ClassSource {
                 // we could have this as an actual cache; I like the idea of processing it asap,
                 // just in case it vanishes before we try to report, or if the urlConnection is
                 // broken or managed or something like that later
-                jarInfoMap.computeIfAbsent(jarUri, _jarUrl -> {
+                final Set<String> extra = jarInfoMap.computeIfAbsent(jarUri, _jarUrl -> {
                     // this function may be called multiple times in parallel;
                     // inefficient but not important
                     try {
@@ -101,13 +115,13 @@ public class ClassSource {
                     }
                 });
 
-                return jarUri;
+                return new ExtraInfo(jarUri, extra);
             }
 
             log.warn("looked like a jar file but it wasn't one when we opened it: " + url);
         }
 
-        return url.toURI();
+        return new ExtraInfo(url.toURI(), Collections.emptySet());
     }
 
     /**
