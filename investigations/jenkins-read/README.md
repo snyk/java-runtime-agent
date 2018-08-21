@@ -1,10 +1,25 @@
 Python script: exploit
 
-https://github.com/jenkinsci/jenkins/commit/29ca81dd59c255ad633f1bd86cf1be40a5f02c64
+https://snyk.io/vuln/SNYK-JAVA-ORGJENKINSCIMAIN-32434
+
+Proposed filter:
+
+```
+filter.stapler.artifact = maven:org.kohsuke.stapler:stapler
+filter.stapler.version = << 1.250 || << 1.254
+filter.stapler.paths = org/kohsuke/stapler/Stapler$LocaleDrivenResourceSelector#open
+```
+
+..how would that version expression really look?
 
 Fix version: 1.250.1
 Vulnerable: 1.250
 
+Fix version: 1.254.1
+Vulnerable: 1.254
+
+
+https://github.com/jenkinsci/jenkins/commit/29ca81dd59c255ad633f1bd86cf1be40a5f02c64
 
 Fix: https://github.com/stapler/stapler/commit/8e9679b08c36a2f0cf2a81855d5e04e2ed2ac2b3
 Code in: https://github.com/stapler/stapler/blob/8e9679b08c36a2f0cf2a81855d5e04e2ed2ac2b3/core/src/main/java/org/kohsuke/stapler/Stapler.java#L343
