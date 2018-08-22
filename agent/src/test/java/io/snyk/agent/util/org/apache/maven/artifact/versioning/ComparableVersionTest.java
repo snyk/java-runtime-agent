@@ -73,11 +73,11 @@ class ComparableVersionTest {
     private void checkVersionsEqual(String v1, String v2) {
         Comparable c1 = newComparable(v1);
         Comparable c2 = newComparable(v2);
-        assertTrue(c1.compareTo(c2) == 0, "expected " + v1 + " == " + v2);
-        assertTrue(c2.compareTo(c1) == 0, "expected " + v2 + " == " + v1);
-        assertTrue(c1.hashCode() == c2.hashCode(), "expected same hashcode for " + v1 + " and " + v2);
-        assertTrue(c1.equals(c2), "expected " + v1 + ".equals( " + v2 + " )");
-        assertTrue(c2.equals(c1), "expected " + v2 + ".equals( " + v1 + " )");
+        assertEquals(0, c1.compareTo(c2), "expected " + v1 + " == " + v2);
+        assertEquals(0, c2.compareTo(c1), "expected " + v2 + " == " + v1);
+        assertEquals(c1.hashCode(), c2.hashCode(), "expected same hashcode for " + v1 + " and " + v2);
+        assertEquals(c1, c2, "expected " + v1 + ".equals( " + v2 + " )");
+        assertEquals(c2, c1, "expected " + v2 + ".equals( " + v1 + " )");
     }
 
     private void checkVersionsOrder(String v1, String v2) {
@@ -88,17 +88,17 @@ class ComparableVersionTest {
     }
 
     @Test
-    public void testVersionsQualifier() {
+    void testVersionsQualifier() {
         checkVersionsOrder(VERSIONS_QUALIFIER);
     }
 
     @Test
-    public void testVersionsNumber() {
+    void testVersionsNumber() {
         checkVersionsOrder(VERSIONS_NUMBER);
     }
 
     @Test
-    public void testVersionsEqual() {
+    void testVersionsEqual() {
         newComparable("1.0-alpha");
         checkVersionsEqual("1", "1");
         checkVersionsEqual("1", "1.0");
@@ -147,7 +147,7 @@ class ComparableVersionTest {
     }
 
     @Test
-    public void testVersionComparing() {
+    void testVersionComparing() {
         checkVersionsOrder("1", "2");
         checkVersionsOrder("1.5", "2");
         checkVersionsOrder("1", "2.5");
@@ -185,7 +185,7 @@ class ComparableVersionTest {
      * <a href="https://netbeans.org/bugzilla/show_bug.cgi?id=226100">226100</a>
      */
     @Test
-    public void testMng5568() {
+    void testMng5568() {
         String a = "6.1.0";
         String b = "6.1.0rc3";
         String c = "6.1H.5-beta"; // this is the unusual version string, with 'H' in the middle
@@ -196,7 +196,7 @@ class ComparableVersionTest {
     }
 
     @Test
-    public void testLocaleIndependent() {
+    void testLocaleIndependent() {
         Locale orig = Locale.getDefault();
         Locale[] locales = {Locale.ENGLISH, new Locale("tr"), Locale.getDefault()};
         try {
@@ -210,7 +210,7 @@ class ComparableVersionTest {
     }
 
     @Test
-    public void testReuse() {
+    void testReuse() {
         ComparableVersion c1 = new ComparableVersion("1");
         c1.parseVersion("2");
 
