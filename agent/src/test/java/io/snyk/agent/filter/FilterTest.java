@@ -31,7 +31,7 @@ class FilterTest {
     void testVersionLessThan() {
         final Filter filter = new Filter("foo",
                 Optional.of("io.snyk:snyk-agent"),
-                Optional.of(new VersionFilter(3)),
+                Optional.of(VersionFilter.parse("<3")),
                 Collections.emptyList());
 
         assertTrue(filter.testArtifacts(new Log(), Collections.emptyList()),

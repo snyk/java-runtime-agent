@@ -1,39 +1,50 @@
 package io.snyk.agent.filter;
 
+import io.snyk.agent.util.org.apache.maven.artifact.versioning.ComparableVersion;
+
 import java.util.function.Predicate;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * A stub implementation that only supports "'major' version is less than"
  */
 public class VersionFilter implements Predicate<String> {
 
-    private static final Pattern LESS_THAN_SINGLE_NUMBER = Pattern.compile("<(\\d+)");
+    private final ComparableVersion version;
+    private final int direction;
 
-    private final long major;
-
-    VersionFilter(long major) {
-        this.major = major;
+    private VersionFilter(ComparableVersion version, int direction) {
+        this.version = version;
+        this.direction = direction;
     }
 
     public static VersionFilter parse(String expression) {
-        final Matcher ma = LESS_THAN_SINGLE_NUMBER.matcher(expression);
-        if (!ma.matches()) {
-            throw new IllegalStateException("unsupported version expression: " + expression);
+        if (expression.length() < 2) {
+            throw new IllegalStateException("too short: " + expression);
         }
 
-        return new VersionFilter(Long.parseLong(ma.group(1)));
+        final int direction;
+
+        switch (expression.charAt(0)) {
+            case '<':
+                direction = -1;
+                break;
+            case '>':
+                direction = 1;
+                break;
+            case '=':
+                direction = 0;
+                break;
+            default:
+                throw new IllegalStateException("version expression must start with </>/=");
+        }
+
+        final ComparableVersion version = new ComparableVersion(expression.substring(1).trim());
+
+        return new VersionFilter(version, direction);
     }
 
     @Override
     public boolean test(String s) {
-        final String[] parts = s.split("[.,~-]");
-        try {
-            return Long.parseLong(parts[0]) < major;
-        } catch (NumberFormatException e) {
-            // non-numeric version number, assume it matches?
-            return true;
-        }
+        return direction == new ComparableVersion(s).compareTo(version);
     }
 }
