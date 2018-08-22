@@ -30,7 +30,7 @@ public class Config {
         }
     }
 
-    private static Config fromLines(Iterable<String> lines) {
+    public static Config fromLines(Iterable<String> lines) {
         String projectId = null;
         Map<String, Filter.Builder> filters = new HashMap<>();
         String urlPrefix = null;

@@ -1,6 +1,5 @@
 package io.snyk.agent.jvm;
 
-import io.snyk.agent.filter.Filter;
 import io.snyk.agent.logic.ClassSource;
 import io.snyk.agent.logic.Config;
 import io.snyk.agent.logic.InstrumentationFilter;
@@ -20,7 +19,7 @@ public class Transformer implements ClassFileTransformer {
     private final Config config;
     private final ClassSource classSource;
 
-    public Transformer(Log log, Config config, ClassSource classSource) {
+    Transformer(Log log, Config config, ClassSource classSource) {
         this.log = log;
         this.config = config;
         this.classSource = classSource;
@@ -62,13 +61,20 @@ public class Transformer implements ClassFileTransformer {
 
         final ClassSource.ExtraInfo info = classSource.findSourceInfo(loader, className, classfileBuffer);
 
-        if (!config.filters.isEmpty() &&
-                config.filters.stream()
-                        .noneMatch(f -> f.testArtifacts(log, info.extra) && f.testClassName(log, className))) {
+        if (!shouldProcessClass(className, info)) {
             return null;
         }
 
         return new Rewriter(LandingZone.class, LandingZone.SEEN_SET::add, info.toLocation())
                 .rewrite(reader);
+    }
+
+    private boolean shouldProcessClass(String className, ClassSource.ExtraInfo info) {
+        if (config.filters.isEmpty()) {
+            return true;
+        }
+
+        return config.filters.stream()
+                .anyMatch(f -> f.testArtifacts(log, info.extra) && f.testClassName(log, className));
     }
 }
