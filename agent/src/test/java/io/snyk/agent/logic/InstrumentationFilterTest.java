@@ -13,7 +13,7 @@ import static io.snyk.agent.logic.InstrumentationFilter.bannedMethod;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class InstrumentationFilterTest {
+public class InstrumentationFilterTest {
     @Test
     void methodsOfVictim() throws Exception {
         final String name = TestVictim.class.getName();
@@ -27,7 +27,7 @@ class InstrumentationFilterTest {
         assertTrue(bannedMethod(findMethod(node, "returnLambda")));
     }
 
-    private MethodNode findMethod(ClassNode node, String name) throws NoSuchElementException {
+    public static MethodNode findMethod(ClassNode node, String name) throws NoSuchElementException {
         // casting for 5.2 compat; fixed in ASM 6
         return ((List<MethodNode>)node.methods).stream()
                 .filter(method -> name.equals(method.name))

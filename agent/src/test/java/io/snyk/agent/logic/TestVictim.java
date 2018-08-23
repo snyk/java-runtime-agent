@@ -45,6 +45,48 @@ public class TestVictim implements Callable<Number> {
         stringField = to;
     }
 
+    void doNothing(int with) {
+
+    }
+
+    int switch1(int input) {
+        int ret;
+        switch (input) {
+            case 1:
+                ret = 5;
+                doNothing(ret);
+                // fall through
+            case 2:
+                ret = 6;
+                doNothing(ret);
+                break;
+            default:
+                ret = 7;
+                doNothing(ret);
+                break;
+        }
+        return ret;
+    }
+
+    int switch2(int input) {
+        int ret;
+        switch (input) {
+            case 1:
+                ret = 5;
+                doNothing(ret);
+                break;
+            case 2:
+                ret = 6;
+                doNothing(ret);
+                break;
+            default:
+                ret = 7;
+                doNothing(ret);
+                break;
+        }
+        return ret;
+    }
+
     @Override
     public Number call() throws Exception {
         return 17;
