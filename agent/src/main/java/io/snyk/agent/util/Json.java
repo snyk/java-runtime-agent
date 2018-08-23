@@ -16,9 +16,6 @@ public class Json {
                 case '\\':
                     into.append("\\\\");
                     return;
-                case '/':
-                    into.append("\\/");
-                    return;
                 case '\n':
                     into.append("\\n");
                     return;
