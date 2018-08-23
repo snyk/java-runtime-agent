@@ -23,7 +23,7 @@ class TransformerTest {
                 "",
                 ""
         )), new ClassSource(logger));
-        final byte[] originalBytes = ByteStreams.toByteArray(classLoader.getResourceAsStream("io/snyk/example/App.class"));
+        final byte[] originalBytes = ByteStreams.toByteArray(classLoader.getResourceAsStream("io/snyk/example/Foo.class"));
         final byte[] newBytes = transformer.transform(classLoader, null, null, null, originalBytes);
 
         assertFalse(Arrays.equals(originalBytes, newBytes));
