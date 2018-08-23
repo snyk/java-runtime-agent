@@ -22,8 +22,8 @@ class RewriterTest {
         final Object instance = clazz.newInstance();
         assertEquals(5, clazz.getDeclaredMethod("returnFive").invoke(instance));
         assertEquals(Sets.newHashSet(
-                "io/snyk/agent/logic/TestVictim:<init>:" + TEST_LOCATION,
-                "io/snyk/agent/logic/TestVictim:returnFive:" + TEST_LOCATION),
+                "io/snyk/agent/logic/TestVictim:<init>()V:" + TEST_LOCATION,
+                "io/snyk/agent/logic/TestVictim:returnFive()I:" + TEST_LOCATION),
                 TestTracker.SEEN_SET.drain().methodEntries);
     }
 }

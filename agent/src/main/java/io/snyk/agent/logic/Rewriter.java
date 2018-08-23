@@ -37,7 +37,9 @@ public class Rewriter {
     }
 
     private void rewriteMethod(String clazzInternalName, MethodNode method) {
-        final String tag = clazzInternalName + ":" + method.name + ":" + sourceLocation;
+        final String tag = clazzInternalName + ":" + method.name +
+                method.desc + // using desc, not signature, as it's always available
+                ":" + sourceLocation;
         addInspectionOfLoadClassCalls(method, tag);
         addInspectionOfMethodEntry(method, tag);
     }
