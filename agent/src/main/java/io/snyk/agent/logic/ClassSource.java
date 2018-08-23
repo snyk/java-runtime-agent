@@ -9,8 +9,10 @@ import java.net.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.zip.ZipError;
 
 public class ClassSource {
@@ -111,7 +113,11 @@ public class ClassSource {
                     // this function may be called multiple times in parallel;
                     // inefficient but not important
                     try {
-                        return extractMavenLocators(jarConn.getJarFile());
+                        final Set<String> locators = new HashSet<>();
+                        final JarFile jarFile = jarConn.getJarFile();
+                        extractImplementation(jarFile.getManifest(), locators);
+                        extractMavenLocators(jarFile, locators);
+                        return locators;
                     } catch (IOException e) {
                         log.warn("looked like a jar file we couldn't process it: " + url);
                         e.printStackTrace();
@@ -128,12 +134,22 @@ public class ClassSource {
         return new ExtraInfo(url.toURI(), Collections.emptySet());
     }
 
+    private void extractImplementation(Manifest manifest, Collection<String> into) {
+        final Attributes attributes = manifest.getMainAttributes();
+        final String title = attributes.getValue("Implementation-Title");
+        final String version = attributes.getValue("Implementation-Version");
+        if (null == title || null == version) {
+            return;
+        }
+
+        into.add("impl:" + title.replaceAll("[^a-zA-Z0-9-]", "-").toLowerCase() + ":" + version);
+    }
+
     /**
      * Walk through a jar file and find META-INF/maven/.../pom.properties, and turn
      * them back into locators ("org.apache.commons:commons-lang:1.0").
      */
-    private Set<String> extractMavenLocators(JarFile jarFile) throws IOException {
-        final Set<String> foundPoms = new HashSet<>();
+    private void extractMavenLocators(JarFile jarFile, Collection<String> into) throws IOException {
         final Enumeration<JarEntry> entries = jarFile.entries();
         while (entries.hasMoreElements()) {
             final JarEntry entry = entries.nextElement();
@@ -160,10 +176,8 @@ public class ClassSource {
             final String version = props.getProperty("version");
 
             if (null != groupId && null != artifactId && null != version) {
-                foundPoms.add("maven:" + groupId + ":" + artifactId + ":" + version);
+                into.add("maven:" + groupId + ":" + artifactId + ":" + version);
             }
         }
-
-        return foundPoms;
     }
 }
