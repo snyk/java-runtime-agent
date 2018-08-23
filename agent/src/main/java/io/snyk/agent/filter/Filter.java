@@ -74,7 +74,7 @@ public class Filter {
         }
 
         final boolean result = matching.findAny().isPresent();
-        log.info("filter: " + this.name + ": artifact: " + artifact + ": " + result);
+        log.debug("filter: " + this.name + ": artifact: " + artifact + ": " + result);
         return result;
     }
 
@@ -88,12 +88,12 @@ public class Filter {
 
     public boolean testPath(Log log, String path) {
         if (pathFilters.isEmpty()) {
-            log.info("filter: " + this.name + ": path: " + path + ": no filters");
+            log.debug("filter: " + this.name + ": path: " + path + ": no filters");
             return true;
         }
 
         final boolean result = pathFilters.stream().anyMatch(filter -> filter.test(path));
-        log.info("filter: " + this.name + ": path: " + path + ": " + result);
+        log.debug("filter: " + this.name + ": path: " + path + ": " + result);
         return result;
     }
 }

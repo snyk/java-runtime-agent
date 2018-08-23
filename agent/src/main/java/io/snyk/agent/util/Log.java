@@ -5,6 +5,8 @@ public class Log {
         System.err.println("snyk-agent initialisation: " + msg);
     }
 
+    public void debug(String _msg) {}
+
     public void info(String msg) {
         System.err.println("snyk-agent info: " + msg);
     }
