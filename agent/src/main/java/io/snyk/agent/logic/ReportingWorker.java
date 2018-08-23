@@ -7,22 +7,34 @@ import io.snyk.agent.util.UseCounter;
 
 import java.io.*;
 import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.Instant;
+import java.util.Comparator;
+import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ReportingWorker implements Runnable {
-    private final String vmName = ManagementFactory.getRuntimeMXBean().getName();
+    private final String vmName;
+    private final String vmVendor;
+    private final String vmVersion;
     private final String hostName = computeHostName();
     private final Log log;
     private final Config config;
     private final ClassSource classSource;
+
+
+    {
+        final RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
+        vmName = runtime.getName();
+        vmVendor = runtime.getVmVendor();
+        vmVersion = runtime.getVmVersion();
+    }
 
     public ReportingWorker(Log log, Config config, ClassSource classSource) {
         this.log = log;
@@ -83,12 +95,33 @@ public class ReportingWorker implements Runnable {
         final StringBuilder msg = new StringBuilder(4096);
         msg.append("{\"projectId\":");
         Json.appendString(msg, config.projectId);
-        msg.append(", \"hostName\":");
-        Json.appendString(msg, hostName);
-        msg.append(", \"vmName\":");
-        Json.appendString(msg, vmName);
         msg.append(", \"timestamp\":");
         Json.appendString(msg, Instant.now().toString());
+
+        msg.append(", \"systemInfo\":{\n");
+        msg.append("   \"hostName\":");
+        Json.appendString(msg, hostName);
+        msg.append(",  \"jvm\":{");
+        msg.append("\"vmName\":");
+        Json.appendString(msg, vmName);
+        msg.append(",\"vendor\":");
+        Json.appendString(msg, vmVendor);
+        msg.append(",\"version\":");
+        Json.appendString(msg, vmVersion);
+        msg.append(",\"loadedSources\":{\n");
+
+        classSource.all().entrySet().stream().sorted(Comparator.comparing(Map.Entry::getKey)).forEachOrdered(entry -> {
+            Json.appendString(msg, entry.getKey().toString());
+            msg.append(":[");
+            entry.getValue().stream().sorted().forEachOrdered(locator -> {
+                Json.appendString(msg, locator);
+                msg.append(",");
+            });
+            trimRightCommaSpacing(msg);
+            msg.append("],\n");
+        });
+        trimRightCommaSpacing(msg);
+        msg.append("}}}\n");
         msg.append(", \"eventsToSend\":[\n");
 
         for (String loc : drain.methodEntries) {

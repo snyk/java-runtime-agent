@@ -15,7 +15,7 @@ import java.util.zip.ZipError;
 
 public class ClassSource {
     // URL is a bad map key. A really bad map key.
-    private final ConcurrentMap<URI, Set<String>> jarInfoMap = new ConcurrentHashMap<>();
+    final ConcurrentMap<URI, Set<String>> jarInfoMap = new ConcurrentHashMap<>();
     private final Log log;
 
     public ClassSource(Log log) {
@@ -70,6 +70,10 @@ public class ClassSource {
         }
 
         return url;
+    }
+
+    public Map<URI, Set<String>> all() {
+        return Collections.unmodifiableMap(this.jarInfoMap);
     }
 
     public static class ExtraInfo {
