@@ -68,8 +68,8 @@ public class Filter {
         if (version.isPresent()) {
             final VersionFilter vf = version.get();
             matching = matching.filter(art -> {
-                final String[] parts = art.split(":", 3);
-                return vf.test(parts[2]);
+                final String[] parts = art.split(":", 4);
+                return vf.test(parts[3]);
             });
         }
 
