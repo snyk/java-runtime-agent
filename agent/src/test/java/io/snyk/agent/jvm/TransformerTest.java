@@ -12,20 +12,33 @@ import java.net.URLClassLoader;
 import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TransformerTest {
     @Test
-    void testTransform() throws IOException {
+    void testNoConfig() throws IOException {
+        assertTrue(exampleChanges("Foo",
+                ""));
+    }
+
+    @Test
+    void testFilterPaths() throws IOException {
+        assertFalse(exampleChanges("Foo",
+                "filter.foo.paths = com.fake.**"));
+    }
+
+    private boolean exampleChanges(String clazz, String... config) throws IOException {
         final URL srcJar = TransformerTest.class.getResource("/example-1.0-SNAPSHOT.jar");
         final URLClassLoader classLoader = new URLClassLoader(new URL[]{srcJar});
         final Log logger = new Log();
-        final Transformer transformer = new Transformer(logger, Config.fromLines(Arrays.asList(
-                "",
-                ""
-        )), new ClassSource(logger));
-        final byte[] originalBytes = ByteStreams.toByteArray(classLoader.getResourceAsStream("io/snyk/example/Foo.class"));
+        final Transformer transformer = new Transformer(logger, Config.fromLines(Arrays.asList(config)), new ClassSource(logger));
+        final byte[] originalBytes = ByteStreams.toByteArray(classLoader.getResourceAsStream("io/snyk/example/" + clazz + ".class"));
         final byte[] newBytes = transformer.transform(classLoader, null, null, null, originalBytes);
 
-        assertFalse(Arrays.equals(originalBytes, newBytes));
+        if (null == newBytes) {
+            return false;
+        }
+
+        return !Arrays.equals(originalBytes, newBytes);
     }
 }
