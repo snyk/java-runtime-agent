@@ -11,7 +11,17 @@ import java.util.Map;
 public class InstructionHashCodeBuilder extends MethodVisitor {
     int hashCode = 0x31415926;
 
-    private Map<Label, Integer> labels = new IdentityHashMap<>();
+    /**
+     * `Label` instances are unique, but don't have any interior unique identifier,
+     * i.e. the `offset` isn't available while iterating an InsnList, which isn't ideal.
+     *
+     * The `toString` method appears to compute a unique id; like "L123123123", but it's
+     * just the identityHashCode and not stable across runs.
+     *
+     * This map is used to generate a monotonic ID for each label (first seen: 0,
+     * second seen: 1, etc.), which we use as as the label number, for the `hashCode`.
+     */
+    private Map<Label, Integer> labelSerialiser = new IdentityHashMap<>();
 
     private void add(int val) {
         hashCode = hashCode * 37 + val;
@@ -26,7 +36,7 @@ public class InstructionHashCodeBuilder extends MethodVisitor {
     }
 
     private void add(Label l) {
-        add(labels.computeIfAbsent(l, _l ->labels.size()));
+        add(labelSerialiser.computeIfAbsent(l, _l -> labelSerialiser.size()));
     }
 
     InstructionHashCodeBuilder() {
