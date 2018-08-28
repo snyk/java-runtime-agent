@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class MethodIdTest {
 
     @Test
-    public void testVictim() throws IOException {
+    void testVictim() throws IOException {
         assertEquals(0x0a554076, hashTestMethod("switch1"));
         assertEquals(0x366fc085, hashTestMethod("switch2"));
     }
