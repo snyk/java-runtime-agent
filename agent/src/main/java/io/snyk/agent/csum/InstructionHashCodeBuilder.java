@@ -1,9 +1,6 @@
 package io.snyk.agent.csum;
 
-import org.objectweb.asm.Handle;
-import org.objectweb.asm.Label;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.*;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -106,8 +103,10 @@ public class InstructionHashCodeBuilder extends MethodVisitor {
     public void visitLdcInsn(Object cst) {
         if (cst instanceof Number || cst instanceof String) {
             add(cst.hashCode());
+        } else if (cst instanceof Type) {
+            add(((Type) cst).getInternalName());
         } else {
-            throw new UnsupportedOperationException("TODO");
+            throw new UnsupportedOperationException("impossible ldc: " + cst.getClass());
         }
     }
 
