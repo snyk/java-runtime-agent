@@ -82,7 +82,7 @@ public class ComparableVersion
 
         private final BigInteger value;
 
-        public static final IntegerItem ZERO = new IntegerItem();
+        static final IntegerItem ZERO = new IntegerItem();
 
         private IntegerItem() {
             this.value = BIG_INTEGER_ZERO;
@@ -189,7 +189,7 @@ public class ComparableVersion
          * @param qualifier
          * @return an equivalent value that can be used with lexical comparison
          */
-        public static String comparableQualifier(String qualifier) {
+        static String comparableQualifier(String qualifier) {
             int i = QUALIFIERS.indexOf(qualifier);
 
             return i == -1 ? (QUALIFIERS.size() + "-" + qualifier) : String.valueOf(i);

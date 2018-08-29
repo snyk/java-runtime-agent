@@ -5,7 +5,7 @@ import org.objectweb.asm.*;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
-public class InstructionHashCodeBuilder extends MethodVisitor {
+class InstructionHashCodeBuilder extends MethodVisitor {
     int hashCode = 0x31415926;
 
     /**

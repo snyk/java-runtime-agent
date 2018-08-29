@@ -2,7 +2,7 @@ package io.snyk.agent.logic;
 
 import io.snyk.agent.util.Throwables;
 
-public class ObservedError {
+class ObservedError {
     public final String msg;
     public final String problem;
 

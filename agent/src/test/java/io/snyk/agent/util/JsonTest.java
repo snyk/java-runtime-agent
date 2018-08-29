@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class JsonTest {
 
-    static String stringy(String what) {
+    private static String stringy(String what) {
         final StringBuilder sb = new StringBuilder();
         Json.appendString(sb, what);
         return sb.toString();

@@ -17,15 +17,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ReportingWorkerTest {
 
-    public static final Config NULL_CONFIG = new Config(null, Collections.emptyList(), null);
+    private static final Config NULL_CONFIG = new Config(null, Collections.emptyList(), null);
 
-    JsonElement toJson(Consumer<UseCounter.Drain> drainer) {
+    private JsonElement toJson(Consumer<UseCounter.Drain> drainer) {
         return toJson(drainer, _jarInfoMap -> {
         });
     }
 
-    JsonElement toJson(Consumer<UseCounter.Drain> drainer,
-                       Consumer<ClassSource> jarInfoAdder) {
+    private JsonElement toJson(Consumer<UseCounter.Drain> drainer,
+                               Consumer<ClassSource> jarInfoAdder) {
         final UseCounter.Drain drain = new UseCounter.Drain();
         drainer.accept(drain);
         final ClassSource classSource = new ClassSource(new Log());

@@ -1,4 +1,4 @@
 package io.snyk.agent.logic;
 
-public class SourceInfo {
+class SourceInfo {
 }

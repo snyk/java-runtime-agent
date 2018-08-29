@@ -66,7 +66,7 @@ public class ReportingWorker implements Runnable {
         }
     }
 
-    void work(UseCounter.Drain drain) {
+    private void work(UseCounter.Drain drain) {
         final String msg = serialiseState(drain);
 
         log.info("reporting: " + msg);

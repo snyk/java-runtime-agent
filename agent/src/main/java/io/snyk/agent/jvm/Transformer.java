@@ -13,7 +13,7 @@ import java.security.ProtectionDomain;
 /**
  * Tie {@link Rewriter} and {@link LandingZone} to the JVM interface.
  */
-public class Transformer implements ClassFileTransformer {
+class Transformer implements ClassFileTransformer {
 
     private final Log log;
     private final Config config;

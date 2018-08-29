@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 @State(Scope.Thread)
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
-public class RewritePerformance {
+class RewritePerformance {
 
     // this is "protected" by the @Scope annotation on the class,
     // don't fiddle with it.

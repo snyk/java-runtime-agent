@@ -1,6 +1,6 @@
 package io.snyk.demo;
 
-public class Main {
+class Main {
     private static final Reflector REFLECTOR = new Reflector();
 
     public static void main(String[] args) {

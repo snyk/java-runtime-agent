@@ -1,6 +1,6 @@
 package io.snyk.demo;
 
-public class Reflector {
+class Reflector {
     public void foo() {
         try {
             Reflector.class.getClassLoader().loadClass("foo");

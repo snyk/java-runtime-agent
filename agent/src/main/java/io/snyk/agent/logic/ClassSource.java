@@ -86,7 +86,7 @@ public class ClassSource {
     }
 
     public static class ExtraInfo {
-        public final URI uri;
+        final URI uri;
         public final Set<String> extra;
         int crc = 0;
 
