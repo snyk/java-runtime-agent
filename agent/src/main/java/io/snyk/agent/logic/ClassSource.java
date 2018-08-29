@@ -18,6 +18,8 @@ import java.util.zip.ZipError;
 public class ClassSource {
     // URL is a bad map key. A really bad map key.
     final ConcurrentMap<URI, Set<String>> jarInfoMap = new ConcurrentHashMap<>();
+
+    final List<ObservedError> errors = Collections.synchronizedList(new ArrayList<>());
     private final Log log;
 
     public ClassSource(Log log) {
@@ -36,9 +38,14 @@ public class ClassSource {
             return info;
         } catch (Exception | ZipError e) {
             log.warn("couldn't process an input");
+            addError("source-info:" + className, e);
             e.printStackTrace();
         }
         return new ExtraInfo(URI.create("unknown-error:" + className), Collections.emptySet());
+    }
+
+    public boolean addError(String msg, Throwable e) {
+        return errors.add(new ObservedError(msg, e));
     }
 
     public Set<String> infoFor(URI sourceUri) {
@@ -120,8 +127,9 @@ public class ClassSource {
                         return locators;
                     } catch (IOException e) {
                         log.warn("looked like a jar file we couldn't process it: " + url);
+                        addError("invald-jar:" + url, e);
                         e.printStackTrace();
-                        return null;
+                        return Collections.emptySet();
                     }
                 });
 

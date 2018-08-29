@@ -42,6 +42,8 @@ public class Transformer implements ClassFileTransformer {
         } catch (Throwable t) {
             // classpath or jar clash issues are just silently eaten by the JVM,
             // make sure they're shown.
+            // note that this class name can be null, but.. what else can we do?
+            classSource.addError("transform:" + className, t);
             t.printStackTrace();
             throw t;
         }

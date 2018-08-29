@@ -26,6 +26,7 @@ public class Config {
         try {
             return fromLines(Files.readAllLines(new File(path).toPath()));
         } catch (IOException e) {
+            e.printStackTrace();
             throw new IllegalStateException(e);
         }
     }

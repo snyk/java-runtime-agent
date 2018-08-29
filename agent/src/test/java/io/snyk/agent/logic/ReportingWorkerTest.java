@@ -11,8 +11,6 @@ import org.junit.jupiter.api.Test;
 import java.io.StringReader;
 import java.net.URI;
 import java.util.Collections;
-import java.util.Set;
-import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -27,11 +25,11 @@ class ReportingWorkerTest {
     }
 
     JsonElement toJson(Consumer<UseCounter.Drain> drainer,
-                       Consumer<ConcurrentMap<URI, Set<String>>> jarInfoAdder) {
+                       Consumer<ClassSource> jarInfoAdder) {
         final UseCounter.Drain drain = new UseCounter.Drain();
         drainer.accept(drain);
         final ClassSource classSource = new ClassSource(new Log());
-        jarInfoAdder.accept(classSource.jarInfoMap);
+        jarInfoAdder.accept(classSource);
 
         final String json = new ReportingWorker(new Log(),
                 NULL_CONFIG,
@@ -70,25 +68,39 @@ class ReportingWorkerTest {
         });
         toJson(drain -> {
                 },
-                jarInfoMap -> {
-                    jarInfoMap.put(URI.create("file://tmp/whatever"), Sets.newHashSet());
+                classSource -> {
+                    classSource.addError("foo", new Exception());
                 });
         toJson(drain -> {
                 },
-                jarInfoMap -> {
-                    jarInfoMap.put(URI.create("file://tmp/whatever"), Sets.newHashSet("maven:foo.bar:baz:12"));
+                classSource -> {
+                    classSource.addError("foo", new Exception());
+                    classSource.addError("bar", new Exception());
                 });
         toJson(drain -> {
                 },
-                jarInfoMap -> {
-                    jarInfoMap.put(URI.create("file://tmp/whatever"),
+                classSource -> {
+                    classSource.jarInfoMap.put(URI.create("file://tmp/whatever"), Sets.newHashSet());
+                });
+        toJson(drain -> {
+                },
+                classSource -> {
+                    classSource.jarInfoMap.put(URI.create("file://tmp/whatever"),
+                            Sets.newHashSet("maven:foo.bar:baz:12"));
+                });
+        toJson(drain -> {
+                },
+                classSource -> {
+                    classSource.jarInfoMap.put(URI.create("file://tmp/whatever"),
                             Sets.newHashSet("maven:foo.bar:baz:7.17", "maven:ooh.aah:baby:3.1.1"));
                 });
         toJson(drain -> {
                 },
-                jarInfoMap -> {
-                    jarInfoMap.put(URI.create("file://tmp/whatever"), Sets.newHashSet("maven:foo.bar:baz:12"));
-                    jarInfoMap.put(URI.create("file://tmp/other"), Sets.newHashSet("maven:foo.bar:quux:13"));
+                classSource -> {
+                    classSource.jarInfoMap.put(URI.create("file://tmp/whatever"),
+                            Sets.newHashSet("maven:foo.bar:baz:12"));
+                    classSource.jarInfoMap.put(URI.create("file://tmp/other"),
+                            Sets.newHashSet("maven:foo.bar:quux:13"));
                 });
     }
 

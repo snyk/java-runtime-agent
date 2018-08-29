@@ -28,7 +28,6 @@ public class ReportingWorker implements Runnable {
     private final Config config;
     private final ClassSource classSource;
 
-
     {
         final RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
         vmName = runtime.getName();
@@ -56,6 +55,7 @@ public class ReportingWorker implements Runnable {
                 work(LandingZone.SEEN_SET.drain());
             } catch (Throwable t) {
                 log.warn("agent issue");
+                classSource.addError("agent-send", t);
                 t.printStackTrace();
             }
             try {
@@ -165,7 +165,17 @@ public class ReportingWorker implements Runnable {
         });
 
         trimRightCommaSpacing(msg);
-        msg.append("\n]}");
+        msg.append("\n],");
+        msg.append("\"errors\":[");
+        classSource.errors.forEach(error -> {
+            msg.append("{\"msg\":");
+            Json.appendString(msg, error.msg);
+            msg.append(",\"exception\":");
+            Json.appendString(msg, error.problem);
+            msg.append("},");
+        });
+        trimRightCommaSpacing(msg);
+        msg.append("]}");
         return msg.toString();
     }
 
