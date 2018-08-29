@@ -38,7 +38,7 @@ class MethodIdTest {
                 continue;
             }
             for (MethodNode method : AsmUtil.parse(new ClassReader(jar)).methods) {
-                final int computed = new MethodId().id(method);
+                final int computed = MethodId.id(method);
                 running += computed;
                 totalMethods += 1;
                 seen.computeIfAbsent(computed, _id -> new HashSet<>())
@@ -69,7 +69,7 @@ class MethodIdTest {
     }
 
     private int hashTestMethod(String name) throws IOException {
-        return new MethodId().id(
+        return MethodId.id(
                 InstrumentationFilterTest.findMethod(AsmUtil.parse(new ClassReader(TestVictim.class.getName())), name)
         );
     }
