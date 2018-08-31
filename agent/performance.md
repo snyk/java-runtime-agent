@@ -32,6 +32,29 @@ to have an unmeasurable overhead.
  * Original startup time is about 7 seconds, so that's a 20% slowdown. :(
 
 
+### osmosis
+
+```$bash
+A='-javaagent:/home/faux/code/java-instrumentor/agent/build/libs/agent.jar=file:/home/faux/code/java-instrumentor/agent/'
+OSMOSIS=/home/faux/clone/osmosis/package/bin/osmosis
+time $OSMOSIS --read-pbf england-latest.osm.pbf --node-key-value keyValueList="highway.speed_camera" --write-xml radar.osm
+```
+
+`anoia`:
+
+ * no agent: 23.993 23.843 23.912; mean: 23.916, sd: 0.075
+ * reporting just classpath (no classes match): 24.134 24.274 23.979
+ * reporting every method everywhere: 1:25.64 1:26.28 1:26.70; mean: 86.21, sd: 0.53
+ * `org/openstreetmap/osmosis/osmbinary/BinaryParser` 24.853 25.396 25.053; mean: 25.101, sd: 0.275
+
+`BinaryParser` has some *very* hot methods in, called tens of millions of times.
+
+25.101/23.916 = 1.049; i.e. a ~5% slowdown.
+86.21/23.916 = 3.6, i.e. a 3x slowdown
+
+It's not clear whether the "all" case is just lots of 5% slowdowns, or if there's some
+super hot method that's causing an issue.
+
 ## Tested hardware
 
  * `errata`: Chris' laptop: i7-7700HQ, 16GB,
