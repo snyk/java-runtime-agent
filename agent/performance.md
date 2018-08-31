@@ -64,6 +64,26 @@ IntArrayList is interesting, it must be very heavily used, and the methods are
 effectively free without our instrumentation. It's not a `getter` as it takes an
 index and an array lookup. Maybe it has significant inlining wins?
 
+Only IntArrayList, method filter (hacked in):
+
+ * Everything but range check: 29.223
+ * Everything but add*: 27.191
+ * Everything but get*: 29.327???
+ * Remove only: 24.052
+ * No get/set/add: 25.679
+
+Right, wtf?
+ 
+ * only make..Message: 23.303
+ * + mutableCopyWithCapacity: 24.501
+ * + emptyList: 24.214
+ * + add: 27.712
+ 
+Seems that 'add' really is the cost. I wonder why.
+
+https://github.com/protocolbuffers/protobuf/blob/v3.4.0/java/core/src/main/java/com/google/protobuf/IntArrayList.java#L154
+ 
+
 Small but non-zero slowdown:
  * `com/google/protobuf/GeneratedMessage**`: 24.932
  * `com/google/protobuf/ByteString` 24.159

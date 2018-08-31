@@ -85,7 +85,7 @@ public class Rewriter {
 
             // This causes the TODO section in the else block below.
 
-            final String callTag =  mi.owner + ":"
+            final String callTag = mi.owner + ":"
                     + mi.name + ":" + mi.desc + ":" + mi.getOpcode() + ":"
                     + methodLocation;
 
