@@ -18,13 +18,13 @@ public class InstrumentationFilterTest {
     void methodsOfVictim() throws Exception {
         final String name = TestVictim.class.getName();
         final ClassNode node = AsmUtil.parse(new ClassReader(name));
-        assertFalse(bannedMethod(findMethod(node, "getStringField")));
-        assertFalse(bannedMethod(findMethod(node, "getIntField")));
-        assertFalse(bannedMethod(findMethod(node, "setStringField")));
-        assertFalse(bannedMethod(findMethod(node, "setIntField")));
-        assertTrue(bannedMethod(findMethod(node, "call")));
-        assertTrue(bannedMethod(findMethod(node, "localGeneric")));
-        assertTrue(bannedMethod(findMethod(node, "returnLambda")));
+        assertTrue(bannedMethod(findMethod(node, "getStringField")));
+        assertTrue(bannedMethod(findMethod(node, "getIntField")));
+        assertTrue(bannedMethod(findMethod(node, "setStringField")));
+        assertTrue(bannedMethod(findMethod(node, "setIntField")));
+        assertFalse(bannedMethod(findMethod(node, "call")));
+        assertFalse(bannedMethod(findMethod(node, "localGeneric")));
+        assertFalse(bannedMethod(findMethod(node, "returnLambda")));
     }
 
     public static MethodNode findMethod(ClassNode node, String name) throws NoSuchElementException {
