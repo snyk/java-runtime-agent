@@ -55,6 +55,21 @@ time $OSMOSIS --read-pbf england-latest.osm.pbf --node-key-value keyValueList="h
 It's not clear whether the "all" case is just lots of 5% slowdowns, or if there's some
 super hot method that's causing an issue.
 
+ * `org/openstreetmap/osmosis/osmbinary/**`: 31.211
+ * `org/openstreetmap/osmosis/osmbinary/**` `crosby/**`: 30.336 (hopefully just noise, it is matching both)
+ * `com/google/protobuf/**` 69.94 (oh dear)
+ * `com/google/protobuf/IntArrayList` 30.974
+
+IntArrayList is interesting, it must be very heavily used, and the methods are
+effectively free without our instrumentation. It's not a `getter` as it takes an
+index and an array lookup. Maybe it has significant inlining wins?
+
+Small but non-zero slowdown:
+ * `com/google/protobuf/GeneratedMessage**`: 24.932
+ * `com/google/protobuf/ByteString` 24.159
+ * `com/google/protobuf/ByteString**` 25.000
+ 
+
 ## Tested hardware
 
  * `errata`: Chris' laptop: i7-7700HQ, 16GB,

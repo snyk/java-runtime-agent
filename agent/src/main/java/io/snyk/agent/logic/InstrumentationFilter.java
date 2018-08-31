@@ -44,7 +44,7 @@ public class InstrumentationFilter {
         if (isAbstract(method.access)
                 || isNative(method.access)
                 || isSynthetic(method.access)) {
-            return false;
+            return true;
         }
 
         // We should expect that we don't have the full signature, just the descriptor;
@@ -56,10 +56,10 @@ public class InstrumentationFilter {
 //        Type.getReturnType(method.desc);
 
         if (isAccessor(method)) {
-            return false;
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     private static boolean isAccessor(MethodNode method) {

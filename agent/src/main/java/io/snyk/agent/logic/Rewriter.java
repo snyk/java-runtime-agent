@@ -30,8 +30,10 @@ public class Rewriter {
         // casting for 5.2 compat; fixed in ASM 6
         for (MethodNode method : (Iterable<MethodNode>) cn.methods) {
             if (InstrumentationFilter.bannedMethod(method)) {
-                rewriteMethod(cn.name, method);
+                continue;
             }
+
+            rewriteMethod(cn.name, method);
         }
         return AsmUtil.byteArray(cn);
     }
