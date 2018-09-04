@@ -6,6 +6,7 @@ import com.sun.jdi.connect.*;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.Map;
 
 public class Trace {
@@ -18,12 +19,8 @@ public class Trace {
     // Mode for tracing the Trace program (default= 0 off)
     private int debugTraceMode = 0;
 
-    // Class patterns for which we don't want events
-    private String[] excludes = {"javax.*", "sun.*",
-            "com.sun.*"};
-
     public static void main(String[] args) throws Exception {
-        new Trace(1337).run(new PrintWriter(System.err));
+        new Trace(Integer.parseInt(args[0])).run(new PrintWriter(System.err));
     }
 
     private Trace(String arg) throws IllegalConnectorArgumentsException, VMStartException, IOException {
@@ -69,8 +66,12 @@ public class Trace {
     private void run(PrintWriter writer) {
         vm.setDebugTraceMode(debugTraceMode);
 
-        final EventDispatcher eventDispatcher = new EventDispatcher(vm, excludes, writer);
-        eventDispatcher.setEventRequests(false);
+        final EventDispatcher eventDispatcher = new EventDispatcher(vm, writer);
+        eventDispatcher.addClassWatches(Arrays.asList(
+                "org.apache.struts2.dispatcher.multipart.JakartaMultiPartRequest",
+                "com.google.common.collect.Lists"
+        ));
+
         eventDispatcher.start();
         if (false) {
             redirectOutput();

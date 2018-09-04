@@ -1,6 +1,7 @@
 #!/bin/sh
 set -eu
+# _OPTS='-Xdebug -agentlib:jdwp=transport=dt_socket,address=127.0.0.1:1337,server=y,suspend=y'
 ./gradlew build
 java \
     -cp /usr/lib/jvm/java-8-openjdk-amd64/lib/tools.jar:./build/libs/agent.jar \
-    io.snyk.debugger.trace.Trace
+    io.snyk.debugger.trace.Trace "$@"
