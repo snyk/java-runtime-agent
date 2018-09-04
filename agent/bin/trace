@@ -3,5 +3,4 @@ set -eu
 ./gradlew build
 java \
     -cp /usr/lib/jvm/java-8-openjdk-amd64/lib/tools.jar:./build/libs/agent.jar \
-    io.snyk.debugger.trace.Trace \
-    '-cp ../simplest-test/build/libs/simplest-test.jar io.snyk.demo.Main'
+    io.snyk.debugger.trace.Trace

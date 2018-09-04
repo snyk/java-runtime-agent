@@ -2,10 +2,7 @@ package io.snyk.debugger.trace;
 
 import com.sun.jdi.Bootstrap;
 import com.sun.jdi.VirtualMachine;
-import com.sun.jdi.connect.Connector;
-import com.sun.jdi.connect.IllegalConnectorArgumentsException;
-import com.sun.jdi.connect.LaunchingConnector;
-import com.sun.jdi.connect.VMStartException;
+import com.sun.jdi.connect.*;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -21,46 +18,78 @@ public class Trace {
     // Mode for tracing the Trace program (default= 0 off)
     private int debugTraceMode = 0;
 
-    //  Do we want to watch assignments to fields
-    private boolean watchFields = false;
-
     // Class patterns for which we don't want events
     private String[] excludes = {"javax.*", "sun.*",
             "com.sun.*"};
 
     public static void main(String[] args) throws Exception {
-        new Trace(args[0]).run(new PrintWriter(System.err));
+        new Trace(1337).run(new PrintWriter(System.err));
     }
 
-
     private Trace(String arg) throws IllegalConnectorArgumentsException, VMStartException, IOException {
-        vm = launchTarget(arg);
+        final LaunchingConnector connector = findLaunchingConnector();
+        final Map<String, Connector.Argument> arguments = connector.defaultArguments();
+
+        {
+            final Connector.Argument mainArg = arguments.get("main");
+
+            if (mainArg == null) {
+                throw new IllegalStateException("LaunchConnector lacks 'main'");
+            }
+            mainArg.setValue(arg);
+        }
+
+        vm = connector.launch(arguments);
+    }
+
+    private Trace(int port) throws IOException, IllegalConnectorArgumentsException {
+        final AttachingConnector connector = findSocketAttachConnector();
+
+        final Map<String, Connector.Argument> arguments = connector.defaultArguments();
+
+        {
+            final Connector.Argument hostnameArg = arguments.get("hostname");
+            if (null == hostnameArg) {
+                throw new IllegalStateException("AttachConnector lacks 'hostname'");
+            }
+            hostnameArg.setValue("127.0.0.1");
+        }
+
+        {
+            final Connector.Argument portArg = arguments.get("port");
+            if (null == portArg) {
+                throw new IllegalStateException("AttachConnector lacks 'port'");
+            }
+            portArg.setValue(String.valueOf(port));
+        }
+
+        vm = connector.attach(arguments);
     }
 
     private void run(PrintWriter writer) {
         vm.setDebugTraceMode(debugTraceMode);
 
         final EventDispatcher eventDispatcher = new EventDispatcher(vm, excludes, writer);
-        eventDispatcher.setEventRequests(watchFields);
+        eventDispatcher.setEventRequests(false);
         eventDispatcher.start();
-        redirectOutput();
+        if (false) {
+            redirectOutput();
+        }
         vm.resume();
 
         try {
             eventDispatcher.join();
-            errThread.join(); // Make sure output is forwarded
-            outThread.join(); // before we exit
+
+            if (null != errThread) {
+                errThread.join(); // Make sure output is forwarded
+            }
+
+            if (null != outThread) {
+                outThread.join(); // before we exit
+            }
         } catch (InterruptedException exc) {
             throw new IllegalStateException(exc);
         }
-    }
-
-    private VirtualMachine launchTarget(String mainArgs)
-            throws VMStartException, IllegalConnectorArgumentsException, IOException {
-        final LaunchingConnector connector = findLaunchingConnector();
-        final Map<String, Connector.Argument> arguments =
-                connectorArguments(connector, mainArgs);
-        return connector.launch(arguments);
     }
 
     private void redirectOutput() {
@@ -77,32 +106,29 @@ public class Trace {
         outThread.start();
     }
 
+    /*
+    com.sun.jdi.CommandLineLaunch (defaults: home=/usr/lib/jvm/java-8-openjdk-amd64/jre, options=, main=, suspend=true, quote=", vmexec=java)
+    com.sun.jdi.RawCommandLineLaunch (defaults: command=, quote=", address=)
+    com.sun.jdi.SocketAttach (defaults: timeout=, hostname=anoia.goeswhere.com, port=)
+    com.sun.jdi.SocketListen (defaults: timeout=, port=, localAddress=)
+    com.sun.jdi.ProcessAttach (defaults: pid=, timeout=)
+     */
+
     private static LaunchingConnector findLaunchingConnector() {
-        return (LaunchingConnector) Bootstrap.virtualMachineManager()
-                .allConnectors()
+        return Bootstrap.virtualMachineManager()
+                .launchingConnectors()
                 .stream()
                 .filter(c -> "com.sun.jdi.CommandLineLaunch".equals(c.name()))
                 .findFirst()
                 .get();
     }
 
-    private Map<String, Connector.Argument> connectorArguments(LaunchingConnector connector, String mainArgs) {
-        final Map<String, Connector.Argument> arguments = connector.defaultArguments();
-        final Connector.Argument mainArg = arguments.get("main");
-
-        if (mainArg == null) {
-            throw new Error("Bad launching connector");
-        }
-        mainArg.setValue(mainArgs);
-
-        if (watchFields) {
-            // We need a VM that supports watchpoints
-            Connector.Argument optionArg = arguments.get("options");
-            if (optionArg == null) {
-                throw new Error("Bad launching connector");
-            }
-            optionArg.setValue("-classic");
-        }
-        return arguments;
+    private static AttachingConnector findSocketAttachConnector() {
+        return Bootstrap.virtualMachineManager()
+                .attachingConnectors()
+                .stream()
+                .filter(c -> "com.sun.jdi.SocketAttach".equals(c.name()))
+                .findFirst()
+                .get();
     }
 }

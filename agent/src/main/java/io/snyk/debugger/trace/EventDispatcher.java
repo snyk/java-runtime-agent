@@ -47,6 +47,7 @@ public class EventDispatcher extends Thread {
                 break;
             }
         }
+        writer.flush();
     }
 
     /**
