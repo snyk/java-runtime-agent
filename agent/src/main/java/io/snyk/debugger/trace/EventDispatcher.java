@@ -1,5 +1,6 @@
 package io.snyk.debugger.trace;
 
+import com.sun.jdi.Method;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.*;
@@ -17,7 +18,8 @@ public class EventDispatcher extends Thread {
     private final EventVisitor handler = new EventVisitor() {
         @Override
         public void methodEntryEvent(MethodEntryEvent event) {
-            System.err.println(event.method().name());
+            final Method method = event.method();
+            System.err.println(method.declaringType() + "#" + method.name());
         }
     };
 
@@ -56,10 +58,12 @@ public class EventDispatcher extends Thread {
      */
     void addClassWatches(Iterable<String> classPatterns) {
         final EventRequestManager mgr = vm.eventRequestManager();
-        final MethodEntryRequest menr = mgr.createMethodEntryRequest();
-        classPatterns.forEach(menr::addClassFilter);
-        menr.setSuspendPolicy(EventRequest.SUSPEND_NONE);
-        menr.enable();
+        for (String pattern : classPatterns) {
+            final MethodEntryRequest menr = mgr.createMethodEntryRequest();
+            menr.addClassFilter(pattern);
+            menr.setSuspendPolicy(EventRequest.SUSPEND_NONE);
+            menr.enable();
+        }
     }
 
     private void dispatchEvent(Event event) {
