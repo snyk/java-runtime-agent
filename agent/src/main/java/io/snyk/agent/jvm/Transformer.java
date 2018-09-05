@@ -44,7 +44,8 @@ class Transformer implements ClassFileTransformer {
             // make sure they're shown.
             // note that this class name can be null, but.. what else can we do?
             classSource.addError("transform:" + className, t);
-            t.printStackTrace();
+            log.warn("transform failed: " + className);
+            log.stackTrace(t);
             throw t;
         }
     }

@@ -39,7 +39,7 @@ public class ClassSource {
         } catch (Exception | ZipError e) {
             log.warn("couldn't process an input");
             addError("source-info:" + className, e);
-            e.printStackTrace();
+            log.stackTrace(e);
         }
         return new ExtraInfo(URI.create("unknown-error:" + className), Collections.emptySet());
     }
@@ -127,8 +127,8 @@ public class ClassSource {
                         return locators;
                     } catch (IOException e) {
                         log.warn("looked like a jar file we couldn't process it: " + url);
+                        log.stackTrace(e);
                         addError("invald-jar:" + url, e);
-                        e.printStackTrace();
                         return Collections.emptySet();
                     }
                 });

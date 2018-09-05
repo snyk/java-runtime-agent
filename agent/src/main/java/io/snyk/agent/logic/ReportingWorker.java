@@ -39,6 +39,8 @@ public class ReportingWorker implements Runnable {
         this.log = log;
         this.config = config;
         this.classSource = classSource;
+
+        log.info("detected vmVendor: " + vmVendor);
     }
 
     @Override
@@ -55,8 +57,8 @@ public class ReportingWorker implements Runnable {
                 work(LandingZone.SEEN_SET.drain());
             } catch (Throwable t) {
                 log.warn("agent issue");
+                log.stackTrace(t);
                 classSource.addError("agent-send", t);
-                t.printStackTrace();
             }
             try {
                 Thread.sleep(4000);
@@ -87,7 +89,7 @@ public class ReportingWorker implements Runnable {
             conn.disconnect();
         } catch (IOException e) {
             log.warn("reporting failed");
-            e.printStackTrace();
+            log.stackTrace(e);
         }
     }
 

@@ -16,19 +16,26 @@ public class Config {
     public final List<Filter> filters;
     final String urlPrefix;
     public final boolean trackClassLoading;
+    public final boolean debugLoggingEnabled;
 
-    Config(String projectId, List<Filter> filters, String urlPrefix, boolean trackClassLoading) {
+    Config(String projectId,
+           List<Filter> filters,
+           String urlPrefix,
+           boolean trackClassLoading,
+           boolean debugLoggingEnabled) {
         this.projectId = null != projectId ? projectId : "no-project-id-provided";
         this.filters = filters;
         this.urlPrefix = null != urlPrefix ? urlPrefix : "http://localhost:8000";
         this.trackClassLoading = trackClassLoading;
+        this.debugLoggingEnabled = debugLoggingEnabled;
     }
 
     public static Config fromFile(String path) {
         try {
+            Log.loading("loading config from: " + path);
             return fromLines(Files.readAllLines(new File(path).toPath()));
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.loading("error reading config file");
             throw new IllegalStateException(e);
         }
     }
@@ -38,6 +45,7 @@ public class Config {
         Map<String, Filter.Builder> filters = new HashMap<>();
         String urlPrefix = null;
         boolean trackClassLoading = false;
+        boolean debugLoggingEnabled = false;
 
         // this looks awfully like a .properties file. Maybe it could be a .properties file?
         // .properties is awful at unicode and multi-value, but we probably don't care
@@ -64,6 +72,11 @@ public class Config {
 
             if ("trackClassLoading".equals(key)) {
                 trackClassLoading = Boolean.parseBoolean(value);
+                continue;
+            }
+
+            if ("debugLoggingEnabled".equals(key)) {
+                debugLoggingEnabled = Boolean.parseBoolean(value);
                 continue;
             }
 
@@ -106,6 +119,6 @@ public class Config {
 
         return new Config(projectId,
                 filters.values().stream().map(Filter.Builder::build).collect(Collectors.toList()),
-                urlPrefix, trackClassLoading);
+                urlPrefix, trackClassLoading, debugLoggingEnabled);
     }
 }

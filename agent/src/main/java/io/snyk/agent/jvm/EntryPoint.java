@@ -15,13 +15,15 @@ class EntryPoint {
     public static void premain(
             String agentArguments,
             Instrumentation instrumentation) throws UnmodifiableClassException {
+        Log.loading("startup");
+
         if (null == agentArguments || !agentArguments.startsWith("file:")) {
             throw new IllegalStateException("expected file:[path to config file]");
         }
 
-        final Log log = new Log();
-
         final Config config = Config.fromFile(agentArguments.substring("file:".length()));
+
+        final Log log = new Log(config.debugLoggingEnabled);
 
         log.info("loading config complete, projectId:" + config.projectId);
 
