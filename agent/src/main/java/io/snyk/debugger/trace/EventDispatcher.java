@@ -1,6 +1,7 @@
 package io.snyk.debugger.trace;
 
 import com.sun.jdi.Method;
+import com.sun.jdi.ReferenceType;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.*;
@@ -9,17 +10,30 @@ import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.MethodEntryRequest;
 
 import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
 
 public class EventDispatcher extends Thread {
 
     private final VirtualMachine vm;   // Running VM
     private final PrintWriter writer;  // Where output goes
 
+    private final Map<String, MethodEntryRequest> byClass = new HashMap<>();
+
     private final EventVisitor handler = new EventVisitor() {
         @Override
         public void methodEntryEvent(MethodEntryEvent event) {
             final Method method = event.method();
-            System.err.println(method.declaringType() + "#" + method.name());
+            final ReferenceType dt = method.declaringType();
+            final String className = dt.name();
+            final MethodEntryRequest menr = byClass.get(className);
+            if (null == menr) {
+                System.err.println("saw entry in class " + className + " but we didn't ask for it");
+                return;
+            }
+
+            vm.eventRequestManager().deleteEventRequest(menr);
+            System.err.println(dt + "#" + method.name());
         }
     };
 
@@ -60,9 +74,13 @@ public class EventDispatcher extends Thread {
         final EventRequestManager mgr = vm.eventRequestManager();
         for (String pattern : classPatterns) {
             final MethodEntryRequest menr = mgr.createMethodEntryRequest();
+            if (pattern.contains("*")) {
+                throw new IllegalStateException("wildcards not currently supported: " + pattern);
+            }
             menr.addClassFilter(pattern);
             menr.setSuspendPolicy(EventRequest.SUSPEND_NONE);
             menr.enable();
+            byClass.put(pattern, menr);
         }
     }
 
