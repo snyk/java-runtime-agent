@@ -13,5 +13,3 @@
  * MethodEntry performance is worse than expected. Way worse.
  
 Currently seeing a web request to goof balloon from ~40ms to ~234s (4 minutes).
-
-...and it's not even reporting the right data.
