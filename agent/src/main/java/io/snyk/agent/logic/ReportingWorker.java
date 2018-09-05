@@ -11,7 +11,6 @@ import java.lang.management.RuntimeMXBean;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
-import java.nio.charset.CharsetEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.Instant;
@@ -109,7 +108,39 @@ public class ReportingWorker implements Runnable {
         Json.appendString(msg, vmVendor);
         msg.append(",\"version\":");
         Json.appendString(msg, vmVersion);
-        msg.append(",\"loadedSources\":{\n");
+        msg.append(",\"filters\":[\n");
+        config.filters.forEach(filter -> {
+            msg.append("{\"name\":");
+            Json.appendString(msg, filter.name);
+            filter.artifact.ifPresent(artifact -> {
+                msg.append(",\"artifact\":");
+                Json.appendString(msg, artifact);
+            });
+            filter.version.ifPresent(version -> {
+                msg.append(",\"version\":");
+                Json.appendString(msg, version.version.toString());
+
+                // TODO: this isn't great, in future this will allow other things...
+                msg.append(",\"versionDirection\":");
+                msg.append(version.direction);
+            });
+            msg.append(",\"paths\":[");
+            filter.pathFilters.forEach(pathFilter -> {
+                msg.append("{\"className\":");
+                Json.appendString(msg, pathFilter.className);
+                pathFilter.methodName.ifPresent(methodName -> {
+                    msg.append(",\"methodName\":");
+                    Json.appendString(msg, methodName);
+                });
+                msg.append(",\"classNameIsPrefix\":");
+                msg.append(pathFilter.classNameIsPrefix);
+                msg.append("},");
+            });
+            trimRightCommaSpacing(msg);
+            msg.append("]},");
+        });
+        trimRightCommaSpacing(msg);
+        msg.append("],\"loadedSources\":{\n");
 
         classSource.all().entrySet().stream().sorted(Comparator.comparing(Map.Entry::getKey)).forEachOrdered(entry -> {
             Json.appendString(msg, entry.getKey().toString());

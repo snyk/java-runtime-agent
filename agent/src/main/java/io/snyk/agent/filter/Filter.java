@@ -10,14 +10,14 @@ public class Filter {
     /**
      * user specified name for this filter, we don't care
      */
-    private final String name;
+    public final String name;
 
     /**
      * the maven artifact in `org.apache.commons:commons-lang` format
      */
-    private final Optional<String> artifact;
-    private final Optional<VersionFilter> version;
-    private final List<PathFilter> pathFilters;
+    public final Optional<String> artifact;
+    public final Optional<VersionFilter> version;
+    public final List<PathFilter> pathFilters;
 
     public Filter(String name,
                   Optional<String> artifact,

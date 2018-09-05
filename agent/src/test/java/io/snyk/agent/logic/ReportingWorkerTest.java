@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Test;
 
 import java.io.StringReader;
 import java.net.URI;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.function.Consumer;
 
@@ -19,20 +21,32 @@ class ReportingWorkerTest {
 
     private static final Config NULL_CONFIG = new Config(null, Collections.emptyList(), null);
 
-    private JsonElement toJson(Consumer<UseCounter.Drain> drainer) {
+    private JsonElement onlyDrain(Consumer<UseCounter.Drain> drainer) {
         return toJson(drainer, _jarInfoMap -> {
-        });
+        }, Collections.emptyList());
+    }
+
+    private JsonElement onlyJar(Consumer<ClassSource> jarInfoAdder) {
+        return toJson(_drainer -> {
+        }, jarInfoAdder, Collections.emptyList());
+    }
+
+    private JsonElement onlyConfig(Collection<String> configLines) {
+        return toJson(_drainer -> {
+        }, _jarInfoAdder -> {
+        }, configLines);
     }
 
     private JsonElement toJson(Consumer<UseCounter.Drain> drainer,
-                               Consumer<ClassSource> jarInfoAdder) {
+                               Consumer<ClassSource> jarInfoAdder,
+                               Collection<String> configLines) {
         final UseCounter.Drain drain = new UseCounter.Drain();
         drainer.accept(drain);
         final ClassSource classSource = new ClassSource(new Log());
         jarInfoAdder.accept(classSource);
 
         final String json = new ReportingWorker(new Log(),
-                NULL_CONFIG,
+                Config.fromLines(configLines),
                 classSource).serialiseState(drain);
 
         System.err.println(json);
@@ -46,62 +60,61 @@ class ReportingWorkerTest {
 
     @Test
     void serialiseWeirdListSizesCorrectly() {
-        toJson(drain -> {
-        });
-        toJson(drain -> drain.methodEntries.add("foo:bar:baz:quux"));
-        toJson(drain -> {
+        onlyDrain(drain -> drain.methodEntries.add("foo:bar:baz:quux"));
+        onlyDrain(drain -> {
             drain.methodEntries.add("foo:bar:baz:quux");
             drain.methodEntries.add("bar:bar:baz:quux");
         });
 
-        toJson(drain -> drain.loadClasses.put("foo", Sets.newHashSet()));
-        toJson(drain -> {
+        onlyDrain(drain -> drain.loadClasses.put("foo", Sets.newHashSet()));
+        onlyDrain(drain -> {
             drain.loadClasses.put("foo", Sets.newHashSet());
             drain.loadClasses.put("bar", Sets.newHashSet());
         });
 
-        toJson(drain -> {
+        onlyDrain(drain -> {
             drain.loadClasses.put("foo", Sets.newHashSet("foo"));
         });
-        toJson(drain -> {
+        onlyDrain(drain -> {
             drain.loadClasses.put("foo", Sets.newHashSet("foo", "bar"));
         });
-        toJson(drain -> {
-                },
-                classSource -> {
-                    classSource.addError("foo", new Exception());
-                });
-        toJson(drain -> {
-                },
-                classSource -> {
-                    classSource.addError("foo", new Exception());
-                    classSource.addError("bar", new Exception());
-                });
-        toJson(drain -> {
-                },
-                classSource -> {
-                    classSource.jarInfoMap.put(URI.create("file://tmp/whatever"), Sets.newHashSet());
-                });
-        toJson(drain -> {
-                },
-                classSource -> {
-                    classSource.jarInfoMap.put(URI.create("file://tmp/whatever"),
-                            Sets.newHashSet("maven:foo.bar:baz:12"));
-                });
-        toJson(drain -> {
-                },
-                classSource -> {
-                    classSource.jarInfoMap.put(URI.create("file://tmp/whatever"),
-                            Sets.newHashSet("maven:foo.bar:baz:7.17", "maven:ooh.aah:baby:3.1.1"));
-                });
-        toJson(drain -> {
-                },
-                classSource -> {
-                    classSource.jarInfoMap.put(URI.create("file://tmp/whatever"),
-                            Sets.newHashSet("maven:foo.bar:baz:12"));
-                    classSource.jarInfoMap.put(URI.create("file://tmp/other"),
-                            Sets.newHashSet("maven:foo.bar:quux:13"));
-                });
+        onlyJar(classSource -> {
+            classSource.addError("foo", new Exception());
+        });
+        onlyJar(classSource -> {
+            classSource.addError("foo", new Exception());
+            classSource.addError("bar", new Exception());
+        });
+        onlyJar(classSource -> {
+            classSource.jarInfoMap.put(URI.create("file://tmp/whatever"), Sets.newHashSet());
+        });
+        onlyJar(classSource -> {
+            classSource.jarInfoMap.put(URI.create("file://tmp/whatever"),
+                    Sets.newHashSet("maven:foo.bar:baz:12"));
+        });
+        onlyJar(classSource -> {
+            classSource.jarInfoMap.put(URI.create("file://tmp/whatever"),
+                    Sets.newHashSet("maven:foo.bar:baz:7.17", "maven:ooh.aah:baby:3.1.1"));
+        });
+        onlyJar(classSource -> {
+            classSource.jarInfoMap.put(URI.create("file://tmp/whatever"),
+                    Sets.newHashSet("maven:foo.bar:baz:12"));
+            classSource.jarInfoMap.put(URI.create("file://tmp/other"),
+                    Sets.newHashSet("maven:foo.bar:quux:13"));
+        });
+
+        onlyConfig(Collections.emptyList());
+        onlyConfig(Arrays.asList(
+                "filter.jakarta-multipart.artifact = maven:org.apache.struts:struts2-core",
+                "filter.jakarta-multipart.paths = org/apache/struts2/dispatcher/multipart/JakartaMultiPartRequest#buildErrorMessage"
+        ));
+
+        onlyConfig(Arrays.asList(
+                "filter.foo.paths = foo/**",
+                "filter.bar.paths = bar/**#baz",
+                "filter.bar.version = <1.3.3",
+                "filter.bar.artifact = maven:foo:bar"
+        ));
     }
 
     @Test

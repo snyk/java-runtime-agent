@@ -9,8 +9,8 @@ import java.util.function.Predicate;
  */
 public class VersionFilter implements Predicate<String> {
 
-    private final ComparableVersion version;
-    private final int direction;
+    public final ComparableVersion version;
+    public final int direction;
 
     private VersionFilter(ComparableVersion version, int direction) {
         this.version = version;

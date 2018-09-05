@@ -4,9 +4,9 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 public class PathFilter implements Predicate<String> {
-    private final String className;
-    private final boolean classNameIsPrefix;
-    private final Optional<String> methodName;
+    public final String className;
+    public final boolean classNameIsPrefix;
+    public final Optional<String> methodName;
 
     private PathFilter(String className, boolean classNameIsPrefix, Optional<String> methodName) {
         this.className = className;
