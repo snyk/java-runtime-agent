@@ -67,7 +67,7 @@ class Transformer implements ClassFileTransformer {
             return null;
         }
 
-        return new Rewriter(LandingZone.class, LandingZone.SEEN_SET::add, info.toLocation())
+        return new Rewriter(LandingZone.class, LandingZone.SEEN_SET::add, info.toLocation(), config.trackClassLoading)
                 .rewrite(reader);
     }
 

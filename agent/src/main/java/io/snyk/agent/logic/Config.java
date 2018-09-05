@@ -14,12 +14,14 @@ import java.util.stream.Collectors;
 public class Config {
     public final String projectId;
     public final List<Filter> filters;
-    public final String urlPrefix;
+    final String urlPrefix;
+    public final boolean trackClassLoading;
 
-    Config(String projectId, List<Filter> filters, String urlPrefix) {
+    Config(String projectId, List<Filter> filters, String urlPrefix, boolean trackClassLoading) {
         this.projectId = null != projectId ? projectId : "no-project-id-provided";
         this.filters = filters;
         this.urlPrefix = null != urlPrefix ? urlPrefix : "http://localhost:8000";
+        this.trackClassLoading = trackClassLoading;
     }
 
     public static Config fromFile(String path) {
@@ -35,6 +37,7 @@ public class Config {
         String projectId = null;
         Map<String, Filter.Builder> filters = new HashMap<>();
         String urlPrefix = null;
+        boolean trackClassLoading = false;
 
         // this looks awfully like a .properties file. Maybe it could be a .properties file?
         // .properties is awful at unicode and multi-value, but we probably don't care
@@ -56,6 +59,11 @@ public class Config {
 
             if ("projectId".equals(key)) {
                 projectId = value;
+                continue;
+            }
+
+            if ("trackClassLoading".equals(key)) {
+                trackClassLoading = Boolean.parseBoolean(value);
                 continue;
             }
 
@@ -98,6 +106,6 @@ public class Config {
 
         return new Config(projectId,
                 filters.values().stream().map(Filter.Builder::build).collect(Collectors.toList()),
-                urlPrefix);
+                urlPrefix, trackClassLoading);
     }
 }

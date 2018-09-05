@@ -19,8 +19,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ReportingWorkerTest {
 
-    private static final Config NULL_CONFIG = new Config(null, Collections.emptyList(), null);
-
     private JsonElement onlyDrain(Consumer<UseCounter.Drain> drainer) {
         return toJson(drainer, _jarInfoMap -> {
         }, Collections.emptyList());

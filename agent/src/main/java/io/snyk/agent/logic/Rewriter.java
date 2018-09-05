@@ -15,14 +15,16 @@ public class Rewriter {
     private final String ourInternalName;
     private final ToIntFunction<String> allocateNewId;
     private final String sourceLocation;
+    private final boolean trackClassLoading;
 
     // This Class<?> must implement the same "static interface" as LandingZone.class.
     // There's no way to express this in Java. The marked public static methods must
     // exist.
-    public Rewriter(Class<?> tracker, ToIntFunction<String> allocateNewId, String sourceLocation) {
+    public Rewriter(Class<?> tracker, ToIntFunction<String> allocateNewId, String sourceLocation, boolean trackClassLoading) {
         this.ourInternalName = tracker.getName().replace('.', '/');
         this.allocateNewId = allocateNewId;
         this.sourceLocation = sourceLocation;
+        this.trackClassLoading = trackClassLoading;
     }
 
     public byte[] rewrite(ClassReader reader) {
@@ -42,7 +44,9 @@ public class Rewriter {
         final String tag = clazzInternalName + ":" + method.name +
                 method.desc + // using desc, not signature, as it's always available
                 ":" + sourceLocation;
-        addInspectionOfLoadClassCalls(method, tag);
+        if (trackClassLoading) {
+            addInspectionOfLoadClassCalls(method, tag);
+        }
         addInspectionOfMethodEntry(method, tag);
     }
 

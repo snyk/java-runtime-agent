@@ -37,13 +37,13 @@ class RewritePerformance {
 
     @Benchmark
     public byte[] justRewrite() {
-        return new Rewriter(LandingZone.class, LandingZone.SEEN_SET::add, "13371337:tests")
+        return new Rewriter(LandingZone.class, LandingZone.SEEN_SET::add, "13371337:tests", true)
                 .rewrite(classReaderBlackHole);
     }
 
     @Benchmark
     public byte[] loadBoth() {
-        return new Rewriter(LandingZone.class, LandingZone.SEEN_SET::add, "13371337:tests")
+        return new Rewriter(LandingZone.class, LandingZone.SEEN_SET::add, "13371337:tests", true)
                 .rewrite(new ClassReader(classBlackHole));
     }
 

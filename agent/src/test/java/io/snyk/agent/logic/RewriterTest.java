@@ -16,7 +16,7 @@ class RewriterTest {
     @Test
     void smokeTest() throws Exception {
         final String name = TestVictim.class.getName();
-        final byte[] bytes = new Rewriter(TestTracker.class, TestTracker.SEEN_SET::add, TEST_LOCATION)
+        final byte[] bytes = new Rewriter(TestTracker.class, TestTracker.SEEN_SET::add, TEST_LOCATION, true)
                 .rewrite(new ClassReader(name));
         final Class<?> clazz = new DefinerLoader().define(name, bytes);
         final Object instance = clazz.newInstance();
