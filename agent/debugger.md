@@ -21,6 +21,7 @@ target (afaik).
     which can load libraries, and be debugged,
  * We can crash without messing anything up (afaik).
  * Dynamic disabling restores original speed (afaik).
+ * Can disconnect and reconnect at runtime.
  
 ### Disadvantages
  
@@ -61,5 +62,3 @@ Without debugger, 24, ab:
 Oh good. It's faster with the instrumentation.
 
 Oh good.
-
-What now, Jesus?

@@ -8,53 +8,51 @@ import com.sun.jdi.event.*;
 import com.sun.jdi.request.ClassPrepareRequest;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
+import io.snyk.agent.filter.Filter;
+import io.snyk.agent.filter.PathFilter;
+import io.snyk.agent.logic.Config;
 
-import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+import java.util.Random;
 
 public class EventDispatcher extends Thread {
 
-    private final VirtualMachine vm;   // Running VM
-    private final PrintWriter writer;  // Where output goes
+    private final VirtualMachine vm;
 
-    private final Map<String, ClassPrepareRequest> byClass = new HashMap<>();
+    private final Config config;
 
     private final EventVisitor handler = new EventVisitor() {
-        @Override
-        public void classPrepareEvent(ClassPrepareEvent event) {
-            final EventRequestManager mgr = vm.eventRequestManager();
-            event.referenceType()
-                    // allMethods would be useful, but we clearly don't want java.lang.Object#<init>.
-                    .methods()
-                    .stream()
-                    .filter(method -> !method.isNative() && !method.isAbstract() && !method.isBridge())
-                    .forEach(method -> mgr.createBreakpointRequest(method.location()).enable());
-        }
-
         @Override
         public void breakpointEvent(BreakpointEvent event) {
             final Location location = event.location();
             final ReferenceType dt = location.declaringType();
             System.err.println(dt + "#" + location.method().name());
+            vm.eventRequestManager().deleteEventRequest(event.request());
         }
     };
 
     private boolean connectedToVm = true;
 
-    EventDispatcher(VirtualMachine vm, PrintWriter writer) {
+    EventDispatcher(VirtualMachine vm, Config config) {
         super("event-dispatcher");
         this.vm = vm;
-        this.writer = writer;
+        this.config = config;
     }
 
     @Override
     public void run() {
-        EventQueue queue = vm.eventQueue();
+        final EventQueue queue = vm.eventQueue();
         while (connectedToVm) {
             try {
-                EventSet eventSet = queue.remove();
-                EventIterator it = eventSet.eventIterator();
+                final EventSet eventSet = queue.remove(4 * 1000);
+                if (null == eventSet) {
+
+                    System.err.println("adding watches...");
+                    doAddWatches();
+
+                    continue;
+                }
+                final EventIterator it = eventSet.eventIterator();
                 while (it.hasNext()) {
                     dispatchEvent(it.nextEvent());
                 }
@@ -66,24 +64,30 @@ public class EventDispatcher extends Thread {
                 break;
             }
         }
-        writer.flush();
     }
 
-    /**
-     * Create the desired event requests, and enable
-     * them so that we will get events.
-     */
-    void addClassWatches(Iterable<String> classPatterns) {
+    private void doAddWatches() {
         final EventRequestManager mgr = vm.eventRequestManager();
-        for (String pattern : classPatterns) {
-            final ClassPrepareRequest prep = mgr.createClassPrepareRequest();
-            if (pattern.contains("*")) {
-                throw new IllegalStateException("wildcards not currently supported: " + pattern);
+        mgr.deleteAllBreakpoints();
+        for (Filter filter : config.filters) {
+            for (PathFilter pathFilter : filter.pathFilters) {
+                final String className = pathFilter.className.replace('/', '.');
+                if (className.contains("*")) {
+                    throw new IllegalStateException("not currently supported: " + className);
+                }
+                final List<ReferenceType> referenceTypes = vm.classesByName(className);
+                if (null == referenceTypes) {
+                    // TODO: probably not reachable
+                    continue;
+                }
+
+                for (ReferenceType referenceType : referenceTypes) {
+                    referenceType.methodsByName(pathFilter.methodName.get())
+                            .stream()
+                            .filter(method -> !(method.isNative() || method.isAbstract() || method.isBridge()))
+                            .forEach(method -> mgr.createBreakpointRequest(method.location()).enable());
+                }
             }
-            prep.addClassFilter(pattern);
-            prep.setSuspendPolicy(EventRequest.SUSPEND_NONE);
-            prep.enable();
-            byClass.put(pattern, prep);
         }
     }
 

@@ -3,15 +3,16 @@ package io.snyk.debugger.trace;
 import com.sun.jdi.Bootstrap;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.connect.*;
+import io.snyk.agent.logic.Config;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Map;
 
 public class Trace {
 
     private final VirtualMachine vm;
+    private final Config config;
 
     private Thread outThread;
     private Thread errThread;
@@ -20,10 +21,13 @@ public class Trace {
     private int debugTraceMode = 0;
 
     public static void main(String[] args) throws Exception {
-        new Trace(Integer.parseInt(args[0])).run(new PrintWriter(System.err));
+        final Config config = Config.fromFile(args[0]);
+        final int port = Integer.parseInt(args[1]);
+        new Trace(port, config).run();
     }
 
-    private Trace(String arg) throws IllegalConnectorArgumentsException, VMStartException, IOException {
+    private Trace(String arg, Config config) throws IllegalConnectorArgumentsException, VMStartException, IOException {
+        this.config = config;
         final LaunchingConnector connector = findLaunchingConnector();
         final Map<String, Connector.Argument> arguments = connector.defaultArguments();
 
@@ -39,7 +43,8 @@ public class Trace {
         vm = connector.launch(arguments);
     }
 
-    private Trace(int port) throws IOException, IllegalConnectorArgumentsException {
+    private Trace(int port, Config config) throws IOException, IllegalConnectorArgumentsException {
+        this.config = config;
         final AttachingConnector connector = findSocketAttachConnector();
 
         final Map<String, Connector.Argument> arguments = connector.defaultArguments();
@@ -63,14 +68,10 @@ public class Trace {
         vm = connector.attach(arguments);
     }
 
-    private void run(PrintWriter writer) {
+    private void run() {
         vm.setDebugTraceMode(debugTraceMode);
 
-        final EventDispatcher eventDispatcher = new EventDispatcher(vm, writer);
-        eventDispatcher.addClassWatches(Arrays.asList(
-                "org.apache.struts2.dispatcher.multipart.JakartaMultiPartRequest",
-                "com.google.common.collect.Lists"
-        ));
+        final EventDispatcher eventDispatcher = new EventDispatcher(vm, config);
 
         eventDispatcher.start();
         if (false) {
