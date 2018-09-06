@@ -1,13 +1,13 @@
 package io.snyk.debugger.trace;
 
-import com.sun.jdi.Method;
+import com.sun.jdi.Location;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.*;
+import com.sun.jdi.request.ClassPrepareRequest;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
-import com.sun.jdi.request.MethodEntryRequest;
 
 import java.io.PrintWriter;
 import java.util.HashMap;
@@ -18,22 +18,25 @@ public class EventDispatcher extends Thread {
     private final VirtualMachine vm;   // Running VM
     private final PrintWriter writer;  // Where output goes
 
-    private final Map<String, MethodEntryRequest> byClass = new HashMap<>();
+    private final Map<String, ClassPrepareRequest> byClass = new HashMap<>();
 
     private final EventVisitor handler = new EventVisitor() {
         @Override
-        public void methodEntryEvent(MethodEntryEvent event) {
-            final Method method = event.method();
-            final ReferenceType dt = method.declaringType();
-            final String className = dt.name();
-            final MethodEntryRequest menr = byClass.get(className);
-            if (null == menr) {
-                System.err.println("saw entry in class " + className + " but we didn't ask for it");
-                return;
-            }
+        public void classPrepareEvent(ClassPrepareEvent event) {
+            final EventRequestManager mgr = vm.eventRequestManager();
+            event.referenceType()
+                    // allMethods would be useful, but we clearly don't want java.lang.Object#<init>.
+                    .methods()
+                    .stream()
+                    .filter(method -> !method.isNative() && !method.isAbstract() && !method.isBridge())
+                    .forEach(method -> mgr.createBreakpointRequest(method.location()).enable());
+        }
 
-            vm.eventRequestManager().deleteEventRequest(menr);
-            System.err.println(dt + "#" + method.name());
+        @Override
+        public void breakpointEvent(BreakpointEvent event) {
+            final Location location = event.location();
+            final ReferenceType dt = location.declaringType();
+            System.err.println(dt + "#" + location.method().name());
         }
     };
 
@@ -73,14 +76,14 @@ public class EventDispatcher extends Thread {
     void addClassWatches(Iterable<String> classPatterns) {
         final EventRequestManager mgr = vm.eventRequestManager();
         for (String pattern : classPatterns) {
-            final MethodEntryRequest menr = mgr.createMethodEntryRequest();
+            final ClassPrepareRequest prep = mgr.createClassPrepareRequest();
             if (pattern.contains("*")) {
                 throw new IllegalStateException("wildcards not currently supported: " + pattern);
             }
-            menr.addClassFilter(pattern);
-            menr.setSuspendPolicy(EventRequest.SUSPEND_NONE);
-            menr.enable();
-            byClass.put(pattern, menr);
+            prep.addClassFilter(pattern);
+            prep.setSuspendPolicy(EventRequest.SUSPEND_NONE);
+            prep.enable();
+            byClass.put(pattern, prep);
         }
     }
 
@@ -89,6 +92,8 @@ public class EventDispatcher extends Thread {
             handler.exceptionEvent((ExceptionEvent) event);
         } else if (event instanceof ModificationWatchpointEvent) {
             handler.fieldWatchEvent((ModificationWatchpointEvent) event);
+        } else if (event instanceof BreakpointEvent) {
+            handler.breakpointEvent((BreakpointEvent) event);
         } else if (event instanceof MethodEntryEvent) {
             handler.methodEntryEvent((MethodEntryEvent) event);
         } else if (event instanceof MethodExitEvent) {

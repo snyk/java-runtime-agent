@@ -32,4 +32,7 @@ interface EventVisitor {
 
     default void vmDisconnectEvent(VMDisconnectEvent event) {
     }
+
+    default void breakpointEvent(BreakpointEvent event) {
+    }
 }
