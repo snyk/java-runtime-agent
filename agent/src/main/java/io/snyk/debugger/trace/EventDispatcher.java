@@ -2,14 +2,17 @@ package io.snyk.debugger.trace;
 
 import com.sun.jdi.*;
 import com.sun.jdi.event.*;
+import com.sun.jdi.request.BreakpointRequest;
 import com.sun.jdi.request.ClassPrepareRequest;
 import com.sun.jdi.request.EventRequestManager;
+import com.sun.jdi.request.MethodEntryRequest;
 import io.snyk.agent.filter.Filter;
 import io.snyk.agent.filter.PathFilter;
 import io.snyk.agent.logic.Config;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class EventDispatcher extends Thread {
 
@@ -17,36 +20,28 @@ public class EventDispatcher extends Thread {
 
     private final Config config;
 
+    private final AtomicBoolean collecting = new AtomicBoolean();
+
     private final EventVisitor handler = new EventVisitor() {
         @Override
-        public void classPrepareEvent(ClassPrepareEvent event) {
-            final ThreadReference thread = event.thread();
-            final ReferenceType dt = event.referenceType();
-            final ClassLoaderReference loader = dt.classLoader();
-            if (null == loader) {
-                System.err.println(dt + " has no classloader");
+        public void methodEntryEvent(MethodEntryEvent event) {
+            vm.eventRequestManager().deleteEventRequest(event.request());
+
+            if (collecting.get()) {
                 return;
             }
-            final List<Method> getResourceMethods = loader.referenceType()
-                    .methodsByName("getResource", "(Ljava/lang/String;)Ljava/net/URL;");
-            final Method getResource = getResourceMethods.get(0);
-            try {
-                System.err.println("going to fetch url for " + dt);
-                final ObjectReference maybeUrl = (ObjectReference) loader.invokeMethod(thread,
-                        getResource,
-                        Collections.singletonList(vm.mirrorOf(dt.name())),
-                        0);
-                final List<Method> toStringMethods = maybeUrl.referenceType()
-                        .methodsByName("toString", "()Ljava/lang/String;");
-                final Method toString = toStringMethods.get(0);
-                final StringReference maybeString = (StringReference) maybeUrl.invokeMethod(thread,
-                        toString,
-                        Collections.emptyList(),
-                        0);
-                System.err.println("url for " + dt + ": " + maybeString.value());
-            } catch (Exception e) {
-                e.printStackTrace();
+
+            collecting.set(true);
+            System.err.println("a method was entered");
+
+            final ThreadReference thread = event.thread();
+
+            final long start = System.currentTimeMillis();
+            for (ReferenceType dt : vm.allClasses()) {
+                gatherClassInfo(dt, thread);
             }
+            System.err.println(System.currentTimeMillis() - start);
+            collecting.set(false);
         }
 
         @Override
@@ -58,6 +53,51 @@ public class EventDispatcher extends Thread {
         }
     };
 
+    private void gatherClassInfo(ReferenceType dt, ThreadReference thread) {
+        final ClassLoaderReference loader = dt.classLoader();
+        if (null == loader) {
+//            System.err.println(dt + " has no classloader");
+            return;
+        }
+
+        final List<Method> getResourceMethods = loader.referenceType()
+                .methodsByName("getResource", "(Ljava/lang/String;)Ljava/net/URL;");
+        final Method getResource = getResourceMethods.get(0);
+        try {
+            checkNotNull(loader);
+            checkNotNull(thread);
+            checkNotNull(getResource);
+            checkNotNull(dt);
+            checkNotNull(dt.name());
+
+            final ObjectReference maybeUrl = (ObjectReference) loader.invokeMethod(thread,
+                    getResource,
+                    Collections.singletonList(vm.mirrorOf(dt.name().replace('.', '/') + ".class")),
+                    0);
+
+            if (null == maybeUrl) {
+                return;
+            }
+
+            final List<Method> toStringMethods = maybeUrl.referenceType()
+                    .methodsByName("toString", "()Ljava/lang/String;");
+            final Method toString = toStringMethods.get(0);
+            final StringReference maybeString = (StringReference) maybeUrl.invokeMethod(thread,
+                    toString,
+                    Collections.emptyList(),
+                    0);
+            System.err.println("url for " + dt + ": " + maybeString.value());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void checkNotNull(Object o) {
+        if (null == o) {
+            throw new NullPointerException();
+        }
+    }
+
     private boolean connectedToVm = true;
 
     EventDispatcher(VirtualMachine vm, Config config) {
@@ -67,11 +107,14 @@ public class EventDispatcher extends Thread {
 
         final ClassPrepareRequest allClasses = vm.eventRequestManager().createClassPrepareRequest();
         allClasses.addClassExclusionFilter("java.*");
+        allClasses.setSuspendPolicy(ClassPrepareRequest.SUSPEND_EVENT_THREAD);
         allClasses.enable();
     }
 
     @Override
     public void run() {
+        doAddWatches();
+
         final EventQueue queue = vm.eventQueue();
         while (connectedToVm) {
             try {
@@ -100,6 +143,14 @@ public class EventDispatcher extends Thread {
     private void doAddWatches() {
         final EventRequestManager mgr = vm.eventRequestManager();
         mgr.deleteAllBreakpoints();
+
+        {
+            // ALL THE THINGS
+            final MethodEntryRequest men = mgr.createMethodEntryRequest();
+            men.setSuspendPolicy(BreakpointRequest.SUSPEND_EVENT_THREAD);
+            men.enable();
+        }
+
         for (Filter filter : config.filters) {
             for (PathFilter pathFilter : filter.pathFilters) {
                 final String className = pathFilter.className.replace('/', '.');
@@ -116,7 +167,11 @@ public class EventDispatcher extends Thread {
                     referenceType.methodsByName(pathFilter.methodName.get())
                             .stream()
                             .filter(method -> !(method.isNative() || method.isAbstract() || method.isBridge()))
-                            .forEach(method -> mgr.createBreakpointRequest(method.location()).enable());
+                            .forEach(method -> {
+                                final BreakpointRequest req = mgr.createBreakpointRequest(method.location());
+                                req.setSuspendPolicy(BreakpointRequest.SUSPEND_NONE);
+                                req.enable();
+                            });
                 }
             }
         }
