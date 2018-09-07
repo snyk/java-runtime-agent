@@ -29,6 +29,7 @@ target (afaik).
  * Some cases where we could miss something,
     but probably fewer than the instrumentation case.
  * MethodEntry performance is worse than expected. Way worse.
+ * Agent can cause deadlocks, which will hang the target forever.
 
 
 With debugger, 24, ab:

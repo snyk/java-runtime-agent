@@ -1,19 +1,15 @@
 package io.snyk.debugger.trace;
 
-import com.sun.jdi.Location;
-import com.sun.jdi.ReferenceType;
-import com.sun.jdi.VMDisconnectedException;
-import com.sun.jdi.VirtualMachine;
+import com.sun.jdi.*;
 import com.sun.jdi.event.*;
 import com.sun.jdi.request.ClassPrepareRequest;
-import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
 import io.snyk.agent.filter.Filter;
 import io.snyk.agent.filter.PathFilter;
 import io.snyk.agent.logic.Config;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
 public class EventDispatcher extends Thread {
 
@@ -22,6 +18,37 @@ public class EventDispatcher extends Thread {
     private final Config config;
 
     private final EventVisitor handler = new EventVisitor() {
+        @Override
+        public void classPrepareEvent(ClassPrepareEvent event) {
+            final ThreadReference thread = event.thread();
+            final ReferenceType dt = event.referenceType();
+            final ClassLoaderReference loader = dt.classLoader();
+            if (null == loader) {
+                System.err.println(dt + " has no classloader");
+                return;
+            }
+            final List<Method> getResourceMethods = loader.referenceType()
+                    .methodsByName("getResource", "(Ljava/lang/String;)Ljava/net/URL;");
+            final Method getResource = getResourceMethods.get(0);
+            try {
+                System.err.println("going to fetch url for " + dt);
+                final ObjectReference maybeUrl = (ObjectReference) loader.invokeMethod(thread,
+                        getResource,
+                        Collections.singletonList(vm.mirrorOf(dt.name())),
+                        0);
+                final List<Method> toStringMethods = maybeUrl.referenceType()
+                        .methodsByName("toString", "()Ljava/lang/String;");
+                final Method toString = toStringMethods.get(0);
+                final StringReference maybeString = (StringReference) maybeUrl.invokeMethod(thread,
+                        toString,
+                        Collections.emptyList(),
+                        0);
+                System.err.println("url for " + dt + ": " + maybeString.value());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
         @Override
         public void breakpointEvent(BreakpointEvent event) {
             final Location location = event.location();
@@ -37,6 +64,10 @@ public class EventDispatcher extends Thread {
         super("event-dispatcher");
         this.vm = vm;
         this.config = config;
+
+        final ClassPrepareRequest allClasses = vm.eventRequestManager().createClassPrepareRequest();
+        allClasses.addClassExclusionFilter("java.*");
+        allClasses.enable();
     }
 
     @Override
