@@ -32,6 +32,8 @@ target (afaik).
  * Agent can cause deadlocks, which will hang the target forever.
  * Apparently we can hang the process to the point it ignores signals,
     who knows who's monitoring copes with this. Mine doesn't.
+ * Evaluating the system state / list of dependencies seems to be much harder,
+   against expectations.
 
 
 With debugger, 24, ab:
