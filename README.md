@@ -13,6 +13,8 @@ Modules:
 
 ## Demo
 
+(outdated)
+
 The `agent` wil run against the snyk standard `java-goof` project. The instructions
 here assume they're checked out like this, and you're inside this directory, but
 none of the layout is required:

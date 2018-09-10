@@ -1,0 +1,6 @@
+rootProject.name = 'java-instrumentor'
+
+include 'common'
+include 'agent'
+include 'bp'
+
