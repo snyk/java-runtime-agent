@@ -4,6 +4,8 @@ plugins {
 }
 
 dependencies {
+    compile project(':common')
+
     // JMH requires 5.2, not 6.2.1 here. Probably a bug in their dependency management.
     compile 'org.ow2.asm:asm-tree:6.2.1'
     compile files(find_tools_jar())

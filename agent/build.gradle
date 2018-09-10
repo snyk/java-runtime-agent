@@ -6,6 +6,7 @@ plugins {
 
 dependencies {
     // JMH requires 5.2, not 6.2.1 here. Probably a bug in their dependency management.
+    compile project(':common')
     compile 'org.ow2.asm:asm-tree:6.2.1'
     compile files(find_tools_jar())
     testCompile 'org.apache.commons:commons-text:1.4'
@@ -59,9 +60,6 @@ jmh {
     fork = 1
     iterations = 1
     warmupIterations = 1
-
-    // allow us to use test classes during the benchmark, hopefully not rewritten
-    includeTests = true
 }
 
 repositories {
