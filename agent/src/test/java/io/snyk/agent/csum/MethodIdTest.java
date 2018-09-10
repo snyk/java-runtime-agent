@@ -8,10 +8,7 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.MethodNode;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 
@@ -37,7 +34,8 @@ class MethodIdTest {
             if (entry.isDirectory() || !entry.getName().endsWith(".class")) {
                 continue;
             }
-            for (MethodNode method : AsmUtil.parse(new ClassReader(jar)).methods) {
+            // ASM 5 nonsense, for jmh
+            for (MethodNode method : (Iterable<MethodNode>) AsmUtil.parse(new ClassReader(jar)).methods) {
                 final int computed = MethodId.id(method);
                 running += computed;
                 totalMethods += 1;
