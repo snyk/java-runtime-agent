@@ -180,7 +180,8 @@ public class EventDispatcher extends Thread {
         purgeWatches();
 
         final EventRequestManager mgr = vm.eventRequestManager();
-        {
+
+        if (false) {
             final MethodEntryRequest men = mgr.createMethodEntryRequest();
             men.setSuspendPolicy(BreakpointRequest.SUSPEND_EVENT_THREAD);
             men.addClassExclusionFilter("com.sun.*");
