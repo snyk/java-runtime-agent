@@ -3,7 +3,6 @@ package io.snyk.debugger.trace;
 import com.sun.jdi.*;
 import com.sun.jdi.event.*;
 import com.sun.jdi.request.BreakpointRequest;
-import com.sun.jdi.request.ClassPrepareRequest;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.MethodEntryRequest;
 import io.snyk.agent.filter.Filter;
@@ -11,7 +10,9 @@ import io.snyk.agent.filter.PathFilter;
 import io.snyk.agent.logic.Config;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class EventDispatcher extends Thread {
 
@@ -21,10 +22,15 @@ public class EventDispatcher extends Thread {
 
     private boolean collecting = false;
 
+    private final Set<String> processedPackages = new HashSet<>(256);
+
     private final EventVisitor handler = new EventVisitor() {
         @Override
         public synchronized void methodEntryEvent(MethodEntryEvent event) {
-            vm.eventRequestManager().deleteEventRequest(event.request());
+            System.err.println("a method was entered");
+
+            final EventRequestManager mgr = vm.eventRequestManager();
+            mgr.deleteEventRequests(mgr.methodEntryRequests());
 
             if (collecting) {
                 return;
@@ -39,7 +45,6 @@ public class EventDispatcher extends Thread {
             }
 
             collecting = true;
-            System.err.println("a method was entered");
 
             final ThreadReference thread = event.thread();
 
@@ -65,6 +70,21 @@ public class EventDispatcher extends Thread {
         if (null == loader) {
             return;
         }
+
+        // this is a performance hack, it's not totally accurate, but likely to be.
+        if (dt.name().contains("$")) {
+            return;
+        }
+
+        // this is a performance hack, it's not totally accurate, but likely to be.
+        final String packageKey = packageOfOrName(dt.name());
+        if (processedPackages.contains(packageKey)) {
+            return;
+        }
+
+        processedPackages.add(packageKey);
+
+        vm.eventRequestManager().deleteAllBreakpoints();
 
         final List<Method> getResourceMethods = loader.referenceType()
                 .methodsByName("getResource", "(Ljava/lang/String;)Ljava/net/URL;");
@@ -98,6 +118,15 @@ public class EventDispatcher extends Thread {
         }
     }
 
+    private String packageOfOrName(String name) {
+        int dot = name.lastIndexOf('.');
+        if (-1 == dot) {
+            return name;
+        }
+
+        return name.substring(0, dot);
+    }
+
     private void checkNotNull(Object o) {
         if (null == o) {
             throw new NullPointerException();
@@ -110,11 +139,6 @@ public class EventDispatcher extends Thread {
         super("event-dispatcher");
         this.vm = vm;
         this.config = config;
-
-        final ClassPrepareRequest allClasses = vm.eventRequestManager().createClassPrepareRequest();
-        allClasses.addClassExclusionFilter("java.*");
-        allClasses.setSuspendPolicy(ClassPrepareRequest.SUSPEND_EVENT_THREAD);
-        allClasses.enable();
     }
 
     @Override
@@ -146,12 +170,17 @@ public class EventDispatcher extends Thread {
         }
     }
 
-    private void doAddWatches() {
+    private void purgeWatches() {
         final EventRequestManager mgr = vm.eventRequestManager();
         mgr.deleteAllBreakpoints();
+        mgr.deleteEventRequests(mgr.methodEntryRequests());
+    }
 
+    private void doAddWatches() {
+        purgeWatches();
+
+        final EventRequestManager mgr = vm.eventRequestManager();
         {
-            // ALL THE THINGS
             final MethodEntryRequest men = mgr.createMethodEntryRequest();
             men.setSuspendPolicy(BreakpointRequest.SUSPEND_EVENT_THREAD);
             men.addClassExclusionFilter("com.sun.*");
