@@ -12,7 +12,6 @@ import io.snyk.agent.logic.Config;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class EventDispatcher extends Thread {
 
@@ -20,18 +19,26 @@ public class EventDispatcher extends Thread {
 
     private final Config config;
 
-    private final AtomicBoolean collecting = new AtomicBoolean();
+    private boolean collecting = false;
 
     private final EventVisitor handler = new EventVisitor() {
         @Override
-        public void methodEntryEvent(MethodEntryEvent event) {
+        public synchronized void methodEntryEvent(MethodEntryEvent event) {
             vm.eventRequestManager().deleteEventRequest(event.request());
 
-            if (collecting.get()) {
+            if (collecting) {
                 return;
             }
 
-            collecting.set(true);
+            try {
+                if (!event.thread().ownedMonitors().isEmpty()) {
+                    return;
+                }
+            } catch (IncompatibleThreadStateException e) {
+                return;
+            }
+
+            collecting = true;
             System.err.println("a method was entered");
 
             final ThreadReference thread = event.thread();
@@ -41,7 +48,7 @@ public class EventDispatcher extends Thread {
                 gatherClassInfo(dt, thread);
             }
             System.err.println(System.currentTimeMillis() - start);
-            collecting.set(false);
+            collecting = false;
         }
 
         @Override
@@ -56,7 +63,6 @@ public class EventDispatcher extends Thread {
     private void gatherClassInfo(ReferenceType dt, ThreadReference thread) {
         final ClassLoaderReference loader = dt.classLoader();
         if (null == loader) {
-//            System.err.println(dt + " has no classloader");
             return;
         }
 
@@ -148,6 +154,10 @@ public class EventDispatcher extends Thread {
             // ALL THE THINGS
             final MethodEntryRequest men = mgr.createMethodEntryRequest();
             men.setSuspendPolicy(BreakpointRequest.SUSPEND_EVENT_THREAD);
+            men.addClassExclusionFilter("com.sun.*");
+            men.addClassExclusionFilter("javax.*");
+            men.addClassExclusionFilter("java.*");
+            men.addClassExclusionFilter("sun.*");
             men.enable();
         }
 
