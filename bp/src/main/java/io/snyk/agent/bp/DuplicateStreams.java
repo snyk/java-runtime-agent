@@ -1,4 +1,4 @@
-package io.snyk.debugger.trace;
+package io.snyk.agent.bp;
 
 import java.io.IOException;
 import java.io.InputStream;

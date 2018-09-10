@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 public class Config {
     public final String projectId;
     public final List<Filter> filters;
-    final String urlPrefix;
+    public final String urlPrefix;
     public final boolean trackClassLoading;
     public final boolean debugLoggingEnabled;
 

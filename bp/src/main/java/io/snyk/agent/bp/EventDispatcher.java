@@ -1,18 +1,23 @@
-package io.snyk.debugger.trace;
+package io.snyk.agent.bp;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.jdi.*;
 import com.sun.jdi.event.*;
 import com.sun.jdi.request.BreakpointRequest;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.MethodEntryRequest;
+import io.snyk.agent.api.Beacon;
+import io.snyk.agent.api.MethodEntry;
 import io.snyk.agent.filter.Filter;
 import io.snyk.agent.filter.PathFilter;
 import io.snyk.agent.logic.Config;
+import org.apache.http.StatusLine;
+import org.apache.http.client.fluent.Request;
+import org.apache.http.entity.ContentType;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.io.IOException;
+import java.time.Instant;
+import java.util.*;
 
 public class EventDispatcher extends Thread {
 
@@ -23,6 +28,8 @@ public class EventDispatcher extends Thread {
     private boolean collecting = false;
 
     private final Set<String> processedPackages = new HashSet<>(256);
+
+    private final List<MethodEntry> entries = new ArrayList<>();
 
     private final EventVisitor handler = new EventVisitor() {
         @Override
@@ -58,10 +65,13 @@ public class EventDispatcher extends Thread {
 
         @Override
         public void breakpointEvent(BreakpointEvent event) {
+            vm.eventRequestManager().deleteEventRequest(event.request());
+
             final Location location = event.location();
             final ReferenceType dt = location.declaringType();
-            System.err.println(dt + "#" + location.method().name());
-            vm.eventRequestManager().deleteEventRequest(event.request());
+            final Method method = location.method();
+
+            entries.add(new MethodEntry("??", dt.name(), method.name() + method.signature()));
         }
     };
 
@@ -161,6 +171,19 @@ public class EventDispatcher extends Thread {
                     dispatchEvent(it.nextEvent());
                 }
                 eventSet.resume();
+
+                final Beacon beacon = new Beacon(null, Instant.now(), entries.toArray(new MethodEntry[0]));
+                new Thread(() -> {
+                    try {
+                        final StatusLine resp = Request.Post(config.urlPrefix + "/api/v1/beacon")
+                                .bodyByteArray(new ObjectMapper().writeValueAsBytes(beacon),
+                                        ContentType.APPLICATION_JSON)
+                                .execute().returnResponse().getStatusLine();
+                        System.err.println(resp);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }).start();
             } catch (InterruptedException exc) {
                 // Ignore
             } catch (VMDisconnectedException discExc) {

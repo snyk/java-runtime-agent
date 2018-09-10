@@ -1,4 +1,4 @@
-package io.snyk.debugger.trace;
+package io.snyk.agent.bp;
 
 import com.sun.jdi.Bootstrap;
 import com.sun.jdi.VirtualMachine;
@@ -6,7 +6,6 @@ import com.sun.jdi.connect.*;
 import io.snyk.agent.logic.Config;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Map;
 
 public class Trace {
