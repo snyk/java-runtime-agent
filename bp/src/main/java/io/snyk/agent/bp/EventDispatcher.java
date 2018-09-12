@@ -172,7 +172,7 @@ public class EventDispatcher extends Thread {
                 }
                 eventSet.resume();
 
-                final Beacon beacon = new Beacon(null, Instant.now(), entries.toArray(new MethodEntry[0]));
+                final Beacon beacon = new Beacon(UUID.fromString(config.projectId), Instant.now(), entries.toArray(new MethodEntry[0]));
                 new Thread(() -> {
                     try {
                         final StatusLine resp = Request.Post(config.urlPrefix + "/api/v1/beacon")
