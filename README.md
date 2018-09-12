@@ -11,7 +11,22 @@ Modules:
  * `investigations`: some data dumps, and discussion of them
 
 
-## Demo
+## Demo (breakpoint method)
+
+```bash
+bin/trace agent/snyk-goof.properties 1337
+```
+
+If the script gets confused, you might have to set `JAVA_HOME`, on Linux this might be:
+
+```bash
+export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/
+```
+
+Note: It doesn't currently send beacons unless an event has happened.
+
+
+## Demo (agent method)
 
 (outdated)
 

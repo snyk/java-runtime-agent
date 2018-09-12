@@ -6,6 +6,7 @@ import com.sun.jdi.connect.*;
 import io.snyk.agent.logic.Config;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
 
 public class Trace {
@@ -20,6 +21,11 @@ public class Trace {
     private int debugTraceMode = 0;
 
     public static void main(String[] args) throws Exception {
+        if (2 != args.length) {
+            System.err.println("usage: path/to/config.properties PORT");
+            System.exit(1);
+        }
+
         final Config config = Config.fromFile(args[0]);
         final int port = Integer.parseInt(args[1]);
         new Trace(port, config).run();
