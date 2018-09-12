@@ -13,6 +13,23 @@ Modules:
 
 ## Demo (breakpoint method)
 
+Start the app with these command line options:
+
+```
+-Xdebug -agentlib:jdwp=transport=dt_socket,address=127.0.0.1:1337,server=y,suspend=y
+```
+
+e.g. for a Maven app (like java-goof):
+
+```bash
+MAVEN_OPTS='-Xdebug -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=127.0.0.1:1337' \
+     mvn tomcat7:run
+```
+
+---
+
+Then, from this directory, run:
+
 ```bash
 bin/trace agent/snyk-goof.properties 1337
 ```
