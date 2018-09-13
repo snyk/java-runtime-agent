@@ -3,6 +3,8 @@ package io.snyk.agent.csum;
 import io.snyk.agent.logic.InstrumentationFilterTest;
 import io.snyk.agent.logic.TestVictim;
 import io.snyk.agent.util.AsmUtil;
+import io.snyk.agent.util.IterableJar;
+import io.snyk.asm.tree.ClassNode;
 import org.junit.jupiter.api.Test;
 import io.snyk.asm.ClassReader;
 import io.snyk.asm.tree.MethodNode;
@@ -24,23 +26,18 @@ class MethodIdTest {
 
     @Test
     void testSmokeGuava() throws IOException {
-        final JarInputStream jar = new JarInputStream(MethodIdTest.class.getResourceAsStream(
+        final IterableJar classNodes = new IterableJar(() -> MethodIdTest.class.getResourceAsStream(
                 "/guava-26.0-jre.jar"));
-        JarEntry entry;
         final Map<Integer, Set<String>> seen = new HashMap<>();
         int running = 0;
         int totalMethods = 0;
-        while (null != (entry = jar.getNextJarEntry())) {
-            if (entry.isDirectory() || !entry.getName().endsWith(".class")) {
-                continue;
-            }
-            // ASM 5 nonsense, for jmh
-            for (MethodNode method : (Iterable<MethodNode>) AsmUtil.parse(new ClassReader(jar)).methods) {
+        for (ClassNode clazz : classNodes) {
+            for (MethodNode method : clazz.methods) {
                 final int computed = MethodId.id(method);
                 running += computed;
                 totalMethods += 1;
                 seen.computeIfAbsent(computed, _id -> new HashSet<>())
-                        .add(entry.getName() + " // " + method.name + method.desc);
+                        .add(clazz.name + " // " + method.name + method.desc);
             }
         }
 

@@ -5,6 +5,8 @@ import io.snyk.asm.Opcodes;
 import io.snyk.asm.Type;
 import io.snyk.asm.tree.*;
 
+import java.util.ListIterator;
+
 /**
  * Determine if a method is interesting enough to instrument.
  */
@@ -70,6 +72,35 @@ public class InstrumentationFilter {
         return false;
     }
 
+    static boolean branches(MethodNode method) {
+        if (!method.tryCatchBlocks.isEmpty()) {
+            return true;
+        }
+
+        final ListIterator<AbstractInsnNode> insns = method.instructions.iterator();
+        while (insns.hasNext()) {
+            final AbstractInsnNode insn = insns.next();
+
+            final int type = insn.getType();
+
+            if (type == AbstractInsnNode.JUMP_INSN
+                    || type == AbstractInsnNode.INVOKE_DYNAMIC_INSN
+                    || type == AbstractInsnNode.LOOKUPSWITCH_INSN
+                    || type == AbstractInsnNode.TABLESWITCH_INSN) {
+                return true;
+            }
+
+            if (insn instanceof MethodInsnNode) {
+                // any dynamic dispatch (interface, virtual, special (i.e. constructor))
+                if (Opcodes.INVOKESTATIC != insn.getOpcode()) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     private static boolean isAccessor(MethodNode method) {
         if (isStatic(method.access)) {
             return false;
@@ -92,6 +123,7 @@ public class InstrumentationFilter {
 
         return false;
     }
+
     private static boolean isGetter(MethodNode method) {
         final InsnIter iter = new InsnIter(method.instructions);
 

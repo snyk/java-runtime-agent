@@ -1,12 +1,12 @@
 package io.snyk.agent.logic;
 
 import io.snyk.agent.util.AsmUtil;
-import org.junit.jupiter.api.Test;
+import io.snyk.agent.util.IterableJar;
 import io.snyk.asm.ClassReader;
 import io.snyk.asm.tree.ClassNode;
 import io.snyk.asm.tree.MethodNode;
+import org.junit.jupiter.api.Test;
 
-import java.util.List;
 import java.util.NoSuchElementException;
 
 import static io.snyk.agent.logic.InstrumentationFilter.bannedMethod;
@@ -27,9 +27,24 @@ public class InstrumentationFilterTest {
         assertFalse(bannedMethod(findMethod(node, "returnLambda")));
     }
 
+    @Test
+    void findGuavaMethods() {
+        for (ClassNode c : new IterableJar(() -> InstrumentationFilterTest.class.getResourceAsStream(
+                "/guava-26.0-jre.jar"))) {
+            for (MethodNode method : c.methods) {
+                if (InstrumentationFilter.bannedMethod(method)) {
+                    continue;
+                }
+
+                if (!InstrumentationFilter.branches(method)) {
+                    System.out.println(c.name + " // " + method.name + method.desc);
+                }
+            }
+        }
+    }
+
     public static MethodNode findMethod(ClassNode node, String name) throws NoSuchElementException {
-        // casting for 5.2 compat; fixed in ASM 6
-        return ((List<MethodNode>)node.methods).stream()
+        return node.methods.stream()
                 .filter(method -> name.equals(method.name))
                 .findFirst()
                 .get();
