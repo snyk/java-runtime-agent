@@ -1,6 +1,6 @@
 package io.snyk.agent.csum;
 
-import org.objectweb.asm.*;
+import io.snyk.asm.*;
 
 import java.util.IdentityHashMap;
 import java.util.Map;

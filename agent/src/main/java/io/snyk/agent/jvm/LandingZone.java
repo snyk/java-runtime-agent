@@ -1,6 +1,5 @@
 package io.snyk.agent.jvm;
 
-import io.snyk.agent.logic.ReportingWorker;
 import io.snyk.agent.util.Log;
 import io.snyk.agent.util.UseCounter;
 

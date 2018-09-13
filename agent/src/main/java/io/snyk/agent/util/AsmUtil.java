@@ -1,10 +1,10 @@
 package io.snyk.agent.util;
 
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.InsnList;
+import io.snyk.asm.ClassReader;
+import io.snyk.asm.ClassWriter;
+import io.snyk.asm.tree.AbstractInsnNode;
+import io.snyk.asm.tree.ClassNode;
+import io.snyk.asm.tree.InsnList;
 
 /**
  * static utility class working around some ugliness in the ASM API

@@ -2,8 +2,8 @@ package io.snyk.agent.logic;
 
 import io.snyk.agent.jvm.LandingZone;
 import io.snyk.agent.util.AsmUtil;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.tree.ClassNode;
+import io.snyk.asm.ClassReader;
+import io.snyk.asm.tree.ClassNode;
 import org.openjdk.jmh.annotations.*;
 
 import java.util.concurrent.TimeUnit;

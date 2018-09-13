@@ -5,7 +5,7 @@ import io.snyk.agent.logic.Config;
 import io.snyk.agent.logic.InstrumentationFilter;
 import io.snyk.agent.logic.Rewriter;
 import io.snyk.agent.util.Log;
-import org.objectweb.asm.ClassReader;
+import io.snyk.asm.ClassReader;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.net.URLClassLoader;

@@ -1,7 +1,7 @@
 package io.snyk.agent.util;
 
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.InsnList;
+import io.snyk.asm.tree.AbstractInsnNode;
+import io.snyk.asm.tree.InsnList;
 
 import java.util.ListIterator;
 import java.util.function.Predicate;

@@ -1,9 +1,9 @@
 package io.snyk.agent.logic;
 
 import io.snyk.agent.util.InsnIter;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.*;
+import io.snyk.asm.Opcodes;
+import io.snyk.asm.Type;
+import io.snyk.asm.tree.*;
 
 /**
  * Determine if a method is interesting enough to instrument.

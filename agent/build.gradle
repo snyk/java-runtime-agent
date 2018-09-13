@@ -7,8 +7,7 @@ plugins {
 dependencies {
     compile project(':common')
 
-    // JMH requires 5.2, not 6.2.1 here. Probably a bug in their dependency management.
-    compile 'org.ow2.asm:asm-tree:6.2.1'
+    compile files("${projectDir}/../repack/asm-re-6.2.1.jar")
     testCompile 'org.apache.commons:commons-text:1.4'
     testCompile 'com.google.code.gson:gson:2.8.5'
     testCompile 'com.google.guava:guava:26.0-jre'

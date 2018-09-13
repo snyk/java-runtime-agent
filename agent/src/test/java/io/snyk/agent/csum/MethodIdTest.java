@@ -4,8 +4,8 @@ import io.snyk.agent.logic.InstrumentationFilterTest;
 import io.snyk.agent.logic.TestVictim;
 import io.snyk.agent.util.AsmUtil;
 import org.junit.jupiter.api.Test;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.tree.MethodNode;
+import io.snyk.asm.ClassReader;
+import io.snyk.asm.tree.MethodNode;
 
 import java.io.IOException;
 import java.util.*;
