@@ -8,13 +8,16 @@ import io.snyk.agent.util.Log;
 import org.objectweb.asm.ClassReader;
 
 import java.lang.instrument.ClassFileTransformer;
+import java.net.URLClassLoader;
 import java.security.ProtectionDomain;
+import java.util.Arrays;
 
 /**
  * Tie {@link Rewriter} and {@link LandingZone} to the JVM interface.
  */
 class Transformer implements ClassFileTransformer {
 
+    private static final String LANDING_ZONE_NAME = LandingZone.class.getName().replace('.', '/') + ".class";
     private final Log log;
     private final Config config;
     private final ClassSource classSource;
@@ -35,8 +38,24 @@ class Transformer implements ClassFileTransformer {
         // `null` here represents the system classloader
         // TODO: is this only going to load core classes? Who knows.
         if (null == loader) {
-            return classfileBuffer;
+            // `null` here means "don't rewrite"
+            return null;
         }
+
+        // if the classloader loading the class can't load us,
+        // then something weird has gone on. NewRelic intentionally strips
+        // other jars out of the classpath when loading itself, to void problems.
+        if (null == loader.getResource(LANDING_ZONE_NAME)) {
+            if (false) {
+                if (loader instanceof URLClassLoader) {
+                    System.err.println(className + " // " + Arrays.toString(((URLClassLoader) loader).getURLs()));
+                }
+            }
+
+            log.info("classloader futzing detected: " + className);
+            return null;
+        }
+
         try {
             return process(loader, classfileBuffer);
         } catch (Throwable t) {

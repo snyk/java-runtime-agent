@@ -47,6 +47,14 @@ public class InstrumentationFilter {
             return true;
         }
 
+        // exclude class initialisers. Unfortunately, this doesn't actually stop
+        // us running code at class initialisation time, because initialisers can and will
+        // call static methods, which we will still rewrite. Maybe we should try and trace
+        // when methods are called from <clinit>?
+        if (method.name.startsWith("<clinit")) {
+            return true;
+        }
+
         // We should expect that we don't have the full signature, just the descriptor;
         // which isn't too bad if we're ignoring synthetic methods.
         // Signatures which you'd think we could ignore, but probably can't:
