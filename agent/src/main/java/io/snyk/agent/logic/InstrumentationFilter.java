@@ -5,12 +5,62 @@ import io.snyk.asm.Opcodes;
 import io.snyk.asm.Type;
 import io.snyk.asm.tree.*;
 
+import java.util.HashSet;
 import java.util.ListIterator;
 
 /**
  * Determine if a method is interesting enough to instrument.
  */
 public class InstrumentationFilter {
+    private static final HashSet<String> FAMOUSLY_FINAL = new HashSet<>();
+
+    static {
+        // critical due to string concatenation
+        FAMOUSLY_FINAL.add("java/lang/String");
+        FAMOUSLY_FINAL.add("java/lang/StringBuilder");
+
+        // other potentially widely used "data types"
+        FAMOUSLY_FINAL.add("java/lang/URL");
+        FAMOUSLY_FINAL.add("java/lang/URI");
+        FAMOUSLY_FINAL.add("java/lang/UUID");
+        FAMOUSLY_FINAL.add("java/util/regex/Pattern");
+        FAMOUSLY_FINAL.add("java/time/LocalTime");
+        FAMOUSLY_FINAL.add("java/time/LocalDate");
+        FAMOUSLY_FINAL.add("java/time/Instant");
+        FAMOUSLY_FINAL.add("java/time/Duration");
+
+        // e.g. getEnv() .. wait, no, that's static; printing is field access, uh.
+        FAMOUSLY_FINAL.add("java/lang/System");
+        FAMOUSLY_FINAL.add("java/lang/Math");
+        FAMOUSLY_FINAL.add("java/util/Spliterators");
+        FAMOUSLY_FINAL.add("java/util/Scanner");
+        FAMOUSLY_FINAL.add("java/nio/ByteOrder");
+        FAMOUSLY_FINAL.add("nio/channels/Channels");
+
+        FAMOUSLY_FINAL.add("java/util/Optional");
+        FAMOUSLY_FINAL.add("java/util/OptionalLong");
+
+        // critical due to boxing
+        FAMOUSLY_FINAL.add("java/lang/Boolean");
+        FAMOUSLY_FINAL.add("java/lang/Character");
+        FAMOUSLY_FINAL.add("java/lang/Double");
+        FAMOUSLY_FINAL.add("java/lang/Float");
+        FAMOUSLY_FINAL.add("java/lang/Integer");
+        FAMOUSLY_FINAL.add("java/lang/Long");
+        FAMOUSLY_FINAL.add("java/lang/Short");
+
+        // Self-introspection (i.e. resource loading)
+        FAMOUSLY_FINAL.add("java/lang/Class");
+
+
+        // Notes:
+        // * Guava Immutable* are all *abstract*, not even close to final
+        // * "Effectively final" classes (e.g. private constructors) are interesting, but can't be found without
+        //     introspection. Also, typically, "utility" classes only have static methods.
+        // * None of the older serialisation infra is final, but we probably wouldn't want to exclude it anyway
+        // * Map#Entry is an interface, which is a shame, as it gets used so much for iteration etc.
+    }
+
     public static boolean bannedClassName(String loadingClassAsName) {
         if (loadingClassAsName.startsWith("java/")) {
             return false;
@@ -72,7 +122,7 @@ public class InstrumentationFilter {
         return false;
     }
 
-    static boolean branches(MethodNode method) {
+    static boolean branches(ClassNode self, MethodNode method) {
         if (!method.tryCatchBlocks.isEmpty()) {
             return true;
         }
@@ -91,13 +141,46 @@ public class InstrumentationFilter {
             }
 
             if (insn instanceof MethodInsnNode) {
-                // any dynamic dispatch (interface, virtual, special (i.e. constructor))
-                if (Opcodes.INVOKESTATIC != insn.getOpcode()) {
+                if (!isStaticEnoughCall(self, (MethodInsnNode) insn)) {
                     return true;
                 }
             }
         }
 
+        return false;
+    }
+
+    private static boolean isStaticEnoughCall(ClassNode self, MethodInsnNode call) {
+        if (Opcodes.INVOKESTATIC == call.getOpcode() || Opcodes.INVOKESPECIAL == call.getOpcode()) {
+            return true;
+        }
+
+        // any dynamic dispatch (interface, virtual, special (i.e. constructor))
+
+        // it would be way better if we could check if the class was actually final,
+        // but I don't like the risk tradeoff (of loading it and introspecting it),
+        // plus it changing during runtime (very, very unlikely).
+        if (FAMOUSLY_FINAL.contains(call.owner)) {
+            return true;
+        }
+
+        // this isn't important if we're allowing INVOKESPECIAL above, as the compiler (always?) replaces these
+        // with invoke INVOKESPECIAL. (always?)
+        if (false && call.owner.equals(self.name)) {
+            // if it's a method call on this object, and the target method is private,
+            // then it's effectively a static method call
+            final boolean resolvedToPrivateMethod = self.methods.stream()
+                    .filter(method -> method.name.equals(call.name) &&
+                            method.desc.equals(call.desc) &&
+                            !isSynthetic(method.access))
+                    .findAny()
+                    .map(method -> isPrivate(method.access))
+                    .orElse(false);
+
+            if (resolvedToPrivateMethod) {
+                return true;
+            }
+        }
         return false;
     }
 
@@ -195,5 +278,9 @@ public class InstrumentationFilter {
 
     private static boolean isStatic(int access) {
         return Opcodes.ACC_STATIC == (access & Opcodes.ACC_STATIC);
+    }
+
+    private static boolean isPrivate(int access) {
+        return Opcodes.ACC_PRIVATE == (access & Opcodes.ACC_PRIVATE);
     }
 }

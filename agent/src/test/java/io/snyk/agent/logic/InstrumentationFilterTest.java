@@ -36,7 +36,7 @@ public class InstrumentationFilterTest {
                     continue;
                 }
 
-                if (!InstrumentationFilter.branches(method)) {
+                if (InstrumentationFilter.branches(c, method)) {
                     System.out.println(c.name + " // " + method.name + method.desc);
                 }
             }
