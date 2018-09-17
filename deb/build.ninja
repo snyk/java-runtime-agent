@@ -1,0 +1,16 @@
+mirror = http://urika:3142/debian
+dest = .
+suffix =
+script = ./with-download.sh
+
+pool big
+    depth = 10
+
+pool massive
+    depth = 10
+
+rule process-binary
+    command = $script $url $out
+
+include sid.ninja
+
