@@ -21,7 +21,9 @@ import org.codehaus.plexus.component.repository.exception.ComponentLookupExcepti
 import org.eclipse.aether.version.InvalidVersionSpecificationException;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.*;
@@ -160,9 +162,16 @@ public class FindMavens {
             centralContext.releaseIndexSearcher(searcher);
         }
 
-        latest.forEach((k, v) -> System.out.println(k + ": " + v.version));
+        System.err.println(latest.size() + " records");
 
-        System.out.println(latest.size());
+        final List<String> strings = new ArrayList<>(latest.keySet());
+        Collections.sort(strings);
+
+        try (final PrintWriter pw = new PrintWriter(new FileOutputStream("artifacts.lst"))) {
+            for (String gav : strings) {
+                pw.println(gav + ":" + latest.get(gav).version);
+            }
+        }
     }
 
     private String toDate(long date) {

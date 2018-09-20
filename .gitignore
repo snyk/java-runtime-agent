@@ -8,3 +8,4 @@ hs_err_*
 .venv/
 /jenkins-*.war
 /?
+artifacts.lst
