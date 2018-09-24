@@ -163,23 +163,27 @@ public class InstrumentationFilter {
         if (FAMOUSLY_FINAL.contains(call.owner)) {
             return true;
         }
+        
+        if (call.owner.equals(self.name)) {
+            if (false) {
+                // if it's a method call on this object, and the target method is private,
+                // then it's effectively a static method call
 
-        // this isn't important if we're allowing INVOKESPECIAL above, as the compiler (always?) replaces these
-        // with invoke INVOKESPECIAL. (always?)
-        if (false && call.owner.equals(self.name)) {
-            // if it's a method call on this object, and the target method is private,
-            // then it's effectively a static method call
-            final boolean resolvedToPrivateMethod = self.methods.stream()
-                    .filter(method -> method.name.equals(call.name) &&
-                            method.desc.equals(call.desc) &&
-                            !isSynthetic(method.access))
-                    .findAny()
-                    .map(method -> isPrivate(method.access))
-                    .orElse(false);
-
-            if (resolvedToPrivateMethod) {
-                return true;
+                // this isn't important if we're allowing INVOKESPECIAL above, as the compiler (always?) replaces these
+                // with invoke INVOKESPECIAL. (always?)
+                return self.methods.stream()
+                        .filter(method -> method.name.equals(call.name) &&
+                                method.desc.equals(call.desc) &&
+                                !isSynthetic(method.access))
+                        .findAny()
+                        .map(method -> isPrivate(method.access))
+                        .orElse(false);
             }
+
+            // it's a call with a receiver of "this". This is unambiguous given the stack trace.
+            // We don't have the stack trace, but hopefully we can pin this to a specific method in the
+            // child class, instead, if necessary.
+            return true;
         }
         return false;
     }
