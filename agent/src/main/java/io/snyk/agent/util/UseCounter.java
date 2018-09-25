@@ -31,13 +31,14 @@ public class UseCounter {
             return id;
         }
 
-        final AtomicIntegerArray newCounters = new AtomicIntegerArray(currentLength * 2);
+        final AtomicIntegerArray old = this.counters;
+        this.counters = new AtomicIntegerArray(currentLength * 2);
 
-        // this is also not thread safe, will lose some(tm) updates during the copy
         for (int i = 0; i < currentLength; i++) {
-            newCounters.set(i, counters.get(i));
+            if (0 != old.get(i)) {
+                this.counters.set(i, 1);
+            }
         }
-        counters = newCounters;
 
         return id;
     }
@@ -45,12 +46,15 @@ public class UseCounter {
     public synchronized Drain drain() {
         final Drain ret = new Drain();
 
-        // this is not truly loss-free, but I believe it would be in practice?
-        // the reassignment happens-before we observe any of the values in our backup
+        // I'm reasonably confident this is fine, we're using volatile access to read the values out,
+        // and nobody else is assigning to `counters` while we're running. Also, it's O(n) and we're
+        // not doing any real work (beyond synchronisation overheads) anywhere; log(n) allocation (for the hashmap),
+        // no copying, etc.
         final AtomicIntegerArray old = counters;
         counters = new AtomicIntegerArray(counters.length());
         for (int i = 0; i < old.length(); i++) {
             if (0 != old.get(i)) {
+                // lookup.get() is "volatile read" here.
                 ret.methodEntries.add(lookup.get(i));
             }
         }
@@ -63,7 +67,7 @@ public class UseCounter {
     }
 
     public void increment(int id) {
-        counters.getAndIncrement(id);
+        counters.lazySet(id, 1);
     }
 
     public synchronized void loadClassCall(int id, String arg) {
