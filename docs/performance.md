@@ -40,65 +40,16 @@ OSMOSIS=/home/faux/clone/osmosis/package/bin/osmosis
 time $OSMOSIS --read-pbf england-latest.osm.pbf --node-key-value keyValueList="highway.speed_camera" --write-xml radar.osm
 ```
 
+(removed a load of text about the `getAndIncrement` method, now using `lazySet`.)
+
 `anoia`:
 
  * no agent: 23.993 23.843 23.912; mean: 23.916, sd: 0.075
  * reporting just classpath (no classes match): 24.134 24.274 23.979
- * reporting every method everywhere: 1:25.64 1:26.28 1:26.70; mean: 86.21, sd: 0.53
- * `org/openstreetmap/osmosis/osmbinary/BinaryParser` 24.853 25.396 25.053; mean: 25.101, sd: 0.275
-
-`BinaryParser` has some *very* hot methods in, called tens of millions of times.
-
-25.101/23.916 = 1.049; i.e. a ~5% slowdown.
-86.21/23.916 = 3.6, i.e. a 3x slowdown
-
-It's not clear whether the "all" case is just lots of 5% slowdowns, or if there's some
-super hot method that's causing an issue.
-
- * `org/openstreetmap/osmosis/osmbinary/**`: 31.211
- * `org/openstreetmap/osmosis/osmbinary/**` `crosby/**`: 30.336 (hopefully just noise, it is matching both)
- * `com/google/protobuf/**` 69.94 (oh dear)
- * `com/google/protobuf/IntArrayList` 30.974
-
-IntArrayList is interesting, it must be very heavily used, and the methods are
-effectively free without our instrumentation. It's not a `getter` as it takes an
-index and an array lookup. Maybe it has significant inlining wins?
-
-Only IntArrayList, method filter (hacked in):
-
- * Everything but range check: 29.223
- * Everything but add*: 27.191
- * Everything but get*: 29.327???
- * Remove only: 24.052
- * No get/set/add: 25.679
-
-Right, wtf?
- 
- * only make..Message: 23.303
- * + mutableCopyWithCapacity: 24.501
- * + emptyList: 24.214
- * + add: 27.712
- 
-Seems that 'add' really is the cost. I wonder why.
-
-https://github.com/protocolbuffers/protobuf/blob/v3.4.0/java/core/src/main/java/com/google/protobuf/IntArrayList.java#L154
- 
-
-Small but non-zero slowdown:
- * `com/google/protobuf/GeneratedMessage**`: 24.932
- * `com/google/protobuf/ByteString` 24.159
- * `com/google/protobuf/ByteString**` 25.000
-
-
-## osmosis, but with "branches" filtering enabled
-
- * reporting just classpath (no classes match): 24.134 24.274 23.979
- * (old-style) reporting every method everywhere: 1:25.64 1:26.28 1:26.70; mean: 86.21, sd: 0.53
- * every method, except ones without branches: 56.624 56.880 56.973
- 
- * `com/google/protobuf/IntArrayList` 27.1 (30.9 before)
- * `com/google/protobuf/**` 46.8 (69.94 before)
- * `org/openstreetmap/osmosis/osmbinary/**` 28.5 (31.2 before)
+ * all branching match, empty instrumentation method (very suspicious): 24.098 24.550 24.318
+ * all branching match, `lazySet`: 28.608 28.579 28.652
+ * osmosis/protobuf, `lazySet`: 27.821 28.069 27.918
+ * osmosis, `lazySet`: 24.654 24.575 25.659
 
 
 ## Tested hardware
