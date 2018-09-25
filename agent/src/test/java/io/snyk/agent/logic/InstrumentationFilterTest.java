@@ -31,9 +31,15 @@ public class InstrumentationFilterTest {
         assertFalse(skipMethod(node, findMethod(node, "switch1")));
         assertFalse(skipMethod(node, findMethod(node, "switch2")));
 
-        // TODO: not sure what's going on here..
+        // System.out is a static final field containing a PrintStream,
+        // we virtually invoke println on this PrintStream.
+        // Ironically this is correct, as System#setOut exists, but ideally
+        // a flow control thing would claim this method was safe in this case
+        // Probably not a super interesting one.
         assertFalse(skipMethod(node, findMethod(node, "printInt")));
         assertFalse(skipMethod(node, findMethod(node, "printConcat")));
+
+        assertTrue(skipMethod(node, findMethod(node, "concat")));
     }
 
     @Test

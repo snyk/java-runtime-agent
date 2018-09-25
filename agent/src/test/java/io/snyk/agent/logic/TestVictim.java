@@ -99,4 +99,8 @@ public class TestVictim implements Callable<Number> {
     void printConcat(int arg) {
         System.out.println("Hello, " + arg);
     }
+
+    String concat(int arg) {
+        return "Hello, " + arg;
+    }
 }
