@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.NoSuchElementException;
 
-import static io.snyk.agent.logic.InstrumentationFilter.bannedMethod;
+import static io.snyk.agent.logic.InstrumentationFilter.skipMethod;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -18,13 +18,22 @@ public class InstrumentationFilterTest {
     void methodsOfVictim() throws Exception {
         final String name = TestVictim.class.getName();
         final ClassNode node = AsmUtil.parse(new ClassReader(name));
-        assertTrue(bannedMethod(findMethod(node, "getStringField")));
-        assertTrue(bannedMethod(findMethod(node, "getIntField")));
-        assertTrue(bannedMethod(findMethod(node, "setStringField")));
-        assertTrue(bannedMethod(findMethod(node, "setIntField")));
-        assertFalse(bannedMethod(findMethod(node, "call")));
-        assertFalse(bannedMethod(findMethod(node, "localGeneric")));
-        assertFalse(bannedMethod(findMethod(node, "returnLambda")));
+        assertTrue(skipMethod(node, findMethod(node, "getStringField")));
+        assertTrue(skipMethod(node, findMethod(node, "getIntField")));
+        assertTrue(skipMethod(node, findMethod(node, "setStringField")));
+        assertTrue(skipMethod(node, findMethod(node, "setIntField")));
+        assertTrue(skipMethod(node, findMethod(node, "call")));
+        assertTrue(skipMethod(node, findMethod(node, "localGeneric")));
+
+        // annoying one.. this is probably safe to skip, under the "branches" rule
+        assertFalse(skipMethod(node, findMethod(node, "returnLambda")));
+
+        assertFalse(skipMethod(node, findMethod(node, "switch1")));
+        assertFalse(skipMethod(node, findMethod(node, "switch2")));
+
+        // TODO: not sure what's going on here..
+        assertFalse(skipMethod(node, findMethod(node, "printInt")));
+        assertFalse(skipMethod(node, findMethod(node, "printConcat")));
     }
 
     @Test
@@ -32,7 +41,7 @@ public class InstrumentationFilterTest {
         for (ClassNode c : new IterableJar(() -> InstrumentationFilterTest.class.getResourceAsStream(
                 "/guava-26.0-jre.jar"))) {
             for (MethodNode method : c.methods) {
-                if (InstrumentationFilter.bannedMethod(method)) {
+                if (InstrumentationFilter.skipMethod(c, method)) {
                     continue;
                 }
 

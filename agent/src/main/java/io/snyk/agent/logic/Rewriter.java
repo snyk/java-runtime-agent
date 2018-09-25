@@ -20,7 +20,10 @@ public class Rewriter {
     // This Class<?> must implement the same "static interface" as LandingZone.class.
     // There's no way to express this in Java. The marked public static methods must
     // exist.
-    public Rewriter(Class<?> tracker, ToIntFunction<String> allocateNewId, String sourceLocation, boolean trackClassLoading) {
+    public Rewriter(Class<?> tracker,
+                    ToIntFunction<String> allocateNewId,
+                    String sourceLocation,
+                    boolean trackClassLoading) {
         this.ourInternalName = tracker.getName().replace('.', '/');
         this.allocateNewId = allocateNewId;
         this.sourceLocation = sourceLocation;
@@ -29,9 +32,8 @@ public class Rewriter {
 
     public byte[] rewrite(ClassReader reader) {
         final ClassNode cn = AsmUtil.parse(reader);
-        // casting for 5.2 compat; fixed in ASM 6
-        for (MethodNode method : (Iterable<MethodNode>) cn.methods) {
-            if (InstrumentationFilter.bannedMethod(method)) {
+        for (MethodNode method : cn.methods) {
+            if (InstrumentationFilter.skipMethod(cn, method)) {
                 continue;
             }
 

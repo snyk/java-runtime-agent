@@ -17,6 +17,7 @@ public class InstrumentationFilter {
     static {
         // critical due to string concatenation
         FAMOUSLY_FINAL.add("java/lang/String");
+        FAMOUSLY_FINAL.add("java/lang/StringBuffer");
         FAMOUSLY_FINAL.add("java/lang/StringBuilder");
 
         // other potentially widely used "data types"
@@ -86,7 +87,7 @@ public class InstrumentationFilter {
      * TODO: This is actually mandatory, as it enforces some asserts
      * TODO: that the actual rewriter should be enforcing, perhaps?
      */
-    static boolean bannedMethod(MethodNode method) {
+    static boolean skipMethod(ClassNode self, MethodNode method) {
         // `abstract` and `native` methods don't have Java code in them,
         // so we can't add extra java code
         // `synthetic` methods, used e.g. in generics dispatch internals,
@@ -116,6 +117,10 @@ public class InstrumentationFilter {
 //        Type.getReturnType(method.desc);
 
         if (isAccessor(method)) {
+            return true;
+        }
+
+        if (!branches(self, method)) {
             return true;
         }
 
@@ -163,7 +168,7 @@ public class InstrumentationFilter {
         if (FAMOUSLY_FINAL.contains(call.owner)) {
             return true;
         }
-        
+
         if (call.owner.equals(self.name)) {
             if (false) {
                 // if it's a method call on this object, and the target method is private,

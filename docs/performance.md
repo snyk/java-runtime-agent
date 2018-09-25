@@ -88,7 +88,18 @@ Small but non-zero slowdown:
  * `com/google/protobuf/GeneratedMessage**`: 24.932
  * `com/google/protobuf/ByteString` 24.159
  * `com/google/protobuf/ByteString**` 25.000
+
+
+## osmosis, but with "branches" filtering enabled
+
+ * reporting just classpath (no classes match): 24.134 24.274 23.979
+ * (old-style) reporting every method everywhere: 1:25.64 1:26.28 1:26.70; mean: 86.21, sd: 0.53
+ * every method, except ones without branches: 56.624 56.880 56.973
  
+ * `com/google/protobuf/IntArrayList` 27.1 (30.9 before)
+ * `com/google/protobuf/**` 46.8 (69.94 before)
+ * `org/openstreetmap/osmosis/osmbinary/**` 28.5 (31.2 before)
+
 
 ## Tested hardware
 

@@ -4,10 +4,11 @@ package io.snyk.agent.logic;
 import com.google.common.collect.Sets;
 import io.snyk.agent.testutil.DefinerLoader;
 import io.snyk.agent.testutil.TestTracker;
-import org.junit.jupiter.api.Test;
 import io.snyk.asm.ClassReader;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class RewriterTest {
 
@@ -20,10 +21,9 @@ class RewriterTest {
                 .rewrite(new ClassReader(name));
         final Class<?> clazz = new DefinerLoader().define(name, bytes);
         final Object instance = clazz.newInstance();
-        assertEquals(5, clazz.getDeclaredMethod("returnFive").invoke(instance));
+        assertNotNull(clazz.getDeclaredMethod("returnLambda").invoke(instance));
         assertEquals(Sets.newHashSet(
-                "io/snyk/agent/logic/TestVictim:<init>()V:" + TEST_LOCATION,
-                "io/snyk/agent/logic/TestVictim:returnFive()I:" + TEST_LOCATION),
+                "io/snyk/agent/logic/TestVictim:returnLambda()Ljava/util/concurrent/Callable;:" + TEST_LOCATION),
                 TestTracker.SEEN_SET.drain().methodEntries);
     }
 }

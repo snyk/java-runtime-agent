@@ -91,4 +91,12 @@ public class TestVictim implements Callable<Number> {
     public Number call() throws Exception {
         return 17;
     }
+
+    void printInt(int arg) {
+        System.out.println(arg);
+    }
+
+    void printConcat(int arg) {
+        System.out.println("Hello, " + arg);
+    }
 }
