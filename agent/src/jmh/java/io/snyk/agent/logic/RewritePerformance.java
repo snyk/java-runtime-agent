@@ -9,7 +9,6 @@ import org.openjdk.jmh.annotations.*;
 import java.util.concurrent.TimeUnit;
 
 // notes:
-//  * due to plugin bug, the code must be build against asm 5, and hence requires generics casts
 //  * due to plugin bug, gradle must be run with --no-daemon or it will randomly fail to rebuild the code
 //  * (it's still better than the jmh-by-hand situation)
 
@@ -40,13 +39,13 @@ public class RewritePerformance {
 
     @Benchmark
     public byte[] justRewrite() {
-        return new Rewriter(LandingZone.class, LandingZone.SEEN_SET::add, "13371337:tests", true)
+        return new Rewriter(LandingZone.class, LandingZone.SEEN_SET::add, "13371337:tests", false, false, false)
                 .rewrite(classReaderBlackHole);
     }
 
     @Benchmark
     public byte[] loadBoth() {
-        return new Rewriter(LandingZone.class, LandingZone.SEEN_SET::add, "13371337:tests", true)
+        return new Rewriter(LandingZone.class, LandingZone.SEEN_SET::add, "13371337:tests", false, false, false)
                 .rewrite(new ClassReader(classBlackHole));
     }
 

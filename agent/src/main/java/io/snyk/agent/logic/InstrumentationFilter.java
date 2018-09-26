@@ -84,8 +84,6 @@ public class InstrumentationFilter {
 
     /**
      * Try and eliminate some methods we don't want to look at.
-     * TODO: This is actually mandatory, as it enforces some asserts
-     * TODO: that the actual rewriter should be enforcing, perhaps?
      */
     static boolean skipMethod(ClassNode self, MethodNode method) {
         // `abstract` and `native` methods don't have Java code in them,
@@ -113,16 +111,7 @@ public class InstrumentationFilter {
         // Signatures which you'd think we could ignore, but probably can't:
         //  * `void foo()`: this is the internal type of constructors, maybe exclude those?
 
-//        Type.getArgumentTypes(method.desc);
-//        Type.getReturnType(method.desc);
-
-        if (isAccessor(method)) {
-            return true;
-        }
-
-        if (!branches(self, method)) {
-            return true;
-        }
+        // TODO: currently we are doing no signature filtering, beyond the <clinit thing
 
         return false;
     }
@@ -193,7 +182,7 @@ public class InstrumentationFilter {
         return false;
     }
 
-    private static boolean isAccessor(MethodNode method) {
+    static boolean isAccessor(MethodNode method) {
         if (isStatic(method.access)) {
             return false;
         }

@@ -17,17 +17,23 @@ public class Config {
     public final String urlPrefix;
     public final boolean trackClassLoading;
     public final boolean debugLoggingEnabled;
+    public final boolean trackBranchingMethods;
+    public final boolean trackAccessors;
 
     Config(String projectId,
            List<Filter> filters,
            String urlPrefix,
            boolean trackClassLoading,
+           boolean trackAccessors,
+           boolean trackBranchingMethods,
            boolean debugLoggingEnabled) {
         this.projectId = null != projectId ? projectId : "no-project-id-provided";
         this.filters = filters;
         this.urlPrefix = null != urlPrefix ? urlPrefix : "http://localhost:8000";
         this.trackClassLoading = trackClassLoading;
+        this.trackAccessors = trackAccessors;
         this.debugLoggingEnabled = debugLoggingEnabled;
+        this.trackBranchingMethods = trackBranchingMethods;
     }
 
     public static Config fromFile(String path) {
@@ -41,13 +47,10 @@ public class Config {
     }
 
     public static Config fromLines(Iterable<String> lines) {
-        String projectId = null;
-        Map<String, Filter.Builder> filters = new HashMap<>();
-        String urlPrefix = null;
-        boolean trackClassLoading = false;
-        boolean debugLoggingEnabled = false;
+        final ConfigBuilder builder = new ConfigBuilder();
+        final Map<String, Filter.Builder> filters = new HashMap<>();
 
-        // this looks awfully like a .properties file. Maybe it could be a .properties file?
+        // this looks awfully like a .properties file. Maybe it could use a real properties loader?
         // .properties is awful at unicode and multi-value, but we probably don't care
 
         for (String line : lines) {
@@ -62,26 +65,36 @@ public class Config {
             }
 
             final String[] splitUp = stripped.split("\\s*=\\s*", 2);
+            if (splitUp.length < 2) {
+                Log.loading("invalid line: " + stripped);
+                continue;
+            }
+
             final String key = splitUp[0];
             final String value = splitUp[1];
 
             if ("projectId".equals(key)) {
-                projectId = value;
+                builder.projectId = value;
                 continue;
             }
 
             if ("trackClassLoading".equals(key)) {
-                trackClassLoading = Boolean.parseBoolean(value);
+                builder.trackClassLoading = Boolean.parseBoolean(value);
+                continue;
+            }
+
+            if ("trackBranchingMethods".equals(key)) {
+                builder.trackBranchingMethods = Boolean.parseBoolean(value);
                 continue;
             }
 
             if ("debugLoggingEnabled".equals(key)) {
-                debugLoggingEnabled = Boolean.parseBoolean(value);
+                builder.debugLoggingEnabled = Boolean.parseBoolean(value);
                 continue;
             }
 
             if ("urlPrefix".equals(key)) {
-                urlPrefix = value;
+                builder.urlPrefix = value;
                 continue;
             }
 
@@ -117,8 +130,8 @@ public class Config {
             Log.loading("unrecognised key: " + key);
         }
 
-        return new Config(projectId,
-                filters.values().stream().map(Filter.Builder::build).collect(Collectors.toList()),
-                urlPrefix, trackClassLoading, debugLoggingEnabled);
+        builder.filters = filters.values().stream().map(Filter.Builder::build).collect(Collectors.toList());
+
+        return builder.build();
     }
 }

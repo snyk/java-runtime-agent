@@ -16,6 +16,8 @@ public class Rewriter {
     private final ToIntFunction<String> allocateNewId;
     private final String sourceLocation;
     private final boolean trackClassLoading;
+    private final boolean trackAccessors;
+    private final boolean trackBranchingMethods;
 
     // This Class<?> must implement the same "static interface" as LandingZone.class.
     // There's no way to express this in Java. The marked public static methods must
@@ -23,17 +25,31 @@ public class Rewriter {
     public Rewriter(Class<?> tracker,
                     ToIntFunction<String> allocateNewId,
                     String sourceLocation,
-                    boolean trackClassLoading) {
+                    boolean trackClassLoading,
+                    boolean trackAccessors,
+                    boolean trackBranchingMethods) {
         this.ourInternalName = tracker.getName().replace('.', '/');
         this.allocateNewId = allocateNewId;
         this.sourceLocation = sourceLocation;
         this.trackClassLoading = trackClassLoading;
+        this.trackAccessors = trackAccessors;
+        this.trackBranchingMethods = trackBranchingMethods;
     }
 
     public byte[] rewrite(ClassReader reader) {
         final ClassNode cn = AsmUtil.parse(reader);
         for (MethodNode method : cn.methods) {
             if (InstrumentationFilter.skipMethod(cn, method)) {
+                continue;
+            }
+
+            final boolean includeWrtAccessors = trackAccessors || !InstrumentationFilter.isAccessor(method);
+            if (!includeWrtAccessors) {
+                continue;
+            }
+
+            final boolean includeWrtBranching = trackBranchingMethods || InstrumentationFilter.branches(cn, method);
+            if (!includeWrtBranching) {
                 continue;
             }
 

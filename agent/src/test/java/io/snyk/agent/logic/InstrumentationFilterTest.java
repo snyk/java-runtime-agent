@@ -6,40 +6,46 @@ import io.snyk.asm.ClassReader;
 import io.snyk.asm.tree.ClassNode;
 import io.snyk.asm.tree.MethodNode;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.NoSuchElementException;
 
-import static io.snyk.agent.logic.InstrumentationFilter.skipMethod;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static io.snyk.agent.logic.InstrumentationFilter.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class InstrumentationFilterTest {
-    @Test
-    void methodsOfVictim() throws Exception {
+    @ParameterizedTest(name = "[{0}] skip: {1} accessor: {2}, branches: {3}")
+    @CsvSource({
+            // method name,  skip,  isAcc, branches,
+            "getStringField, false, true , false",
+            "getIntField   , false, true , false",
+            "setStringField, false, true , false",
+            "setIntField   , false, true , false",
+            "call          , false, false, false",
+            "localGeneric  , false, false, false",
+            // annoying one.. this is probably safe to skip, under the "branches" rule
+            "returnLambda  , false, false, true ",
+            "switch1       , false, false, true ",
+            "switch2       , false, false, true ",
+
+            // System.out is a static final field containing a PrintStream,
+            // we virtually invoke println on this PrintStream.
+            // Ironically this is correct, as System#setOut exists, but ideally
+            // a flow control thing would claim this method was safe in this case
+            // Probably not a super interesting one.
+            "printInt      , false, false, true ",
+            "printConcat   , false, false, true ",
+            "concat        , false, false, false",
+    })
+    void methodsOfVictim(String method, boolean skip, boolean accessor, boolean branches) throws Exception {
         final String name = TestVictim.class.getName();
-        final ClassNode node = AsmUtil.parse(new ClassReader(name));
-        assertTrue(skipMethod(node, findMethod(node, "getStringField")));
-        assertTrue(skipMethod(node, findMethod(node, "getIntField")));
-        assertTrue(skipMethod(node, findMethod(node, "setStringField")));
-        assertTrue(skipMethod(node, findMethod(node, "setIntField")));
-        assertTrue(skipMethod(node, findMethod(node, "call")));
-        assertTrue(skipMethod(node, findMethod(node, "localGeneric")));
+        final ClassNode classNode = AsmUtil.parse(new ClassReader(name));
+        final MethodNode node = findMethod(classNode, method);
 
-        // annoying one.. this is probably safe to skip, under the "branches" rule
-        assertFalse(skipMethod(node, findMethod(node, "returnLambda")));
-
-        assertFalse(skipMethod(node, findMethod(node, "switch1")));
-        assertFalse(skipMethod(node, findMethod(node, "switch2")));
-
-        // System.out is a static final field containing a PrintStream,
-        // we virtually invoke println on this PrintStream.
-        // Ironically this is correct, as System#setOut exists, but ideally
-        // a flow control thing would claim this method was safe in this case
-        // Probably not a super interesting one.
-        assertFalse(skipMethod(node, findMethod(node, "printInt")));
-        assertFalse(skipMethod(node, findMethod(node, "printConcat")));
-
-        assertTrue(skipMethod(node, findMethod(node, "concat")));
+        assertEquals(skip, skipMethod(classNode, node), "skip");
+        assertEquals(accessor, isAccessor(node), "accessor");
+        assertEquals(branches, branches(classNode, node), "branches");
     }
 
     @Test
@@ -51,7 +57,7 @@ public class InstrumentationFilterTest {
                     continue;
                 }
 
-                if (InstrumentationFilter.branches(c, method)) {
+                if (branches(c, method)) {
                     System.out.println(c.name + " // " + method.name + method.desc);
                 }
             }
