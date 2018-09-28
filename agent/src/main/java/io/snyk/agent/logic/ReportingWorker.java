@@ -124,7 +124,7 @@ public class ReportingWorker implements Runnable {
         Json.appendString(msg, vmVendor);
         msg.append(",\"version\":");
         Json.appendString(msg, vmVersion);
-        msg.append(",\"correlationId\":");
+        msg.append("}},\"correlationId\":");
         Json.appendString(msg, UUID.randomUUID().toString());
         msg.append(",");
         return msg;
