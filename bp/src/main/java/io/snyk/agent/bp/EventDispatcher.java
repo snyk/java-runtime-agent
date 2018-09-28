@@ -175,7 +175,7 @@ public class EventDispatcher extends Thread {
                 final Beacon beacon = new Beacon(UUID.fromString(config.projectId), Instant.now(), entries.toArray(new MethodEntry[0]));
                 new Thread(() -> {
                     try {
-                        final StatusLine resp = Request.Post(config.urlPrefix + "/api/v1/beacon")
+                        final StatusLine resp = Request.Post(config.homeBaseUrl)
                                 .bodyByteArray(new ObjectMapper().writeValueAsBytes(beacon),
                                         ContentType.APPLICATION_JSON)
                                 .execute().returnResponse().getStatusLine();

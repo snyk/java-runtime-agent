@@ -1,63 +1,79 @@
 package io.snyk.agent.logic;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.gson.JsonElement;
 import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
 import io.snyk.agent.util.Log;
 import io.snyk.agent.util.UseCounter;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class ReportingWorkerTest {
 
-    private JsonElement onlyDrain(Consumer<UseCounter.Drain> drainer) {
-        return toJson(drainer, _jarInfoMap -> {
+    private void onlyDrain(Consumer<UseCounter.Drain> drainer) throws IOException {
+        toJson(drainer, _jarInfoMap -> {
         }, Collections.emptyList());
     }
 
-    private JsonElement onlyJar(Consumer<ClassSource> jarInfoAdder) {
-        return toJson(_drainer -> {
+    private void onlyJar(Consumer<ClassSource> jarInfoAdder) throws IOException {
+        toJson(_drainer -> {
         }, jarInfoAdder, Collections.emptyList());
     }
 
-    private JsonElement onlyConfig(Collection<String> configLines) {
-        return toJson(_drainer -> {
+    private void onlyConfig(Collection<String> configLines) throws IOException {
+        toJson(_drainer -> {
         }, _jarInfoAdder -> {
         }, configLines);
     }
 
-    private JsonElement toJson(Consumer<UseCounter.Drain> drainer,
-                               Consumer<ClassSource> jarInfoAdder,
-                               Collection<String> configLines) {
+    private void toJson(Consumer<UseCounter.Drain> drainer,
+                        Consumer<ClassSource> jarInfoAdder,
+                        Collection<String> configLines) throws IOException {
         final UseCounter.Drain drain = new UseCounter.Drain();
         drainer.accept(drain);
         final ClassSource classSource = new ClassSource(new Log());
         jarInfoAdder.accept(classSource);
 
-        final String json = new ReportingWorker(new Log(),
-                Config.fromLines(configLines),
-                classSource).serialiseState(drain);
+        final List<CharSequence> postings = new ArrayList<>();
+        final ReportingWorker.Poster poster = postings::add;
 
-        System.err.println(json);
+        final List<String> configs = Lists.newArrayList(configLines);
+        configs.add("projectId=1f9378b7-46fa-41ea-a156-98f7a8930ee1");
+        new ReportingWorker(new Log(),
+                Config.fromLines(configs),
+                classSource).doPosting(drain, poster);
 
-        // this weird dance is important; half of the methods turn leniency back on for you,
-        // and we really care
-        final JsonReader parser = new JsonReader(new StringReader(json));
-        parser.setLenient(false);
-        return Streams.parse(parser);
+        assertFalse(postings.isEmpty(), "at least the metadata should be sent");
+
+        for (CharSequence fragment : postings) {
+            final String json = "{" + fragment + "}";
+            // this weird dance is important; half of the methods turn leniency back on for you,
+            // and we really care
+            System.err.println("input: " + json);
+            final JsonReader parser = new JsonReader(new StringReader(json));
+            parser.setLenient(false);
+            System.err.println("output: " + Streams.parse(parser));
+
+            // TODO: we're not actually confirming there's anything useful in here, only that it's valid JSON
+
+            // what an odd API
+            assertEquals(JsonToken.END_DOCUMENT, parser.peek());
+        }
     }
 
     @Test
-    void serialiseWeirdListSizesCorrectly() {
+    void serialiseWeirdListSizesCorrectly() throws IOException {
         onlyDrain(drain -> drain.methodEntries.add("foo:bar:baz:quux"));
         onlyDrain(drain -> {
             drain.methodEntries.add("foo:bar:baz:quux");

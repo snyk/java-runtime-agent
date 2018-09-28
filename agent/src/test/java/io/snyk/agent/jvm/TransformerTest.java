@@ -1,5 +1,6 @@
 package io.snyk.agent.jvm;
 
+import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
 import io.snyk.agent.logic.ClassSource;
 import io.snyk.agent.logic.Config;
@@ -9,7 +10,9 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -65,8 +68,10 @@ class TransformerTest {
         final URL srcJar = TransformerTest.class.getResource("/example-1.0-SNAPSHOT.jar");
         final URLClassLoader classLoader = new URLClassLoader(new URL[]{srcJar});
         final Log logger = new Log();
+        final List<String> configItems = Lists.newArrayList(config);
+        configItems.add("projectId=b2c2d38f-f147-4010-b92d-3dea94893d5b");
         final Transformer transformer = new Transformer(logger,
-                Config.fromLines(Arrays.asList(config)),
+                Config.fromLines(configItems),
                 new ClassSource(logger));
         final byte[] originalBytes = ByteStreams.toByteArray(classLoader.getResourceAsStream(
                 "io/snyk/example/" + clazz + ".class"));
