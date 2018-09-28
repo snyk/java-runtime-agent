@@ -12,12 +12,13 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.fail;
 
 class ReportingWorkerTest {
 
@@ -50,26 +51,34 @@ class ReportingWorkerTest {
 
         final List<String> configs = Lists.newArrayList(configLines);
         configs.add("projectId=1f9378b7-46fa-41ea-a156-98f7a8930ee1");
-        new ReportingWorker(new Log(),
+        final ReportingWorker reportingWorker = new ReportingWorker(new Log(),
                 Config.fromLines(configs),
-                classSource).doPosting(drain, poster);
+                classSource);
+        reportingWorker.doPosting(drain, poster);
+        assertValidJson(new String(reportingWorker.new StdLibHttpPoster(new URL("http://localhost:3232")).fullMessage(
+                "\"fragment\": true"),
+                StandardCharsets.UTF_8));
 
         assertFalse(postings.isEmpty(), "at least the metadata should be sent");
 
         for (CharSequence fragment : postings) {
             final String json = "{" + fragment + "}";
-            // this weird dance is important; half of the methods turn leniency back on for you,
-            // and we really care
-            System.err.println("input: " + json);
-            final JsonReader parser = new JsonReader(new StringReader(json));
-            parser.setLenient(false);
-            System.err.println("output: " + Streams.parse(parser));
-
-            // TODO: we're not actually confirming there's anything useful in here, only that it's valid JSON
-
-            // what an odd API
-            assertEquals(JsonToken.END_DOCUMENT, parser.peek());
+            assertValidJson(json);
         }
+    }
+
+    private void assertValidJson(String json) throws IOException {
+        // this weird dance is important; half of the methods turn leniency back on for you,
+        // and we really care
+        System.err.println("input: " + json);
+        final JsonReader parser = new JsonReader(new StringReader(json));
+        parser.setLenient(false);
+        System.err.println("output: " + Streams.parse(parser));
+
+        // TODO: we're not actually confirming there's anything useful in here, only that it's valid JSON
+
+        // what an odd API
+        assertEquals(JsonToken.END_DOCUMENT, parser.peek());
     }
 
     @Test

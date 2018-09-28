@@ -68,7 +68,7 @@ public class ReportingWorker implements Runnable {
     }
 
     private void work(UseCounter.Drain drain) {
-        try (final StdLibHttpPoster homeBaseEndpoint = new StdLibHttpPoster(jsonHeader().toString(), new URL(config.homeBaseUrl))) {
+        try (final StdLibHttpPoster homeBaseEndpoint = new StdLibHttpPoster(new URL(config.homeBaseUrl))) {
             doPosting(drain, homeBaseEndpoint);
         } catch (Exception e) {
             log.warn("reporting failed");
@@ -325,8 +325,8 @@ public class ReportingWorker implements Runnable {
         private final URL destination;
         private HttpURLConnection lastConnection = null;
 
-        StdLibHttpPoster(String prefix, URL destination) {
-            this.prefix = prefix;
+        StdLibHttpPoster(URL destination) {
+            this.prefix = jsonHeader().toString();
             this.destination = destination;
         }
 
@@ -351,13 +351,8 @@ public class ReportingWorker implements Runnable {
             }
         }
 
-        private byte[] fullMessage(CharSequence msg) {
-            final StringBuilder wholeMessage = new StringBuilder(prefix.length() + msg.length() + 32);
-            wholeMessage.append(prefix);
-            wholeMessage.append(msg);
-            wholeMessage.append("}");
-
-            return wholeMessage.toString().getBytes(StandardCharsets.UTF_8);
+        byte[] fullMessage(CharSequence msg) {
+            return (prefix + msg + "}").getBytes(StandardCharsets.UTF_8);
         }
 
         @Override
