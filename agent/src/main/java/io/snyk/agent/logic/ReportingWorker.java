@@ -14,9 +14,8 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.Instant;
-import java.util.Comparator;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 public class ReportingWorker implements Runnable {
@@ -69,31 +68,46 @@ public class ReportingWorker implements Runnable {
     }
 
     private void work(UseCounter.Drain drain) {
-        final String msg = serialiseState(drain);
-
-        log.info("reporting: " + msg);
-
-        try {
-            final byte[] bytes = msg.getBytes(StandardCharsets.UTF_8);
-
-            final HttpURLConnection conn = (HttpURLConnection)
-                    new URL(config.urlPrefix + "/api/v1/beacon").openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json");
-            conn.setFixedLengthStreamingMode(bytes.length);
-            conn.setDoOutput(true);
-            try (final OutputStream body = conn.getOutputStream()) {
-                body.write(bytes);
-            }
-            conn.getInputStream().close();
-            conn.disconnect();
-        } catch (IOException e) {
+        try (final StdLibHttpPoster homeBaseEndpoint = new StdLibHttpPoster(jsonHeader().toString(), new URL(config.homeBaseUrl))) {
+            doPosting(drain, homeBaseEndpoint);
+        } catch (Exception e) {
             log.warn("reporting failed");
             log.stackTrace(e);
         }
     }
 
-    String serialiseState(UseCounter.Drain drain) {
+    void doPosting(UseCounter.Drain from, Poster poster)
+            throws IOException {
+        poster.sendFragment(buildMeta());
+        postArray(poster, "eventsToSend", from.methodEntries.iterator(), this::appendMethodEntry);
+        postArray(poster, "eventsToSend", from.loadClasses.entrySet().iterator(), this::appendLoadClass);
+        postArray(poster, "errors", classSource.errors.iterator(), this::appendError);
+    }
+
+    private <T> void postArray(Poster poster,
+                               String fieldName,
+                               Iterator<T> array,
+                               BiConsumer<StringBuilder, T> appender)
+            throws IOException {
+        while (array.hasNext()) {
+            final StringBuilder msg = new StringBuilder(4096);
+            msg.append("\"" + fieldName + "\":[\n");
+
+            // guarantee progress by always sending at least one event
+            appender.accept(msg, array.next());
+
+            while (array.hasNext() && msg.length() < config.homeBasePostLimit) {
+                appender.accept(msg, array.next());
+            }
+
+            trimRightCommaSpacing(msg);
+            msg.append("]");
+
+            poster.sendFragment(msg.toString());
+        }
+    }
+
+    private CharSequence jsonHeader() {
         final StringBuilder msg = new StringBuilder(4096);
         msg.append("{\"projectId\":");
         Json.appendString(msg, config.projectId);
@@ -110,7 +124,66 @@ public class ReportingWorker implements Runnable {
         Json.appendString(msg, vmVendor);
         msg.append(",\"version\":");
         Json.appendString(msg, vmVersion);
-        msg.append(",\"filters\":[\n");
+        msg.append(",\"correlationId\":");
+        Json.appendString(msg, UUID.randomUUID().toString());
+        msg.append(",");
+        return msg;
+    }
+
+    private void appendMethodEntry(StringBuilder msg, String rawLocator) {
+        final String[] parts = rawLocator.split(":", 4);
+        final String className = parts[0];
+        final String methodName = parts[1];
+        final String classCrc32c = parts[2];
+        final String sourceUrl = parts[3];
+        final URI sourceUri = URI.create(sourceUrl);
+        msg.append("{\"methodEntry\":{");
+        msg.append("\"className\":");
+        Json.appendString(msg, className);
+        msg.append(",\"methodName\":");
+        Json.appendString(msg, methodName);
+        msg.append(",\"classCrc32c\":");
+        Json.appendString(msg, classCrc32c);
+        msg.append(",\"sourceUri\":");
+        Json.appendString(msg, sourceUrl);
+        msg.append(",\"jarInfo\":[");
+        for (String jarInfo : classSource.infoFor(sourceUri)
+                .stream().sorted().collect(Collectors.toList())) {
+            Json.appendString(msg, jarInfo);
+            msg.append(",");
+        }
+        trimRightCommaSpacing(msg);
+        msg.append("]}},\n");
+    }
+
+    private void appendLoadClass(StringBuilder msg, Map.Entry<String, HashSet<String>> entry) {
+        final String caller = entry.getKey();
+        final HashSet<String> loaded = entry.getValue();
+
+        msg.append("{\"loadClass\":{");
+        msg.append("\"from\":");
+        Json.appendString(msg, caller);
+        msg.append(",\"args\":[");
+        loaded.forEach(arg -> {
+            msg.append("\n  ");
+            Json.appendString(msg, arg);
+            msg.append(",");
+        });
+        trimRightCommaSpacing(msg);
+        msg.append("]}},");
+    }
+
+    private void appendError(StringBuilder msg, ObservedError error) {
+        msg.append("{\"msg\":");
+        Json.appendString(msg, error.msg);
+        msg.append(",\"exception\":");
+        Json.appendString(msg, error.problem);
+        msg.append("},");
+    }
+
+    private StringBuilder buildMeta() {
+        final StringBuilder msg = new StringBuilder(1024);
+        msg.append("\"filters\":[\n");
         config.filters.forEach(filter -> {
             msg.append("{\"name\":");
             Json.appendString(msg, filter.name);
@@ -155,62 +228,9 @@ public class ReportingWorker implements Runnable {
             msg.append("],\n");
         });
         trimRightCommaSpacing(msg);
-        msg.append("}}}\n");
-        msg.append(", \"eventsToSend\":[\n");
+        msg.append("}\n");
 
-        for (String loc : drain.methodEntries) {
-            final String[] parts = loc.split(":", 4);
-            final String className = parts[0];
-            final String methodName = parts[1];
-            final String classCrc32c = parts[2];
-            final String sourceUrl = parts[3];
-            final URI sourceUri = URI.create(sourceUrl);
-            msg.append("{\"methodEntry\":{");
-            msg.append("\"className\":");
-            Json.appendString(msg, className);
-            msg.append(",\"methodName\":");
-            Json.appendString(msg, methodName);
-            msg.append(",\"classCrc32c\":");
-            Json.appendString(msg, classCrc32c);
-            msg.append(",\"sourceUri\":");
-            Json.appendString(msg, sourceUrl);
-            msg.append(",\"jarInfo\":[");
-            for (String jarInfo : classSource.infoFor(sourceUri)
-                    .stream().sorted().collect(Collectors.toList())) {
-                Json.appendString(msg, jarInfo);
-                msg.append(",");
-            }
-            trimRightCommaSpacing(msg);
-            msg.append("]}},\n");
-        }
-
-        drain.loadClasses.forEach((caller, loaded) -> {
-            msg.append("{\"loadClass\":{");
-            msg.append("\"from\":");
-            Json.appendString(msg, caller);
-            msg.append(",\"args\":[");
-            loaded.forEach(arg -> {
-                msg.append("\n  ");
-                Json.appendString(msg, arg);
-                msg.append(",");
-            });
-            trimRightCommaSpacing(msg);
-            msg.append("]}},");
-        });
-
-        trimRightCommaSpacing(msg);
-        msg.append("\n],");
-        msg.append("\"errors\":[");
-        classSource.errors.forEach(error -> {
-            msg.append("{\"msg\":");
-            Json.appendString(msg, error.msg);
-            msg.append(",\"exception\":");
-            Json.appendString(msg, error.problem);
-            msg.append("},");
-        });
-        trimRightCommaSpacing(msg);
-        msg.append("]}");
-        return msg.toString();
+        return msg;
     }
 
     static void trimRightCommaSpacing(StringBuilder msg) {
@@ -275,6 +295,77 @@ public class ReportingWorker implements Runnable {
              final InputStreamReader reader = new InputStreamReader(input);
              final BufferedReader buffered = new BufferedReader(reader)) {
             return buffered.readLine();
+        }
+    }
+
+    /**
+     * Try a bit harder to read bytes from a reader, even if it blocks for a bit.
+     */
+    private static int readMany(final InputStream input, final byte[] buffer) throws IOException {
+        int remaining = buffer.length;
+        while (remaining > 0) {
+            final int location = buffer.length - remaining;
+            final int count = input.read(buffer, location, remaining);
+            // -1 means EOF
+            if (-1 == count) {
+                break;
+            }
+            remaining -= count;
+        }
+        return buffer.length - remaining;
+    }
+
+    interface Poster {
+        void sendFragment(CharSequence msg) throws IOException;
+    }
+
+    class StdLibHttpPoster implements Poster, AutoCloseable {
+
+        private final String prefix;
+        private final URL destination;
+        private HttpURLConnection lastConnection = null;
+
+        StdLibHttpPoster(String prefix, URL destination) {
+            this.prefix = prefix;
+            this.destination = destination;
+        }
+
+        @Override
+        public void sendFragment(CharSequence msg) throws IOException {
+            final byte[] bytes = fullMessage(msg);
+
+            final HttpURLConnection conn = (HttpURLConnection)
+                    destination.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setFixedLengthStreamingMode(bytes.length);
+            conn.setDoOutput(true);
+            try (final OutputStream body = conn.getOutputStream()) {
+                body.write(bytes);
+            }
+            try (final InputStream response = conn.getInputStream()) {
+                final byte[] buffer = new byte[16 * 1024];
+                final int count = readMany(response, buffer);
+                final String reply = new String(buffer, 0, count, StandardCharsets.UTF_8);
+                log.info("reply: " + reply);
+            }
+        }
+
+        private byte[] fullMessage(CharSequence msg) {
+            final StringBuilder wholeMessage = new StringBuilder(prefix.length() + msg.length() + 32);
+            wholeMessage.append(prefix);
+            wholeMessage.append(msg);
+            wholeMessage.append("}");
+
+            return wholeMessage.toString().getBytes(StandardCharsets.UTF_8);
+        }
+
+        @Override
+        public void close() throws Exception {
+            if (null != lastConnection) {
+                lastConnection.disconnect();
+                lastConnection = null;
+            }
         }
     }
 }

@@ -6,6 +6,7 @@ import io.snyk.agent.util.Log;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,22 +15,34 @@ import java.util.stream.Collectors;
 public class Config {
     public final String projectId;
     public final List<Filter> filters;
-    public final String urlPrefix;
+    public final String homeBaseUrl;
+    public final long homeBasePostLimit;
     public final boolean trackClassLoading;
     public final boolean debugLoggingEnabled;
     public final boolean trackBranchingMethods;
     public final boolean trackAccessors;
 
+    private static final long DEFAULT_POST_LIMIT = 1024 * 1024;
+
     Config(String projectId,
            List<Filter> filters,
-           String urlPrefix,
+           String homeBaseUrl,
+           Long homeBasePostLimit,
            boolean trackClassLoading,
            boolean trackAccessors,
            boolean trackBranchingMethods,
            boolean debugLoggingEnabled) {
-        this.projectId = null != projectId ? projectId : "no-project-id-provided";
-        this.filters = filters;
-        this.urlPrefix = null != urlPrefix ? urlPrefix : "http://localhost:8000";
+        if (null == projectId) {
+            throw new IllegalStateException("projectId is required");
+        }
+        this.projectId = projectId;
+        this.filters = Collections.unmodifiableList(filters);
+        this.homeBaseUrl = null != homeBaseUrl ? homeBaseUrl : "https://homebase.snyk.io/api/v1/beacon";
+        if (null == homeBasePostLimit) {
+            this.homeBasePostLimit = DEFAULT_POST_LIMIT;
+        } else {
+            this.homeBasePostLimit = homeBasePostLimit;
+        }
         this.trackClassLoading = trackClassLoading;
         this.trackAccessors = trackAccessors;
         this.debugLoggingEnabled = debugLoggingEnabled;
@@ -78,6 +91,11 @@ public class Config {
                 continue;
             }
 
+            if ("trackAccessors".equals(key)) {
+                builder.trackAccessors = Boolean.parseBoolean(value);
+                continue;
+            }
+
             if ("trackClassLoading".equals(key)) {
                 builder.trackClassLoading = Boolean.parseBoolean(value);
                 continue;
@@ -93,8 +111,8 @@ public class Config {
                 continue;
             }
 
-            if ("urlPrefix".equals(key)) {
-                builder.urlPrefix = value;
+            if ("homeBaseUrl".equals(key)) {
+                builder.homeBaseUrl = value;
                 continue;
             }
 
