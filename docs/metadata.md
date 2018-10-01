@@ -1,3 +1,27 @@
+## What does `registry` want from `homebase`?
+
+Within a project, do any of the project's libraries which have `vulndb` metadata, hit those
+locations?
+
+No.
+
+Everything's within a project. Based on the libraries we know the project has, we have a
+list of vulnerabilities?
+
+Each vulnerability has a location, including a library locator/version, and some information
+about the method.
+
+Are we expecting `registry` to work for projects that haven't been setup, so we have real
+library/vulnerability information available? No, 'cos there's no way to get a `projectId`?
+
+If the agent fetches the metadata from `registry`, given the `projectId`, it could just return
+an internal/private id, which is included in the post, and all the library filtering is done
+in `registry`, not in the agent.
+
+It's still useful to send the system information, so we know if the build running in production
+is the same as the one that was tested by `snyk-cli`.
+
+
 ## v0.0 metadata
 
  * timestamp of method call
@@ -7,7 +31,9 @@
  * moduleName
  * moduleScriptRelativePath
 
+
 ## v0.1 metadata
+
  * timestamp of ... the submission? Seems unnecessary, for http.
  * potentially empty set of .. `module locators`:
    * e.g. `()`
@@ -23,10 +49,18 @@
  * identifier for the method (ignoring lambdas / synthetics)
    * e.g. `getPath`
    * e.g. `org.apache.catalina.core.ContainerBase#getMappingObject(Ljava.lang.Object;, int, int)` (stick to the `fourSignature`?)
+ * filter name (for correlation with generated filters, and debugging)
  * extra info, entirely optional?
    * line number
    * `fiveSignature` (see below)
    * `baseDir`, `scriptRelativePath`?
+
+Would it be better if `homebase` rebuilt the module locator information based on sources, and
+the system information scan? Can this work for node? It would make sense for Java.
+
+Note that these are in different messages, so it would need to be rebuilt after message reception,
+possibly during fetch.
+
 
 ## terms
 
@@ -34,6 +68,7 @@
  * "typically": unless someone has intentionally messed with us (95% of the time)
  * "frequently": in a real deployment, it'd probably work (80% of the time)
  * "sometimes": available with naive, positive defaults (60% of the time)
+
 
 ## node overview
 
@@ -52,6 +87,7 @@ e.g.
 
 Is the line number in the `bp` required, or is the method name globally unique?
 i.e. is there no other namespacing in node?
+
 
 ## java overview
 
