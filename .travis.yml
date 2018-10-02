@@ -1,6 +1,15 @@
 language: java
 jdk: oraclejdk8
-script: "./gradlew test shadow"
+script:
+- ./gradlew test shadow
+- cd agent/e2e
+- make
 branches:
   only:
   - master
+
+# https://docs.travis-ci.com/user/docker/
+sudo: required
+services:
+- docker
+
