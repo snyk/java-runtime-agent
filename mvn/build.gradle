@@ -3,6 +3,8 @@ plugins {
     id 'application'
 }
 
+mainClassName = 'io.snyk.agent.FindMavens'
+
 dependencies {
     compile project(':common')
     compile 'com.google.guava:guava:26.0-jre'
