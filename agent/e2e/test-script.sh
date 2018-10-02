@@ -20,12 +20,11 @@ TOMCAT_PID=$!
 
 trap "kill ${TOMCAT_PID} ${HOMEBASE_PID}" EXIT
 
-# just for log readability on travis, where the tomcat logs seem to vanish..
-sleep 1
-
 # wait for the app to start
-for i in 1 2 3 4 5; do
+for i in {1..30}; do
     sleep 1
+
+    echo 'Checking for startup, attempt '${i}'...'
     # we don't really care if this fails for another reason, we'll try it again later
     curl -q http://localhost:8080 && (echo Started; break)
 done
