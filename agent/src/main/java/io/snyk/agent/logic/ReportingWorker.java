@@ -9,10 +9,12 @@ import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -26,6 +28,7 @@ public class ReportingWorker implements Runnable {
     private final Log log;
     private final Config config;
     private final ClassSource classSource;
+    private final Poster poster;
 
     {
         final RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
@@ -34,12 +37,20 @@ public class ReportingWorker implements Runnable {
         vmVersion = runtime.getVmVersion();
     }
 
-    public ReportingWorker(Log log, Config config, ClassSource classSource) {
+    public ReportingWorker(Log log, Config config, ClassSource classSource) throws MalformedURLException {
         this.log = log;
         this.config = config;
         this.classSource = classSource;
 
         log.info("detected vmVendor: " + vmVendor);
+        switch (config.homeBaseUrl.getScheme()) {
+            case "file":
+                poster = new DirectoryWritingPoster(config.homeBaseUrl);
+                break;
+            default:
+                poster = new StdLibHttpPoster(config.homeBaseUrl.toURL());
+                break;
+        }
     }
 
     @Override
@@ -68,8 +79,8 @@ public class ReportingWorker implements Runnable {
     }
 
     private void work(UseCounter.Drain drain) {
-        try (final StdLibHttpPoster homeBaseEndpoint = new StdLibHttpPoster(new URL(config.homeBaseUrl))) {
-            doPosting(drain, homeBaseEndpoint);
+        try {
+            doPosting(drain, this.poster);
         } catch (Exception e) {
             log.warn("reporting failed");
             log.stackTrace(e);
@@ -78,13 +89,15 @@ public class ReportingWorker implements Runnable {
 
     void doPosting(UseCounter.Drain from, Poster poster)
             throws IOException {
-        poster.sendFragment(buildMeta());
-        postArray(poster, "eventsToSend", from.methodEntries.iterator(), this::appendMethodEntry);
-        postArray(poster, "eventsToSend", from.loadClasses.entrySet().iterator(), this::appendLoadClass);
-        postArray(poster, "errors", classSource.errors.iterator(), this::appendError);
+        final String prefix = jsonHeader().toString();
+        poster.sendFragment(prefix, buildMeta());
+        postArray(poster, prefix, "eventsToSend", from.methodEntries.iterator(), this::appendMethodEntry);
+        postArray(poster, prefix, "eventsToSend", from.loadClasses.entrySet().iterator(), this::appendLoadClass);
+        postArray(poster, prefix, "errors", classSource.errors.iterator(), this::appendError);
     }
 
     private <T> void postArray(Poster poster,
+                               String prefix,
                                String fieldName,
                                Iterator<T> array,
                                BiConsumer<StringBuilder, T> appender)
@@ -103,11 +116,11 @@ public class ReportingWorker implements Runnable {
             trimRightCommaSpacing(msg);
             msg.append("]");
 
-            poster.sendFragment(msg.toString());
+            poster.sendFragment(prefix, msg.toString());
         }
     }
 
-    private CharSequence jsonHeader() {
+    CharSequence jsonHeader() {
         final StringBuilder msg = new StringBuilder(4096);
         msg.append("{\"projectId\":");
         Json.appendString(msg, config.projectId);
@@ -316,23 +329,21 @@ public class ReportingWorker implements Runnable {
     }
 
     interface Poster {
-        void sendFragment(CharSequence msg) throws IOException;
+        void sendFragment(String prefix, CharSequence msg) throws IOException;
     }
 
     class StdLibHttpPoster implements Poster, AutoCloseable {
 
-        private final String prefix;
         private final URL destination;
         private HttpURLConnection lastConnection = null;
 
         StdLibHttpPoster(URL destination) {
-            this.prefix = jsonHeader().toString();
             this.destination = destination;
         }
 
         @Override
-        public void sendFragment(CharSequence msg) throws IOException {
-            final byte[] bytes = fullMessage(msg);
+        public void sendFragment(String prefix, CharSequence msg) throws IOException {
+            final byte[] bytes = buildFullMessage(prefix, msg);
 
             final HttpURLConnection conn = (HttpURLConnection)
                     destination.openConnection();
@@ -351,9 +362,6 @@ public class ReportingWorker implements Runnable {
             }
         }
 
-        byte[] fullMessage(CharSequence msg) {
-            return (prefix + msg + "}").getBytes(StandardCharsets.UTF_8);
-        }
 
         @Override
         public void close() throws Exception {
@@ -361,6 +369,29 @@ public class ReportingWorker implements Runnable {
                 lastConnection.disconnect();
                 lastConnection = null;
             }
+        }
+    }
+
+    public byte[] buildFullMessage(String prefix, CharSequence msg) {
+        return (prefix + msg + "}").getBytes(StandardCharsets.UTF_8);
+    }
+
+    class DirectoryWritingPoster implements Poster {
+
+        private final File root;
+        long messageNumber = 0;
+
+        DirectoryWritingPoster(URI homeBaseUrl) {
+            root = new File(homeBaseUrl.getPath());
+            if (!root.mkdirs()) {
+                throw new IllegalStateException("couldn't create output directory: " + root);
+            }
+        }
+
+        @Override
+        public void sendFragment(String prefix, CharSequence msg) throws IOException {
+            Files.write(Paths.get(root.getPath(), "post-" + messageNumber + ".json"), buildFullMessage(prefix, msg));
+            messageNumber++;
         }
     }
 }

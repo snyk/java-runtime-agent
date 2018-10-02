@@ -47,7 +47,7 @@ class ReportingWorkerTest {
         jarInfoAdder.accept(classSource);
 
         final List<CharSequence> postings = new ArrayList<>();
-        final ReportingWorker.Poster poster = postings::add;
+        final ReportingWorker.Poster poster = (_prefix, message) -> postings.add(message);
 
         final List<String> configs = Lists.newArrayList(configLines);
         configs.add("projectId=1f9378b7-46fa-41ea-a156-98f7a8930ee1");
@@ -55,7 +55,8 @@ class ReportingWorkerTest {
                 Config.fromLines(configs),
                 classSource);
         reportingWorker.doPosting(drain, poster);
-        assertValidJson(new String(reportingWorker.new StdLibHttpPoster(new URL("http://localhost:3232")).fullMessage(
+        assertValidJson(new String(reportingWorker.buildFullMessage(
+                reportingWorker.jsonHeader().toString(),
                 "\"fragment\": true"),
                 StandardCharsets.UTF_8));
 

@@ -5,10 +5,6 @@ set -eux
 # PWD: /root
 # goof: /root/java-goof
 
-# run our "homebase" in the background
-python3 simple_homebase.py 10 &
-HOMEBASE_PID=$!
-
 # start the app
 (
   cd java-goof &&
@@ -18,7 +14,7 @@ HOMEBASE_PID=$!
 
 TOMCAT_PID=$!
 
-trap "kill ${TOMCAT_PID} ${HOMEBASE_PID}" EXIT
+trap "kill ${TOMCAT_PID}" EXIT
 
 # wait for the app to start
 for i in {1..30}; do
@@ -39,10 +35,10 @@ done
 sleep 6
 
 # show the reports
-jq --color-output . *.json
+jq --color-output . /var/tmp/snyk-data/*.json
 
 # we must have hit the methodEntry
-fgrep org/apache/struts2/dispatcher/multipart/JakartaMultiPartRequest *.json >/dev/null || (
+fgrep org/apache/struts2/dispatcher/multipart/JakartaMultiPartRequest /var/tmp/snyk-data/*.json >/dev/null || (
     echo Class was never mentioned...
     exit 4
 )

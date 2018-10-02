@@ -12,6 +12,6 @@ RUN git clone https://github.com/snyk/java-goof && \
         cd java-goof && \
         mvn package tomcat7:help
 
-COPY snyk-agent.jar snyk-goof-e2e.properties test-script.sh simple_homebase.py /root/
+COPY snyk-agent.jar snyk-goof-e2e.properties test-script.sh /root/
 
 ENTRYPOINT bash test-script.sh

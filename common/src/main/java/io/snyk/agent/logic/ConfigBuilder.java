@@ -2,6 +2,7 @@ package io.snyk.agent.logic;
 
 import io.snyk.agent.filter.Filter;
 
+import java.net.MalformedURLException;
 import java.util.List;
 
 class ConfigBuilder {
@@ -14,7 +15,7 @@ class ConfigBuilder {
     boolean trackBranchingMethods;
     boolean debugLoggingEnabled;
 
-    Config build() {
+    Config build() throws MalformedURLException {
         return new Config(projectId, filters, homeBaseUrl, homeBasePostLimit,
                 trackClassLoading, trackAccessors, trackBranchingMethods,
                 debugLoggingEnabled);

@@ -7,6 +7,7 @@ import io.snyk.agent.util.Log;
 
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
+import java.net.MalformedURLException;
 
 /**
  * The entry point for the agent. Load and install our plugins.
@@ -14,7 +15,7 @@ import java.lang.instrument.UnmodifiableClassException;
 class EntryPoint {
     public static void premain(
             String agentArguments,
-            Instrumentation instrumentation) throws UnmodifiableClassException {
+            Instrumentation instrumentation) throws MalformedURLException {
         Log.loading("startup");
 
         if (null == agentArguments || !agentArguments.startsWith("file:")) {

@@ -5,6 +5,9 @@ import io.snyk.agent.util.Log;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
 import java.nio.file.Files;
 import java.util.Collections;
 import java.util.HashMap;
@@ -15,7 +18,7 @@ import java.util.stream.Collectors;
 public class Config {
     public final String projectId;
     public final List<Filter> filters;
-    public final String homeBaseUrl;
+    public final URI homeBaseUrl;
     public final long homeBasePostLimit;
     public final boolean trackClassLoading;
     public final boolean debugLoggingEnabled;
@@ -31,13 +34,13 @@ public class Config {
            boolean trackClassLoading,
            boolean trackAccessors,
            boolean trackBranchingMethods,
-           boolean debugLoggingEnabled) {
+           boolean debugLoggingEnabled) throws MalformedURLException {
         if (null == projectId) {
             throw new IllegalStateException("projectId is required");
         }
         this.projectId = projectId;
         this.filters = Collections.unmodifiableList(filters);
-        this.homeBaseUrl = null != homeBaseUrl ? homeBaseUrl : "https://homebase.snyk.io/api/v1/beacon";
+        this.homeBaseUrl = URI.create(null != homeBaseUrl ? homeBaseUrl : "https://homebase.snyk.io/api/v1/beacon");
         if (null == homeBasePostLimit) {
             this.homeBasePostLimit = DEFAULT_POST_LIMIT;
         } else {
@@ -59,7 +62,7 @@ public class Config {
         }
     }
 
-    public static Config fromLines(Iterable<String> lines) {
+    public static Config fromLines(Iterable<String> lines) throws MalformedURLException {
         final ConfigBuilder builder = new ConfigBuilder();
         final Map<String, Filter.Builder> filters = new HashMap<>();
 
