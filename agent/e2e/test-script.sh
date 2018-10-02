@@ -26,7 +26,7 @@ for i in {1..30}; do
 
     echo 'Checking for startup, attempt '${i}'...'
     # we don't really care if this fails for another reason, we'll try it again later
-    curl -q http://localhost:8080 && (echo Started; break)
+    curl -s http://localhost:8080 && break
 done
 
 # start printing the agent logs
