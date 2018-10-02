@@ -20,11 +20,14 @@ TOMCAT_PID=$!
 
 trap "kill ${TOMCAT_PID} ${HOMEBASE_PID}" EXIT
 
+# just for log readability on travis, where the tomcat logs seem to vanish..
+sleep 1
+
 # wait for the app to start
 for i in 1 2 3 4 5; do
     sleep 1
     # we don't really care if this fails for another reason, we'll try it again later
-    curl -q http://localhost:8080 && break
+    curl -q http://localhost:8080 && (echo Started; break)
 done
 
 # start printing the agent logs
