@@ -383,7 +383,7 @@ public class ReportingWorker implements Runnable {
 
         DirectoryWritingPoster(URI homeBaseUrl) {
             root = new File(homeBaseUrl.getPath());
-            if (!root.mkdirs()) {
+            if (!root.isDirectory() && !root.mkdirs()) {
                 throw new IllegalStateException("couldn't create output directory: " + root);
             }
         }

@@ -9,3 +9,4 @@ hs_err_*
 /jenkins-*.war
 /?
 artifacts.lst
+/java-goof

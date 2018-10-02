@@ -2,19 +2,31 @@
 
 set -eux
 
-# PWD: /root
-# goof: /root/java-goof
+# PWD: [repository root]
+# goof: ./java-goof
+
+TEMP_DIR="$(mktemp -d)"
+CONF_TEMPLATE="agent/e2e/snyk-goof-e2e.properties"
+AGENT_JAR="$(pwd)/agent/build/libs/agent.jar"
+
+<${CONF_TEMPLATE} sed 's,OUTPUT_PATH,'${TEMP_DIR}, > ${TEMP_DIR}/temp.properties
+
+# clean-up previous (potentially failed) runs
+rm -f java-goof/snyk-agent-*.log
+
+# do some maven downloading outside of the waiting period
+mvn -q tomcat7:help
 
 # start the app
 (
   cd java-goof &&
-  MAVEN_OPTS="-javaagent:/root/snyk-agent.jar=file:///root/snyk-goof-e2e.properties" \
+  MAVEN_OPTS="-javaagent:${AGENT_JAR}=file://${TEMP_DIR}/temp.properties" \
     mvn tomcat7:run
 ) &
 
 TOMCAT_PID=$!
 
-trap "kill ${TOMCAT_PID}" EXIT
+trap "kill ${TOMCAT_PID} && rm ${TEMP_DIR}/*.json ${TEMP_DIR}/*.properties && rmdir ${TEMP_DIR}" EXIT
 
 # wait for the app to start
 for i in {1..30}; do
@@ -25,9 +37,6 @@ for i in {1..30}; do
     curl -s http://localhost:8080 && break
 done
 
-# start printing the agent logs
-(tail -n5000 -f java-goof/snyk-agent-*.log | sed 's/^/snyk-agent.log: /') &disown
-
 # exploit the app
 <java-goof/exploits/struts-exploit-headers.txt sed "s/COMMAND/env/" | xargs curl -v -X GET http://localhost:8080 -H
 
@@ -35,10 +44,11 @@ done
 sleep 6
 
 # show the reports
-jq --color-output . /var/tmp/snyk-data/*.json
+tail -n5000 java-goof/snyk-agent-*.log
+jq --color-output . ${TEMP_DIR}/*.json
 
 # we must have hit the methodEntry
-fgrep org/apache/struts2/dispatcher/multipart/JakartaMultiPartRequest /var/tmp/snyk-data/*.json >/dev/null || (
+fgrep org/apache/struts2/dispatcher/multipart/JakartaMultiPartRequest ${TEMP_DIR}/*.json >/dev/null || (
     echo Class was never mentioned...
     exit 4
 )
