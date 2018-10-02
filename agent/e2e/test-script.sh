@@ -15,7 +15,7 @@ AGENT_JAR="$(pwd)/agent/build/libs/agent.jar"
 rm -f java-goof/snyk-agent-*.log
 
 # do some maven downloading outside of the waiting period
-mvn -q tomcat7:help
+(cd java-goof && mvn -q tomcat7:help)
 
 # start the app
 (
