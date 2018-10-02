@@ -8,11 +8,6 @@ branches:
   only:
   - master
 
-# https://docs.travis-ci.com/user/docker/
-sudo: required
-services:
-- docker
-
 # cargo-culted from SO
 before_cache:
 - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
