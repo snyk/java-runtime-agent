@@ -1,0 +1,51 @@
+{
+  "projectId": "0153525f-5a99-4efe-a84f-454f12494033",
+  "timestamp": "2018-10-05T08:23:12.693Z",
+  "systemInfo": {
+    "hostName": "anoia.goeswhere.com",
+    "jvm": {
+      "vmName": "26296@anoia.goeswhere.com",
+      "vendor": "Oracle Corporation",
+      "version": "25.181-b13"
+    }
+  },
+  "correlationId": "b1ed2a54-7d25-466b-abc9-d5f4231225ae",
+  "eventsToSend": [
+    {
+      "methodEntry": {
+        "className": "org/apache/struts2/dispatcher/multipart/JakartaMultiPartRequest",
+        "methodName": "cleanUp()V",
+        "classCrc32c": "f80cc345",
+        "sourceUri": "file:/home/faux/.m2/repository/org/apache/struts/struts2-core/2.3.20/struts2-core-2.3.20.jar",
+        "jarInfo": [
+          "impl:struts-2-core:2.3.20",
+          "maven:org.apache.struts:struts2-core:2.3.20"
+        ]
+      }
+    },
+    {
+      "methodEntry": {
+        "className": "org/apache/struts2/dispatcher/Dispatcher",
+        "methodName": "setInstance(Lorg/apache/struts2/dispatcher/Dispatcher;)V",
+        "classCrc32c": "3105f10a",
+        "sourceUri": "file:/home/faux/.m2/repository/org/apache/struts/struts2-core/2.3.20/struts2-core-2.3.20.jar",
+        "jarInfo": [
+          "impl:struts-2-core:2.3.20",
+          "maven:org.apache.struts:struts2-core:2.3.20"
+        ]
+      }
+    },
+    {
+      "methodEntry": {
+        "className": "org/apache/struts2/dispatcher/Dispatcher",
+        "methodName": "cleanUpRequest(Ljavax/servlet/http/HttpServletRequest;)V",
+        "classCrc32c": "3105f10a",
+        "sourceUri": "file:/home/faux/.m2/repository/org/apache/struts/struts2-core/2.3.20/struts2-core-2.3.20.jar",
+        "jarInfo": [
+          "impl:struts-2-core:2.3.20",
+          "maven:org.apache.struts:struts2-core:2.3.20"
+        ]
+      }
+    }
+  ]
+}

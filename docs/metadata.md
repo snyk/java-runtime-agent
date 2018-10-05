@@ -32,25 +32,24 @@ is the same as the one that was tested by `snyk-cli`.
  * moduleScriptRelativePath
 
 
-## v0.1 metadata
+## v0.1 metadata object, inside the container
 
- * timestamp of ... the submission? Seems unnecessary, for http.
- * potentially empty set of .. `module locators`:
+ * potentially empty set of `module coordinates`:
    * e.g. `()`
    * e.g. `("npm:st:0.2.4")`
    * e.g. `("maven:org.apache:commons-lang3:3.0", "maven:com.google:guava:26.0-jre~20180203.000129")`
- * path/url where the code was loaded from, if available:
+ * identifier for the method (ignoring lambdas / synthetics)
+   * e.g. `getPath`
+   * e.g. `org.apache.catalina.core.ContainerBase#getMappingObject(Ljava.lang.Object;, int, int)` (stick to the `fourSignature`?)
+ * filter name (for correlation with generated filters, and debugging)
+ * nullable: path/url where the code was loaded from:
    * e.g. `file:/Users/assafhefetz/development/goof/node_modules/st/st.js:158:0`
    * e.g. `file:/usr/share/maven/lib/maven-settings-builder-3.x.jar`
    * e.g. `http://localhost/foo.jar`
    * e.g. `jar:file:/usr/share/maven/lib/guava.jar!/com/google/common/collect/NullsLastOrdering.class`
    * e.g. `null`
- * crc32c checksum for the source file?
- * identifier for the method (ignoring lambdas / synthetics)
-   * e.g. `getPath`
-   * e.g. `org.apache.catalina.core.ContainerBase#getMappingObject(Ljava.lang.Object;, int, int)` (stick to the `fourSignature`?)
- * filter name (for correlation with generated filters, and debugging)
- * extra info, entirely optional?
+ * nullable: crc32c checksum for the source file
+ * extra info, entirely nullable?
    * line number
    * `fiveSignature` (see below)
    * `baseDir`, `scriptRelativePath`?
@@ -58,8 +57,9 @@ is the same as the one that was tested by `snyk-cli`.
 Would it be better if `homebase` rebuilt the module locator information based on sources, and
 the system information scan? Can this work for node? It would make sense for Java.
 
-Note that these are in different messages, so it would need to be rebuilt after message reception,
-possibly during fetch.
+`homebase` is much easier to write if the information is "duplicated" (i.e. consistent)
+in the single message, as it may be the case that the event/metadata are split across multiple
+posts, as is currently the case in the Java agent.
 
 
 ## terms
