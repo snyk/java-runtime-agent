@@ -65,6 +65,9 @@ distributions {
             from ("build/libs") {
                 include "agent.jar"
             }
+            from("src/main/resources") {
+                include "version.txt"
+            }
         }
     }
 }
