@@ -16,7 +16,7 @@ class EntryPoint {
     public static void premain(
             String agentArguments,
             Instrumentation instrumentation) throws MalformedURLException {
-        Log.loading("startup");
+        Log.loading("startup: " + Version.extendedVersionInfo());
 
         if (null == agentArguments || !agentArguments.startsWith("file:")) {
             throw new IllegalStateException("expected file:[path to config file]");

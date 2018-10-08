@@ -1,6 +1,8 @@
 plugins {
     id 'com.github.johnrengelman.shadow' version '2.0.4'
     id 'me.champeau.gradle.jmh' version '0.4.7'
+    // 0.12*rc* drops requirement on native git, which might be useful
+    id 'com.palantir.git-version' version '0.12.0-rc2'
     id 'java'
 }
 
@@ -17,8 +19,28 @@ dependencies {
     jmh 'com.google.guava:guava:26.0-jre'
 }
 
+def extended_version() {
+    def ver = "git:" + gitVersion()
+    def travis_build = System.getenv("TRAVIS_BUILD_NUMBER")
+    if (travis_build) {
+        ver += " travis:" + travis_build
+    }
+
+    ver
+}
+
+task versionTxt() << {
+    final res = new File("$projectDir/src/main/resources")
+    assert res.isDirectory() || res.mkdirs()
+    new File(res, "version.txt").text = extended_version()
+}
+
+processResources.dependsOn versionTxt
+build.dependsOn shadowJar
+
 jar {
     manifest {
+        attributes 'Extended-Version-Info': extended_version()
         attributes 'Premain-Class': 'io.snyk.agent.jvm.EntryPoint'
         attributes 'Can-Retransform-Classes': true
     }
