@@ -151,22 +151,22 @@ public class ReportingWorker implements Runnable {
         final String sourceUrl = parts[3];
         final URI sourceUri = URI.create(sourceUrl);
         msg.append("{\"methodEntry\":{");
-        msg.append("\"className\":");
-        Json.appendString(msg, className);
-        msg.append(",\"methodName\":");
-        Json.appendString(msg, methodName);
-        msg.append(",\"classCrc32c\":");
-        Json.appendString(msg, classCrc32c);
-        msg.append(",\"sourceUri\":");
-        Json.appendString(msg, sourceUrl);
-        msg.append(",\"jarInfo\":[");
+        msg.append("\"source\":\"java-agent\",");
+        msg.append("\"coordinates\":[");
         for (String jarInfo : classSource.infoFor(sourceUri)
                 .stream().sorted().collect(Collectors.toList())) {
             Json.appendString(msg, jarInfo);
             msg.append(",");
         }
         trimRightCommaSpacing(msg);
-        msg.append("]}},\n");
+        msg.append("],");
+        msg.append("\"methodName\":");
+        Json.appendString(msg, className + "#" + methodName);
+        msg.append(",\"sourceUri\":");
+        Json.appendString(msg, sourceUrl);
+        msg.append(",\"sourceCrc32c\":");
+        Json.appendString(msg, classCrc32c);
+        msg.append("}},\n");
     }
 
     private void appendLoadClass(StringBuilder msg, Map.Entry<String, HashSet<String>> entry) {
