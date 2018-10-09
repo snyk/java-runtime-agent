@@ -10,3 +10,5 @@ hs_err_*
 /?
 artifacts.lst
 /java-goof
+/agent/src/main/resources/version.txt
+agent/snyk-*.properties
