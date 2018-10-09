@@ -17,3 +17,15 @@ cache:
   - $HOME/.gradle/caches/
   - $HOME/.gradle/wrapper/
   - $HOME/.m2
+
+deploy:
+  on:
+    branch: master
+  provider: s3
+  access_key_id: $AWS_ACCESS_KEY_ID
+  secret_access_key: $AWS_SECRET_ACCESS_KEY
+  bucket: "snyk-java-instrumentor-releases"
+  skip_cleanup: true
+  local_dir: agent/build/distributions
+  upload-dir: last-release
+
