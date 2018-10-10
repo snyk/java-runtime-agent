@@ -12,3 +12,7 @@ artifacts.lst
 /java-goof
 /agent/src/main/resources/version.txt
 agent/snyk-*.properties
+/build/
+snyk-logs/
+snyk*.properties
+src/main/resources/version.txt

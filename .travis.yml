@@ -3,7 +3,7 @@ jdk: oraclejdk8
 script:
 - ./gradlew build test distZip
 - git clone --depth 1 https://github.com/snyk/java-goof
-- agent/e2e/test-script.sh
+- e2e/test-script.sh
 branches:
   only:
   - master
@@ -26,6 +26,6 @@ deploy:
   secret_access_key: $AWS_SECRET_ACCESS_KEY
   bucket: "snyk-java-runtime-agent-releases"
   skip_cleanup: true
-  local_dir: agent/build/distributions
+  local_dir: build/distributions
   upload-dir: last-release
 
