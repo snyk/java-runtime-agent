@@ -1,13 +1,12 @@
 package io.snyk.agent.logic;
 
 import io.snyk.agent.filter.Filter;
-import io.snyk.agent.util.Log;
+import io.snyk.agent.util.InitLog;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
 import java.nio.file.Files;
 import java.util.Collections;
 import java.util.HashMap;
@@ -54,10 +53,10 @@ public class Config {
 
     public static Config fromFile(String path) {
         try {
-            Log.loading("loading config from: " + path);
+            InitLog.loading("loading config from: " + path);
             return fromLines(Files.readAllLines(new File(path).toPath()));
         } catch (IOException e) {
-            Log.loading("error reading config file");
+            InitLog.loading("error reading config file");
             throw new IllegalStateException(e);
         }
     }
@@ -82,7 +81,7 @@ public class Config {
 
             final String[] splitUp = stripped.split("\\s*=\\s*", 2);
             if (splitUp.length < 2) {
-                Log.loading("invalid line: " + stripped);
+                InitLog.loading("invalid line: " + stripped);
                 continue;
             }
 
@@ -122,7 +121,7 @@ public class Config {
             if (key.startsWith("filter.")) {
                 final String[] parts = key.split("\\.", 3);
                 if (3 != parts.length) {
-                    Log.loading("invalid filter. key: " + key);
+                    InitLog.loading("invalid filter. key: " + key);
                     continue;
                 }
 
@@ -142,13 +141,13 @@ public class Config {
                         filter.addPathsFrom(value);
                         break;
                     default:
-                        Log.loading("unrecognised filter command: " + key);
+                        InitLog.loading("unrecognised filter command: " + key);
                 }
 
                 continue;
             }
 
-            Log.loading("unrecognised key: " + key);
+            InitLog.loading("unrecognised key: " + key);
         }
 
         builder.filters = filters.values().stream().map(Filter.Builder::build).collect(Collectors.toList());

@@ -98,6 +98,6 @@ class Transformer implements ClassFileTransformer {
         }
 
         return config.filters.stream()
-                .anyMatch(f -> f.testArtifacts(log, info.extra) && f.testClassName(log, className));
+                .anyMatch(f -> f.testArtifacts(log, info.extra) && f.testClassName(className));
     }
 }
