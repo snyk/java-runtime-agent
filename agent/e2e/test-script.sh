@@ -26,7 +26,7 @@ rm -f java-goof/snyk-agent-*.log
 
 TOMCAT_PID=$!
 
-trap "kill ${TOMCAT_PID} && rm ${TEMP_DIR}/*.json ${TEMP_DIR}/*.properties && rmdir ${TEMP_DIR}" EXIT
+trap "kill ${TOMCAT_PID} && rm -r '${TEMP_DIR}'" EXIT
 
 # wait for the app to start
 for i in {1..30}; do
@@ -44,7 +44,7 @@ done
 sleep 6
 
 # show the reports
-tail -n5000 java-goof/snyk-agent-*.log
+tail -n5000 ${TEMP_DIR}/snyk-logs/agent-*.log
 jq --color-output . ${TEMP_DIR}/*.json
 
 # we must have hit the methodEntry

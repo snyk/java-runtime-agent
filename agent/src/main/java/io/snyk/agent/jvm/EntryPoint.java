@@ -5,6 +5,7 @@ import io.snyk.agent.logic.Config;
 import io.snyk.agent.logic.ReportingWorker;
 import io.snyk.agent.util.Log;
 
+import java.io.File;
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
 import java.net.MalformedURLException;
@@ -18,13 +19,15 @@ class EntryPoint {
             Instrumentation instrumentation) throws MalformedURLException {
         Log.loading("startup: " + Version.extendedVersionInfo());
 
-        if (null == agentArguments || !agentArguments.startsWith("file:")) {
-            throw new IllegalStateException("expected file:[path to config file]");
+        final File configFile = ConfigSearch.find(agentArguments);
+
+        if (null == configFile) {
+            throw new IllegalStateException("config file not found");
         }
 
-        final Config config = Config.fromFile(agentArguments.substring("file:".length()));
+        final Config config = Config.fromFile(configFile.getAbsolutePath());
 
-        final Log log = new Log(config.debugLoggingEnabled);
+        final Log log = new Log(configFile.getParentFile(), config.debugLoggingEnabled);
 
         log.info("loading config complete, projectId:" + config.projectId);
 

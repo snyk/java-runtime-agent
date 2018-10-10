@@ -1,9 +1,6 @@
 package io.snyk.agent.util;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -33,20 +30,26 @@ public class Log {
     }
 
     public Log() {
-        this(false);
+        this(new File("."), false);
     }
 
-    public Log(boolean debugEnabled) {
+    public Log(File baseDir, boolean debugEnabled) {
         this.debugEnabled = debugEnabled;
 
-        Log.loading("switching to main logging...");
+        final File logDir = new File(baseDir, "snyk-logs");
+        if (!logDir.isDirectory() && !logDir.mkdirs()) {
+            throw new IllegalStateException("invalid log dir: " + logDir);
+        }
+
+        final File logPath = new File(logDir,
+                "agent-" + new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss.SSS'Z'", Locale.US).format(new Date()) + ".log");
+
+        Log.loading("switching logging to " + logPath.getAbsolutePath());
 
         try {
-            logFile = new PrintWriter(new OutputStreamWriter(new FileOutputStream("snyk-agent-" +
-                    new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss.SSS'Z'", Locale.US).format(new Date())
-                    + ".log"), StandardCharsets.UTF_8));
+            logFile = new PrintWriter(new OutputStreamWriter(new FileOutputStream(logPath),
+                    StandardCharsets.UTF_8));
 
-            // note: must be last
             synchronized (Log.class) {
                 instance = this;
 
