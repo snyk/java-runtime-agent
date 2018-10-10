@@ -5,14 +5,13 @@ import com.google.common.collect.Sets;
 import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
-import io.snyk.agent.util.Log;
+import io.snyk.agent.testutil.TestLogger;
 import io.snyk.agent.util.UseCounter;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Consumer;
@@ -43,7 +42,7 @@ class ReportingWorkerTest {
                         Collection<String> configLines) throws IOException {
         final UseCounter.Drain drain = new UseCounter.Drain();
         drainer.accept(drain);
-        final ClassSource classSource = new ClassSource(new Log());
+        final ClassSource classSource = new ClassSource(new TestLogger());
         jarInfoAdder.accept(classSource);
 
         final List<CharSequence> postings = new ArrayList<>();
@@ -51,7 +50,7 @@ class ReportingWorkerTest {
 
         final List<String> configs = Lists.newArrayList(configLines);
         configs.add("projectId=1f9378b7-46fa-41ea-a156-98f7a8930ee1");
-        final ReportingWorker reportingWorker = new ReportingWorker(new Log(),
+        final ReportingWorker reportingWorker = new ReportingWorker(new TestLogger(),
                 Config.fromLines(configs),
                 classSource);
         reportingWorker.doPosting(drain, poster);

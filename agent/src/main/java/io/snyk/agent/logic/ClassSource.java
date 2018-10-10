@@ -143,6 +143,9 @@ public class ClassSource {
     }
 
     private void extractImplementation(Manifest manifest, Collection<String> into) {
+        if (null == manifest) {
+            return;
+        }
         final Attributes attributes = manifest.getMainAttributes();
         final String title = attributes.getValue("Implementation-Title");
         final String version = attributes.getValue("Implementation-Version");

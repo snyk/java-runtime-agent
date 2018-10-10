@@ -78,7 +78,7 @@ public class Filter {
         return result;
     }
 
-    public boolean testClassName(Log log, String className) {
+    public boolean testClassName(String className) {
         if (pathFilters.isEmpty()) {
             return true;
         }

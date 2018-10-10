@@ -1,6 +1,6 @@
 package io.snyk.agent.jvm;
 
-import io.snyk.agent.util.Log;
+import io.snyk.agent.util.InitLog;
 import io.snyk.agent.util.UseCounter;
 
 /**
@@ -12,9 +12,9 @@ import io.snyk.agent.util.UseCounter;
  */
 public class LandingZone {
     static {
-        Log.loading("LandingZone being loaded by:");
+        InitLog.loading("LandingZone being loaded by:");
         for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
-            Log.loading(" * " + ste);
+            InitLog.loading(" * " + ste);
         }
     }
 

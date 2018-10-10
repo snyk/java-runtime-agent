@@ -1,6 +1,5 @@
 package io.snyk.agent.filter;
 
-import io.snyk.agent.filter.PathFilter;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;

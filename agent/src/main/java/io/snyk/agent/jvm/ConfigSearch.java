@@ -1,6 +1,6 @@
 package io.snyk.agent.jvm;
 
-import io.snyk.agent.util.Log;
+import io.snyk.agent.util.InitLog;
 
 import java.io.File;
 import java.net.URL;
@@ -17,7 +17,7 @@ class ConfigSearch {
         final String provided;
         if (null != agentArguments && !agentArguments.isEmpty()) {
             if (!agentArguments.startsWith("file:")) {
-                Log.loading("invalid arguments, expected file:, not " + agentArguments);
+                InitLog.loading("invalid arguments, expected file:, not " + agentArguments);
                 return null;
             }
 
@@ -31,17 +31,17 @@ class ConfigSearch {
             provided = AGENT_PROPS;
         }
 
-        Log.loading("resolving \"" + provided + "\" to an absolute path");
+        InitLog.loading("resolving \"" + provided + "\" to an absolute path");
 
         for (File searchPath : searchIn()) {
             final File candidate = new File(searchPath, provided);
-            Log.loading("trying: " + candidate.getAbsolutePath());
+            InitLog.loading("trying: " + candidate.getAbsolutePath());
             if (candidate.isFile()) {
                 return candidate;
             }
         }
 
-        Log.loading("failed: file could not be found, please specify a valid absolute path");
+        InitLog.loading("failed: file could not be found, please specify a valid absolute path");
         return null;
     }
 

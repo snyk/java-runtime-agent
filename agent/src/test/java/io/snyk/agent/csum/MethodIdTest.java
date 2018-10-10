@@ -4,15 +4,16 @@ import io.snyk.agent.logic.InstrumentationFilterTest;
 import io.snyk.agent.logic.TestVictim;
 import io.snyk.agent.util.AsmUtil;
 import io.snyk.agent.util.IterableJar;
-import io.snyk.asm.tree.ClassNode;
-import org.junit.jupiter.api.Test;
 import io.snyk.asm.ClassReader;
+import io.snyk.asm.tree.ClassNode;
 import io.snyk.asm.tree.MethodNode;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.util.*;
-import java.util.jar.JarEntry;
-import java.util.jar.JarInputStream;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
