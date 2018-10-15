@@ -7,7 +7,7 @@ set -eux
 
 TEMP_DIR="$(mktemp -d)"
 CONF_TEMPLATE="agent/e2e/snyk-goof-e2e.properties"
-AGENT_JAR="$(pwd)/agent/build/libs/agent.jar"
+AGENT_JAR="$(pwd)/agent/build/libs/snyk-java-runtime-agent.jar"
 
 <${CONF_TEMPLATE} sed 's,OUTPUT_PATH,'${TEMP_DIR}, > ${TEMP_DIR}/temp.properties
 

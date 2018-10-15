@@ -10,5 +10,5 @@ WAR=jenkins-${JENKINS_VERSION}.war
 (cd agent && ./gradlew test shadow)
 
 java \
-    -javaagent:$(pwd)/agent/build/libs/agent.jar=file:$(pwd)/agent/snyk-jenkins.properties \
+    -javaagent:$(pwd)/agent/build/libs/snyk-java-runtime-agent.jar=file:$(pwd)/agent/snyk-jenkins.properties \
     -jar "$WAR"

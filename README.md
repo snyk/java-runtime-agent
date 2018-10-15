@@ -1,4 +1,4 @@
-# java-instrumentor
+# java-runtime-agent
 
 Modules have their own `README.md`.
 
@@ -54,14 +54,14 @@ none of the layout is required:
 ```
 faux@errata:~/code% ls -1
 java-goof
-java-instrumentor
+java-runtime-agent
 ```
 
 In a terminal, run:
 
 ```
 (cd agent && ./gradlew shadow)
-(export MAVEN_OPTS="-javaagent:$(pwd)/agent/build/libs/agent.jar=file:$(pwd)/agent/snyk.properties" && cd ../java-goof && mvn tomcat7:run)
+(export MAVEN_OPTS="-javaagent:$(pwd)/agent/build/libs/snyk-java-runtime-agent.jar=file:$(pwd)/agent/snyk.properties" && cd ../java-goof && mvn tomcat7:run)
 ```
 
 (Shell note: the `()` here are required. They prevent environment and `cd` from

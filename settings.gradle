@@ -1,4 +1,4 @@
-rootProject.name = 'java-instrumentor'
+rootProject.name = 'java-runtime-agent'
 
 include 'common'
 include 'agent'
