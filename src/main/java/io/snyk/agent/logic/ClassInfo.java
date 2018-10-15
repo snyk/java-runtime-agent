@@ -16,6 +16,9 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.zip.ZipError;
 
+/**
+ * Load and cache information about loaded classes, from JAR files.
+ */
 public class ClassInfo {
     // URL is a bad map key. A really bad map key.
     final ConcurrentMap<URI, Set<String>> jarInfoMap = new ConcurrentHashMap<>();

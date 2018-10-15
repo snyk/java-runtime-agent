@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+/**
+ * Static utility class; API name from Guava.
+ */
 public class Throwables {
     public static String getStackTrace(Throwable t) {
         try (final StringWriter sw = new StringWriter();

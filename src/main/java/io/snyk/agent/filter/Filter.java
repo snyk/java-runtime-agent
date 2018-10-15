@@ -6,6 +6,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Represents a filter block from the config file, which can filter on:
+ *  * the full class and name of a method
+ *  * the artifact and version of a jar, if known
+ */
 public class Filter {
     /**
      * user specified name for this filter, we don't care

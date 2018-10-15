@@ -8,6 +8,10 @@ import java.util.function.Predicate;
 
 import static io.snyk.agent.logic.InstrumentationFilter.isNonsenseNode;
 
+/**
+ * Working around inconveniences in the ASM API:
+ * iterate over instructions in a method, skipping ones that are worthless.
+ */
 public class InsnIter {
 
     private final ListIterator<AbstractInsnNode> inner;

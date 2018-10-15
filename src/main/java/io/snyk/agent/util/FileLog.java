@@ -7,6 +7,9 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.Locale;
 
+/**
+ * A logger implementation that writes to a file in a directory.
+ */
 public class FileLog implements Log {
     private final boolean debugEnabled;
     private final PrintWriter logFile;

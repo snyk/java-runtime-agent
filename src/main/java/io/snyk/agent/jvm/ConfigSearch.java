@@ -9,6 +9,9 @@ import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Try and find our config file, and explain what went wrong if we can't.
+ */
 class ConfigSearch {
 
     private static final String AGENT_PROPS = "snyk-agent.properties";

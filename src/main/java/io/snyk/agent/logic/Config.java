@@ -14,6 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * A parsed config (properties) file.
+ */
 public class Config {
     public final String projectId;
     public final List<Filter> filters;

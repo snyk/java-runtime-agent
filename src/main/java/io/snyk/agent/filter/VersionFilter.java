@@ -5,7 +5,10 @@ import io.snyk.agent.util.org.apache.maven.artifact.versioning.ComparableVersion
 import java.util.function.Predicate;
 
 /**
- * A stub implementation that only supports "'major' version is less than"
+ * Stub implementation: only supports <, > or = a version.
+ *
+ * Note that versions are compared using the Maven version syntax, not semver,
+ * so versions with hyphens and letters (and all kinds of other horrors) in will work.
  */
 public class VersionFilter implements Predicate<String> {
 

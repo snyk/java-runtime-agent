@@ -5,6 +5,9 @@ import io.snyk.agent.filter.Filter;
 import java.net.MalformedURLException;
 import java.util.List;
 
+/**
+ * Helper builder for {@link Config}, only used internally.
+ */
 class ConfigBuilder {
     String projectId;
     List<Filter> filters;

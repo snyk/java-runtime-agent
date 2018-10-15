@@ -20,6 +20,9 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
+/**
+ * Sit around in the background, and occasionally send off beacons.
+ */
 public class ReportingWorker implements Runnable {
     private final String vmName;
     private final String vmVendor;
