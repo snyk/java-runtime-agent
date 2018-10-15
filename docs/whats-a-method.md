@@ -2,7 +2,7 @@ Say we have a library that looks like this:
 
 ```js
 module pdf {
-    function parse(inputFile) {
+    public exported function parse(inputFile) {
         // ...
         if (inputFile.contains(OBSCURE_FONT_FORMAT)) {
             loadObscureFontsFrom(inputFile);
@@ -30,4 +30,4 @@ user input, which is very hard.
 
 Which are we adding to the database?
 
-
+ * the patch/commit changes only code in `loadObscureFontsFrom`
