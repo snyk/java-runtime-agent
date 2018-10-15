@@ -21,29 +21,42 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class ReportingWorkerTest {
 
+    // yes, these helpers have got totally out of control.
+    // no, I don't have a solution
     private void onlyDrain(Consumer<UseCounter.Drain> drainer) throws IOException {
         toJson(drainer, _jarInfoMap -> {
+        }, _errorInfoMap -> {
         }, Collections.emptyList());
     }
 
     private void onlyJar(Consumer<ClassInfo> jarInfoAdder) throws IOException {
         toJson(_drainer -> {
-        }, jarInfoAdder, Collections.emptyList());
+        }, jarInfoAdder, _errorInfoMap -> {
+        }, Collections.emptyList());
+    }
+
+    private void onlyError(Consumer<ClassSource> errorInfoAdder) throws IOException {
+        toJson(_drainer -> {
+        }, _jarInfo -> {
+        }, errorInfoAdder, Collections.emptyList());
     }
 
     private void onlyConfig(Collection<String> configLines) throws IOException {
         toJson(_drainer -> {
         }, _jarInfoAdder -> {
+        }, _errorInfoMap -> {
         }, configLines);
     }
 
     private void toJson(Consumer<UseCounter.Drain> drainer,
                         Consumer<ClassInfo> jarInfoAdder,
+                        Consumer<ClassSource> errorInfoAdder,
                         Collection<String> configLines) throws IOException {
         final UseCounter.Drain drain = new UseCounter.Drain();
         drainer.accept(drain);
         final ClassSource classSource = new ClassSource(new TestLogger());
         jarInfoAdder.accept(classSource.classInfo);
+        errorInfoAdder.accept(classSource);
 
         final List<CharSequence> postings = new ArrayList<>();
         final ReportingWorker.Poster poster = (_prefix, message) -> postings.add(message);
@@ -101,10 +114,10 @@ class ReportingWorkerTest {
         onlyDrain(drain -> {
             drain.loadClasses.put("foo", Sets.newHashSet("foo", "bar"));
         });
-        onlyJar(classSource -> {
+        onlyError(classSource -> {
             classSource.addError("foo", new Exception());
         });
-        onlyJar(classSource -> {
+        onlyError(classSource -> {
             classSource.addError("foo", new Exception());
             classSource.addError("bar", new Exception());
         });

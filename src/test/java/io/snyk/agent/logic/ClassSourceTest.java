@@ -43,6 +43,7 @@ class ClassSourceTest {
                                                    String className, TestLogger log) {
         final URL srcJar = ClassSourceTest.class.getResource(resourceName);
         final URLClassLoader classLoader = new URLClassLoader(new URL[]{srcJar});
-        return new ClassSource(log).findSourceInfo(classLoader, className, new byte[0]);
+        final byte[] classfileBuffer = new byte[0];
+        return new ClassSource(log).classInfo.findSourceInfo(classLoader, className, classfileBuffer);
     }
 }

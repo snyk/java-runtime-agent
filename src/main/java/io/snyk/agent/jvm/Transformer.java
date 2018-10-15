@@ -78,7 +78,7 @@ class Transformer implements ClassFileTransformer {
             return null;
         }
 
-        final ClassInfo.ExtraInfo info = classSource.findSourceInfo(loader, className, classfileBuffer);
+        final ClassInfo.ExtraInfo info = classSource.classInfo.findSourceInfo(loader, className, classfileBuffer);
 
         if (!shouldProcessClass(className, info)) {
             return null;

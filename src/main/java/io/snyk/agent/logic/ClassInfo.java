@@ -9,6 +9,7 @@ import java.net.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.BiConsumer;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -19,11 +20,13 @@ public class ClassInfo {
     // URL is a bad map key. A really bad map key.
     final ConcurrentMap<URI, Set<String>> jarInfoMap = new ConcurrentHashMap<>();
 
-    final List<ObservedError> errors = Collections.synchronizedList(new ArrayList<>());
     private final Log log;
+    private final BiConsumer<String, Throwable> addError;
 
-    public ClassInfo(Log log) {
+    ClassInfo(Log log, BiConsumer<String, Throwable> addError) {
+        // note: addError should probably be avoided during construction; safe but confusing circular dependency
         this.log = log;
+        this.addError = addError;
     }
 
     public ExtraInfo findSourceInfo(final ClassLoader loader, final String className, final byte[] classfileBuffer) {
@@ -38,17 +41,13 @@ public class ClassInfo {
             return info;
         } catch (Exception | ZipError e) {
             log.warn("couldn't process an input");
-            addError("source-info:" + className, e);
+            addError.accept("source-info:" + className, e);
             log.stackTrace(e);
         }
         return new ExtraInfo(URI.create("unknown-error:" + className), Collections.emptySet());
     }
 
-    public boolean addError(String msg, Throwable e) {
-        return errors.add(new ObservedError(msg, e));
-    }
-
-    public Set<String> infoFor(URI sourceUri) {
+    Set<String> infoFor(URI sourceUri) {
         return jarInfoMap.getOrDefault(sourceUri, Collections.emptySet());
     }
 
@@ -128,7 +127,7 @@ public class ClassInfo {
                     } catch (IOException e) {
                         log.warn("looked like a jar file we couldn't process it: " + url);
                         log.stackTrace(e);
-                        addError("invald-jar:" + url, e);
+                        addError.accept("invald-jar:" + url, e);
                         return Collections.emptySet();
                     }
                 });

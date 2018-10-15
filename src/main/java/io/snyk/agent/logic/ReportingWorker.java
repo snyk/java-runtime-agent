@@ -153,7 +153,7 @@ public class ReportingWorker implements Runnable {
         msg.append("{\"methodEntry\":{");
         msg.append("\"source\":\"java-agent\",");
         msg.append("\"coordinates\":[");
-        for (String jarInfo : classSource.infoFor(sourceUri)
+        for (String jarInfo : classSource.classInfo.infoFor(sourceUri)
                 .stream().sorted().collect(Collectors.toList())) {
             Json.appendString(msg, jarInfo);
             msg.append(",");
@@ -230,7 +230,8 @@ public class ReportingWorker implements Runnable {
         trimRightCommaSpacing(msg);
         msg.append("],\"loadedSources\":{\n");
 
-        classSource.all().entrySet().stream().sorted(Comparator.comparing(Map.Entry::getKey)).forEachOrdered(entry -> {
+        classSource.classInfo.all()
+                .entrySet().stream().sorted(Comparator.comparing(Map.Entry::getKey)).forEachOrdered(entry -> {
             Json.appendString(msg, entry.getKey().toString());
             msg.append(":[");
             entry.getValue().stream().sorted().forEachOrdered(locator -> {
