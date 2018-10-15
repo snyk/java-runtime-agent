@@ -61,7 +61,7 @@ In a terminal, run:
 
 ```
 (cd agent && ./gradlew shadow)
-(export MAVEN_OPTS="-javaagent:$(pwd)/agent/build/libs/agent.jar=file:$(pwd)/agent/snyk.properties" && cd ../java-goof && mvn tomcat7:run)
+(export MAVEN_OPTS="-javaagent:$(pwd)/agent/build/libs/snyk-java-runtime-agent.jar=file:$(pwd)/agent/snyk.properties" && cd ../java-goof && mvn tomcat7:run)
 ```
 
 (Shell note: the `()` here are required. They prevent environment and `cd` from

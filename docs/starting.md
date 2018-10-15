@@ -12,9 +12,9 @@ Reminder: Java applications are started by the Java command, like this:
 
 We need to go before the `application-class-or--jar`.
 
- * e.g. `java -javaagent:agent.jar=foo.props -jar foo.jar`
- * e.g. `java -cp '.:../foo/libs/*' -javaagent:agent.jar=foo.props org.example.Foo --help`
- * e.g. `java -javaagent:agent.jar=foo.props -cp '.:../foo/libs/*' org.example.Foo --help`
+ * e.g. `java -javaagent:snyk-java-runtime-agent.jar=foo.props -jar foo.jar`
+ * e.g. `java -cp '.:../foo/libs/*' -javaagent:snyk-java-runtime-agent.jar=foo.props org.example.Foo --help`
+ * e.g. `java -javaagent:snyk-java-runtime-agent.jar=foo.props -cp '.:../foo/libs/*' org.example.Foo --help`
 
 For most tools, there's probably some way to pass flags to the JVM (which is not
 the same as the application), this is used for adjusting the memory limit, and
@@ -34,7 +34,7 @@ If you can specify a path to Java, and the shell script is sloppy enough, that c
 Workaround: extract what `asadmin` is actually doing
 
 ```bash
-java -javaagent:agent.jar=... -jar glassfish/lib/client/appserver-cli.jar
+java -javaagent:snyk-java-runtime-agent.jar=... -jar glassfish/lib/client/appserver-cli.jar
 ```
 
 .. but this only runs it for the CLI, not the server. For that, the UI provides:

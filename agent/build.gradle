@@ -51,19 +51,20 @@ jar {
 shadowJar {
     mergeServiceFiles()
 
+    baseName = 'snyk-java-runtime-agent'
     classifier = null
     version = null
 }
 
 // It would be great to use shadowDistZip here, but it doesn't want to play nice.
 // It wants us to be an application, and hence it wants us to ship shell scripts.
-// It seems easier to pick up src/main/dist, and ram b/l/agent.jar in afterwards.
+// It seems easier to pick up src/main/dist, and ram b/l/snyk-java-runtime-agent.jar in afterwards.
 distributions {
     main {
         baseName = 'snyk-java-runtime-agent'
         contents {
             from ("build/libs") {
-                include "agent.jar"
+                include "snyk-java-runtime-agent.jar"
             }
             from("src/main/resources") {
                 include "version.txt"
