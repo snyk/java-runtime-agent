@@ -1,4 +1,4 @@
-package io.snyk.agent.csum;
+package io.snyk.agent.util.csum;
 
 import io.snyk.agent.logic.InstrumentationFilterTest;
 import io.snyk.agent.logic.TestVictim;
