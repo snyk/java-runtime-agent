@@ -1,6 +1,6 @@
 package io.snyk.agent.jvm;
 
-import io.snyk.agent.logic.ClassSource;
+import io.snyk.agent.logic.DataTracker;
 import io.snyk.agent.logic.Config;
 import io.snyk.agent.logic.ReportingWorker;
 import io.snyk.agent.util.FileLog;
@@ -29,13 +29,13 @@ class EntryPoint {
 
         log.info("loading config complete, projectId:" + config.projectId);
 
-        final ClassSource classSource = new ClassSource(log);
+        final DataTracker dataTracker = new DataTracker(log);
 
-        final Thread worker = new Thread(new ReportingWorker(log, config, classSource));
+        final Thread worker = new Thread(new ReportingWorker(log, config, dataTracker));
         worker.setDaemon(true);
         worker.setName("snyk-agent");
         worker.start();
 
-        instrumentation.addTransformer(new Transformer(log, config, classSource), false);
+        instrumentation.addTransformer(new Transformer(log, config, dataTracker), false);
     }
 }

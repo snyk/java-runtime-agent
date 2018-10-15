@@ -17,12 +17,12 @@ class Transformer implements ClassFileTransformer {
     private static final String LANDING_ZONE_NAME = LandingZone.class.getName().replace('.', '/') + ".class";
     private final Log log;
     private final Config config;
-    private final ClassSource classSource;
+    private final DataTracker dataTracker;
 
-    Transformer(Log log, Config config, ClassSource classSource) {
+    Transformer(Log log, Config config, DataTracker dataTracker) {
         this.log = log;
         this.config = config;
-        this.classSource = classSource;
+        this.dataTracker = dataTracker;
     }
 
     @Override
@@ -59,7 +59,7 @@ class Transformer implements ClassFileTransformer {
             // classpath or jar clash issues are just silently eaten by the JVM,
             // make sure they're shown.
             // note that this class name can be null, but.. what else can we do?
-            classSource.addError("transform:" + className, t);
+            dataTracker.addError("transform:" + className, t);
             log.warn("transform failed: " + className);
             log.stackTrace(t);
             throw t;
@@ -78,7 +78,7 @@ class Transformer implements ClassFileTransformer {
             return null;
         }
 
-        final ClassInfo.ExtraInfo info = classSource.classInfo.findSourceInfo(loader, className, classfileBuffer);
+        final ClassInfo.ExtraInfo info = dataTracker.classInfo.findSourceInfo(loader, className, classfileBuffer);
 
         if (!shouldProcessClass(className, info)) {
             return null;

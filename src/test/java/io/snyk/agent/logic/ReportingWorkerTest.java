@@ -35,7 +35,7 @@ class ReportingWorkerTest {
         }, Collections.emptyList());
     }
 
-    private void onlyError(Consumer<ClassSource> errorInfoAdder) throws IOException {
+    private void onlyError(Consumer<DataTracker> errorInfoAdder) throws IOException {
         toJson(_drainer -> {
         }, _jarInfo -> {
         }, errorInfoAdder, Collections.emptyList());
@@ -50,13 +50,13 @@ class ReportingWorkerTest {
 
     private void toJson(Consumer<UseCounter.Drain> drainer,
                         Consumer<ClassInfo> jarInfoAdder,
-                        Consumer<ClassSource> errorInfoAdder,
+                        Consumer<DataTracker> errorInfoAdder,
                         Collection<String> configLines) throws IOException {
         final UseCounter.Drain drain = new UseCounter.Drain();
         drainer.accept(drain);
-        final ClassSource classSource = new ClassSource(new TestLogger());
-        jarInfoAdder.accept(classSource.classInfo);
-        errorInfoAdder.accept(classSource);
+        final DataTracker dataTracker = new DataTracker(new TestLogger());
+        jarInfoAdder.accept(dataTracker.classInfo);
+        errorInfoAdder.accept(dataTracker);
 
         final List<CharSequence> postings = new ArrayList<>();
         final ReportingWorker.Poster poster = (_prefix, message) -> postings.add(message);
@@ -65,7 +65,7 @@ class ReportingWorkerTest {
         configs.add("projectId=1f9378b7-46fa-41ea-a156-98f7a8930ee1");
         final ReportingWorker reportingWorker = new ReportingWorker(new TestLogger(),
                 Config.fromLines(configs),
-                classSource);
+                dataTracker);
         reportingWorker.doPosting(drain, poster);
         assertValidJson(new String(reportingWorker.buildFullMessage(
                 reportingWorker.jsonHeader().toString(),

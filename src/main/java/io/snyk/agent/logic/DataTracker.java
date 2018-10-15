@@ -6,12 +6,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class ClassSource {
+public class DataTracker {
     public final ClassInfo classInfo;
 
     final List<ObservedError> errors = Collections.synchronizedList(new ArrayList<>());
 
-    public ClassSource(Log log) {
+    public DataTracker(Log log) {
         this.classInfo = new ClassInfo(log, this::addError);
     }
 

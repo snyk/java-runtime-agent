@@ -27,7 +27,7 @@ public class ReportingWorker implements Runnable {
     private final String hostName = computeHostName();
     private final Log log;
     private final Config config;
-    private final ClassSource classSource;
+    private final DataTracker dataTracker;
     private final Poster poster;
 
     {
@@ -37,10 +37,10 @@ public class ReportingWorker implements Runnable {
         vmVersion = runtime.getVmVersion();
     }
 
-    public ReportingWorker(Log log, Config config, ClassSource classSource) throws MalformedURLException {
+    public ReportingWorker(Log log, Config config, DataTracker dataTracker) throws MalformedURLException {
         this.log = log;
         this.config = config;
-        this.classSource = classSource;
+        this.dataTracker = dataTracker;
 
         log.info("detected vmVendor: " + vmVendor);
         switch (config.homeBaseUrl.getScheme()) {
@@ -68,7 +68,7 @@ public class ReportingWorker implements Runnable {
             } catch (Throwable t) {
                 log.warn("agent issue");
                 log.stackTrace(t);
-                classSource.addError("agent-send", t);
+                dataTracker.addError("agent-send", t);
             }
             try {
                 Thread.sleep(4000);
@@ -93,7 +93,7 @@ public class ReportingWorker implements Runnable {
         poster.sendFragment(prefix, buildMeta());
         postArray(poster, prefix, "eventsToSend", from.methodEntries.iterator(), this::appendMethodEntry);
         postArray(poster, prefix, "eventsToSend", from.loadClasses.entrySet().iterator(), this::appendLoadClass);
-        postArray(poster, prefix, "errors", classSource.errors.iterator(), this::appendError);
+        postArray(poster, prefix, "errors", dataTracker.errors.iterator(), this::appendError);
     }
 
     private <T> void postArray(Poster poster,
@@ -153,7 +153,7 @@ public class ReportingWorker implements Runnable {
         msg.append("{\"methodEntry\":{");
         msg.append("\"source\":\"java-agent\",");
         msg.append("\"coordinates\":[");
-        for (String jarInfo : classSource.classInfo.infoFor(sourceUri)
+        for (String jarInfo : dataTracker.classInfo.infoFor(sourceUri)
                 .stream().sorted().collect(Collectors.toList())) {
             Json.appendString(msg, jarInfo);
             msg.append(",");
@@ -230,7 +230,7 @@ public class ReportingWorker implements Runnable {
         trimRightCommaSpacing(msg);
         msg.append("],\"loadedSources\":{\n");
 
-        classSource.classInfo.all()
+        dataTracker.classInfo.all()
                 .entrySet().stream().sorted(Comparator.comparing(Map.Entry::getKey)).forEachOrdered(entry -> {
             Json.appendString(msg, entry.getKey().toString());
             msg.append(":[");

@@ -10,7 +10,7 @@ import java.util.Collections;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-class ClassSourceTest {
+class DataTrackerTest {
 
     @Test
     void testNoManifests() {
@@ -41,9 +41,9 @@ class ClassSourceTest {
 
     private ClassInfo.ExtraInfo extractExtraInfo(String resourceName,
                                                    String className, TestLogger log) {
-        final URL srcJar = ClassSourceTest.class.getResource(resourceName);
+        final URL srcJar = DataTrackerTest.class.getResource(resourceName);
         final URLClassLoader classLoader = new URLClassLoader(new URL[]{srcJar});
         final byte[] classfileBuffer = new byte[0];
-        return new ClassSource(log).classInfo.findSourceInfo(classLoader, className, classfileBuffer);
+        return new DataTracker(log).classInfo.findSourceInfo(classLoader, className, classfileBuffer);
     }
 }
