@@ -1,4 +1,4 @@
-# java-instrumentor
+# java-runtime-agent
 
 Modules have their own `README.md`.
 
@@ -54,7 +54,7 @@ none of the layout is required:
 ```
 faux@errata:~/code% ls -1
 java-goof
-java-instrumentor
+java-runtime-agent
 ```
 
 In a terminal, run:

@@ -35,7 +35,7 @@ to have an unmeasurable overhead.
 ### osmosis
 
 ```$bash
-A='-javaagent:/home/faux/code/java-instrumentor/agent/build/libs/agent.jar=file:/home/faux/code/java-instrumentor/agent/'
+A='-javaagent:/home/faux/code/java-runtime-agent/agent/build/libs/agent.jar=file:/home/faux/code/java-runtime-agent/agent/'
 OSMOSIS=/home/faux/clone/osmosis/package/bin/osmosis
 time $OSMOSIS --read-pbf england-latest.osm.pbf --node-key-value keyValueList="highway.speed_camera" --write-xml radar.osm
 ```

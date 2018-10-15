@@ -60,7 +60,7 @@ shadowJar {
 // It seems easier to pick up src/main/dist, and ram b/l/agent.jar in afterwards.
 distributions {
     main {
-        baseName = 'snyk-java-agent'
+        baseName = 'snyk-java-runtime-agent'
         contents {
             from ("build/libs") {
                 include "agent.jar"
@@ -75,7 +75,7 @@ distributions {
 distZip {
     // This prevents it from placing the version number, which we're not using,
     // in the archive name, and as the prefix for every path in the archive.
-    archiveName = "snyk-java-agent.zip"
+    archiveName = "snyk-java-runtime-agent.zip"
 }
 
 test {
