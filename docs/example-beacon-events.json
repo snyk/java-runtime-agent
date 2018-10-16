@@ -13,38 +13,26 @@
   "eventsToSend": [
     {
       "methodEntry": {
-        "className": "org/apache/struts2/dispatcher/multipart/JakartaMultiPartRequest",
-        "methodName": "cleanUp()V",
-        "classCrc32c": "f80cc345",
-        "sourceUri": "file:/home/faux/.m2/repository/org/apache/struts/struts2-core/2.3.20/struts2-core-2.3.20.jar",
-        "jarInfo": [
+        "source": "java-agent",
+        "coordinates": [
           "impl:struts-2-core:2.3.20",
           "maven:org.apache.struts:struts2-core:2.3.20"
-        ]
+        ],
+        "methodName": "org/apache/struts2/dispatcher/multipart/JakartaMultiPartRequest#parse(Ljavax/servlet/http/HttpServletRequest;Ljava/lang/String;)V",
+        "sourceUri": "file:/home/faux/.m2/repository/org/apache/struts/struts2-core/2.3.20/struts2-core-2.3.20.jar",
+        "sourceCrc32c": "f80cc345"
       }
     },
     {
       "methodEntry": {
-        "className": "org/apache/struts2/dispatcher/Dispatcher",
-        "methodName": "setInstance(Lorg/apache/struts2/dispatcher/Dispatcher;)V",
-        "classCrc32c": "3105f10a",
-        "sourceUri": "file:/home/faux/.m2/repository/org/apache/struts/struts2-core/2.3.20/struts2-core-2.3.20.jar",
-        "jarInfo": [
+        "source": "java-agent",
+        "coordinates": [
           "impl:struts-2-core:2.3.20",
           "maven:org.apache.struts:struts2-core:2.3.20"
-        ]
-      }
-    },
-    {
-      "methodEntry": {
-        "className": "org/apache/struts2/dispatcher/Dispatcher",
-        "methodName": "cleanUpRequest(Ljavax/servlet/http/HttpServletRequest;)V",
-        "classCrc32c": "3105f10a",
+        ],
+        "methodName": "org/apache/struts2/dispatcher/Dispatcher#logConfigurationException(Ljavax/servlet/http/HttpServletRequest;Lcom/opensymphony/xwork2/config/ConfigurationException;)V",
         "sourceUri": "file:/home/faux/.m2/repository/org/apache/struts/struts2-core/2.3.20/struts2-core-2.3.20.jar",
-        "jarInfo": [
-          "impl:struts-2-core:2.3.20",
-          "maven:org.apache.struts:struts2-core:2.3.20"
-        ]
+        "sourceCrc32c": "3105f10a"
       }
     }
   ]

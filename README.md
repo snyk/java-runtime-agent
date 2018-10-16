@@ -76,3 +76,6 @@ There's a number of documents, many relate to the project:
      and how we specifically mitigate them.
  * [Starting](docs/starting.md) explains how to install the runtime-agent in
      different types of project.
+ * Sample [events beacon](docs/example-beacon-events.json) and
+    [metadata beacon](docs/example-beacon-meta.json) files, that
+    homebase is consuming.
