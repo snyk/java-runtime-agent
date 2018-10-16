@@ -39,6 +39,8 @@ build.dependsOn shadowJar
 distZip.dependsOn shadowJar
 
 jar {
+    baseName = 'without-deps'
+
     manifest {
         attributes 'Extended-Version-Info': extended_version()
         attributes 'Premain-Class': 'io.snyk.agent.jvm.EntryPoint'
