@@ -28,10 +28,14 @@ public class ReportingWorker implements Runnable {
     private final String vmVendor;
     private final String vmVersion;
     private final String hostName = computeHostName();
+    private final UUID agentId = UUID.randomUUID();
+
     private final Log log;
     private final Config config;
     private final DataTracker dataTracker;
     private final Poster poster;
+
+    private long lastSuccessfulBeacon = 0;
 
     {
         final RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
@@ -61,7 +65,7 @@ public class ReportingWorker implements Runnable {
         try {
             // arbitrary: no point running during early vm startup;
             // no harm, but no useful information?
-            Thread.sleep(1000);
+            Thread.sleep(config.startupDelayMs);
         } catch (InterruptedException e) {
             return;
         }
@@ -74,7 +78,7 @@ public class ReportingWorker implements Runnable {
                 dataTracker.addError("agent-send", t);
             }
             try {
-                Thread.sleep(4000);
+                Thread.sleep(config.heartBeatIntervalMs);
             } catch (InterruptedException e) {
                 return;
             }
@@ -93,10 +97,21 @@ public class ReportingWorker implements Runnable {
     void doPosting(UseCounter.Drain from, Poster poster)
             throws IOException {
         final String prefix = jsonHeader().toString();
+        poster.sendFragment(prefix, "\"heartbeat\": true");
+
+        final long now = System.currentTimeMillis();
+
+        // if we've reported recently enough; abs() so insane clock drift won't break us forever
+        if (Math.abs(now - this.lastSuccessfulBeacon) < config.reportIntervalMs) {
+            return;
+        }
         poster.sendFragment(prefix, buildMeta());
         postArray(poster, prefix, "eventsToSend", from.methodEntries.iterator(), this::appendMethodEntry);
         postArray(poster, prefix, "eventsToSend", from.loadClasses.entrySet().iterator(), this::appendLoadClass);
         postArray(poster, prefix, "errors", dataTracker.errors.iterator(), this::appendError);
+
+        // intentionally at the end; this method might terminate by exception
+        this.lastSuccessfulBeacon = now;
     }
 
     private <T> void postArray(Poster poster,
@@ -142,6 +157,8 @@ public class ReportingWorker implements Runnable {
         Json.appendString(msg, vmVersion);
         msg.append("}},\"correlationId\":");
         Json.appendString(msg, UUID.randomUUID().toString());
+        msg.append(",\"agentId\":");
+        Json.appendString(msg, agentId.toString());
         msg.append(",");
         return msg;
     }

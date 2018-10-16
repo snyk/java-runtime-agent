@@ -13,6 +13,9 @@ class ConfigBuilder {
     List<Filter> filters;
     String homeBaseUrl;
     Long homeBasePostLimit;
+    long startupDelayMs = 1_000;
+    long heartBeatIntervalMs = 30_000;
+    long reportIntervalMs = 60_000;
     boolean trackClassLoading;
     boolean trackAccessors;
     boolean trackBranchingMethods;
@@ -21,6 +24,7 @@ class ConfigBuilder {
 
     Config build() throws MalformedURLException {
         return new Config(projectId, filters, homeBaseUrl, homeBasePostLimit,
+                startupDelayMs, heartBeatIntervalMs, reportIntervalMs,
                 trackClassLoading, trackAccessors, trackBranchingMethods,
                 debugLoggingEnabled,
                 skipBuiltInRules);
