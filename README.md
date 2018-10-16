@@ -13,6 +13,9 @@ Everything is a production build by default; there is no test/debug build.
 The build outputs `build/libs/java-runtime-agent.jar`. This must be provided
 to your victim JVM, as explained in [docs/starting.md](docs/starting.md).
 
+Currently, we only test Java 8. Java 9-11 will give weird errors about
+`illegal reflective access`.
+
 
 ### Example
 
@@ -61,6 +64,7 @@ This doesn't mention a couple of critical classes:
 
 Every class should have at least a sentence explaining what it does,
 in its documentation string.
+
 
 ### Other docs
 

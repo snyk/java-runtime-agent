@@ -131,7 +131,24 @@ public class InstrumentationFilter {
                     || type == AbstractInsnNode.INVOKE_DYNAMIC_INSN
                     || type == AbstractInsnNode.LOOKUPSWITCH_INSN
                     || type == AbstractInsnNode.TABLESWITCH_INSN) {
-                return true;
+
+                if (!(insn instanceof InvokeDynamicInsnNode)) {
+                    return true;
+                }
+
+                // We'd rather leave invokedynamic alone; it's mostly used for lambdas, which we
+                // would need proper data flow to avoid.
+                // However, in Java 9, it has started to be used for string concatenation, including
+                // concatenation with constants. String foo(int a) { return "foo" + a; } is now
+                // an invokedynamic, and I want to skip it. Here, we look at whether the bsm for
+                // the instruction is that specific class, and skip it. All other invokedynamics
+                // are branches. See TestVictim#concat, and the associated tests in this class.
+                final InvokeDynamicInsnNode indy = (InvokeDynamicInsnNode) insn;
+                if (!indy.bsm.getOwner().equals("java/lang/invoke/StringConcatFactory") ||
+                        !(indy.bsm.getName().equals("makeConcat") ||
+                                indy.bsm.getName().equals("makeConcatWithConstants"))) {
+                    return true;
+                }
             }
 
             if (insn instanceof MethodInsnNode) {
