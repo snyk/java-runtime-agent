@@ -77,7 +77,7 @@ and sending snapshots off to `homebase` (our cloud data service).
 
 Gathering the data is conceptually `wasCalled[our_method_id] = true`.
 
-Sending the snapshot is conceptually `http.post(homebase, wasCalled)`.
+Sending the snapshot is conceptually `http.post(homebase, wasCalled) && wasCalled.clear()`.
 
 The rest is just easy problems, like "performance" and "thread-safety".
 
