@@ -10,7 +10,7 @@ Build is using `gradle`. You can use the wrapper, if you don't have `gradle`:
 
 Everything is a production build by default; there is no test/debug build.
 
-The build outputs `build/libs/java-runtime-agent.jar`. This must be provided
+The build outputs `build/libs/snyk-java-runtime-agent.jar`. This must be provided
 to your victim JVM, as explained in [docs/starting.md](docs/starting.md).
 
 Currently, we only test Java 8. Java 9-11 will give weird errors about
@@ -30,7 +30,7 @@ checked out in the current directory:
 echo 'projectId=cf257fa0-37f9-4690-a3fc-a71f0417ded6' > build/libs/snyk-agent.properties
 
 # start goof, with the local runtime agent
-(cd java-goof && MAVEN_OPTS="-javaagent:../build/libs/java-runtime-agent.jar" mvn tomcat7:run)
+(cd java-goof && MAVEN_OPTS="-javaagent:../build/libs/snyk-java-runtime-agent.jar" mvn tomcat7:run)
 ```
 
 It should output something like:
