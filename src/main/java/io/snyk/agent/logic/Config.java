@@ -3,8 +3,10 @@ package io.snyk.agent.logic;
 import io.snyk.agent.filter.Filter;
 import io.snyk.agent.util.InitLog;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.nio.file.Files;
@@ -26,6 +28,7 @@ public class Config {
     public final boolean debugLoggingEnabled;
     public final boolean trackBranchingMethods;
     public final boolean trackAccessors;
+    final boolean skipBuiltInRules;
 
     private static final long DEFAULT_POST_LIMIT = 1024 * 1024;
 
@@ -36,7 +39,8 @@ public class Config {
            boolean trackClassLoading,
            boolean trackAccessors,
            boolean trackBranchingMethods,
-           boolean debugLoggingEnabled) throws MalformedURLException {
+           boolean debugLoggingEnabled,
+           boolean skipBuiltInRules) throws MalformedURLException {
         if (null == projectId) {
             throw new IllegalStateException("projectId is required");
         }
@@ -52,19 +56,39 @@ public class Config {
         this.trackAccessors = trackAccessors;
         this.debugLoggingEnabled = debugLoggingEnabled;
         this.trackBranchingMethods = trackBranchingMethods;
+        this.skipBuiltInRules = skipBuiltInRules;
     }
 
-    public static Config fromFile(String path) {
+    public static Config fromFileWithDefault(String path) {
         try {
             InitLog.loading("loading config from: " + path);
-            return fromLines(Files.readAllLines(new File(path).toPath()));
+            final ConfigBuilder intermediate = builderFromLines(Files.readAllLines(new File(path).toPath()));
+            if (!intermediate.skipBuiltInRules) {
+                InitLog.loading("adding built-in filters");
+                intermediate.filters.addAll(loadBuiltInFilters());
+            }
+            return intermediate.build();
         } catch (IOException e) {
             InitLog.loading("error reading config file");
             throw new IllegalStateException(e);
         }
     }
 
-    public static Config fromLines(Iterable<String> lines) throws MalformedURLException {
+    private static List<Filter> loadBuiltInFilters() {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(Config.class.getResourceAsStream(
+                "/methods.properties")))) {
+            return builderFromLines(reader.lines().collect(Collectors.toList())).filters;
+        } catch (IOException builtin) {
+            throw new IllegalStateException("built-in filter loading shouldn't fail", builtin);
+        }
+    }
+
+    // @VisibleForTesting
+    public static Config fromLinesWithoutDefault(Iterable<String> lines) throws MalformedURLException {
+        return builderFromLines(lines).build();
+    }
+
+    private static ConfigBuilder builderFromLines(Iterable<String> lines) throws MalformedURLException {
         final ConfigBuilder builder = new ConfigBuilder();
         final Map<String, Filter.Builder> filters = new HashMap<>();
 
@@ -121,6 +145,11 @@ public class Config {
                 continue;
             }
 
+            if ("skipBuiltInRules".equals(key)) {
+                builder.skipBuiltInRules = Boolean.parseBoolean(value);
+                continue;
+            }
+
             if (key.startsWith("filter.")) {
                 final String[] parts = key.split("\\.", 3);
                 if (3 != parts.length) {
@@ -155,6 +184,6 @@ public class Config {
 
         builder.filters = filters.values().stream().map(Filter.Builder::build).collect(Collectors.toList());
 
-        return builder.build();
+        return builder;
     }
 }

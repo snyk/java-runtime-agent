@@ -2,8 +2,8 @@ package io.snyk.agent.jvm;
 
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
-import io.snyk.agent.logic.DataTracker;
 import io.snyk.agent.logic.Config;
+import io.snyk.agent.logic.DataTracker;
 import io.snyk.agent.testutil.TestLogger;
 import io.snyk.agent.util.Log;
 import org.junit.jupiter.api.Test;
@@ -71,7 +71,7 @@ class TransformerTest {
         final List<String> configItems = Lists.newArrayList(config);
         configItems.add("projectId=b2c2d38f-f147-4010-b92d-3dea94893d5b");
         final Transformer transformer = new Transformer(log,
-                Config.fromLines(configItems),
+                Config.fromLinesWithoutDefault(configItems),
                 new DataTracker(log));
         final byte[] originalBytes = ByteStreams.toByteArray(classLoader.getResourceAsStream(
                 "io/snyk/example/" + clazz + ".class"));

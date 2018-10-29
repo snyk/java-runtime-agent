@@ -63,7 +63,9 @@ task methodsToProperties() << {
 
         filters += "filter.provided-${i}.paths = ${fullClassName}#${method.methodName}\n"
         filters += "filter.provided-${i}.artifact = maven:${record.packageName}\n"
-        filters += "filter.provided-${i}.version = ${versions}\n"
+        if (false) {
+            filters += "filter.provided-${i}.version = ${versions}\n"
+        }
         filters += "\n"
     }
 

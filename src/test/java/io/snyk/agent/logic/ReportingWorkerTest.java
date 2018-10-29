@@ -64,7 +64,7 @@ class ReportingWorkerTest {
         final List<String> configs = Lists.newArrayList(configLines);
         configs.add("projectId=1f9378b7-46fa-41ea-a156-98f7a8930ee1");
         final ReportingWorker reportingWorker = new ReportingWorker(new TestLogger(),
-                Config.fromLines(configs),
+                Config.fromLinesWithoutDefault(configs),
                 dataTracker);
         reportingWorker.doPosting(drain, poster);
         assertValidJson(new String(reportingWorker.buildFullMessage(
