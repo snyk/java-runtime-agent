@@ -1,0 +1,420 @@
+[
+  {
+    "methodId": {
+      "className": "MapDataBinder",
+      "filePath": "org/springframework/data/web/MapDataBinder.java",
+      "methodName": "setPropertyValue"
+    },
+    "packageName": "org.springframework.data:spring-data-commons",
+    "version": [
+      "[,1.13.11)",
+      "[2,2.0.6)"
+    ]
+  },
+  {
+    "methodId": {
+      "className": "NettyServerCnxn",
+      "filePath": "org/apache/zookeeper/server/NettyServerCnxn.java",
+      "methodName": "checkFourLetterWord"
+    },
+    "packageName": "org.apache.zookeeper:zookeeper",
+    "version": [
+      "[,3.4.10)",
+      "[3.5,3.5.3)"
+    ]
+  },
+  {
+    "methodId": {
+      "className": "ResourceServlet",
+      "filePath": "org/springframework/web/servlet/ResourceServlet.java",
+      "methodName": "doInclude"
+    },
+    "packageName": "org.springframework:spring-webmvc",
+    "version": [
+      "[1.2.1,3.1.4.RELEASE]",
+      "[3.2.0.RELEASE,3.2.18.RELEASE)",
+      "[4.2.0.RELEASE,4.2.9.RELEASE)",
+      "[4.3.0.RELEASE,4.3.5.RELEASE)"
+    ]
+  },
+  {
+    "methodId": {
+      "className": "Crypt",
+      "filePath": "org/eclipse/jetty/util/security/Password.java",
+      "methodName": "check"
+    },
+    "packageName": "org.eclipse.jetty:jetty-util",
+    "version": [
+      "[,9.2.22.v20170606)",
+      "[9.3.0, 9.3.20.v20170531)",
+      "[9.4.0, 9.4.6.v20170531)"
+    ]
+  },
+  {
+    "methodId": {
+      "className": "Crypt",
+      "filePath": "org/eclipse/jetty/util/security/Credential.java",
+      "methodName": "check"
+    },
+    "packageName": "org.eclipse.jetty:jetty-util",
+    "version": [
+      "[,9.2.22.v20170606)",
+      "[9.3.0, 9.3.20.v20170531)",
+      "[9.4.0, 9.4.6.v20170531)"
+    ]
+  },
+  {
+    "methodId": {
+      "className": "Digest",
+      "filePath": "org/eclipse/jetty/security/authentication/DigestAuthenticator.java",
+      "methodName": "check"
+    },
+    "packageName": "org.eclipse.jetty:jetty-util",
+    "version": [
+      "[,9.2.22.v20170606)",
+      "[9.3.0, 9.3.20.v20170531)",
+      "[9.4.0, 9.4.6.v20170531)"
+    ]
+  },
+  {
+    "methodId": {
+      "className": "Digest",
+      "filePath": "org/eclipse/jetty/security/jaspi/modules/DigestAuthModule.java",
+      "methodName": "check"
+    },
+    "packageName": "org.eclipse.jetty:jetty-util",
+    "version": [
+      "[,9.2.22.v20170606)",
+      "[9.3.0, 9.3.20.v20170531)",
+      "[9.4.0, 9.4.6.v20170531)"
+    ]
+  },
+  {
+    "methodId": {
+      "className": "Expand",
+      "filePath": "java/org/codehaus/plexus/util/Expand.java",
+      "methodName": "extractFile"
+    },
+    "packageName": "org.codehaus.plexus:plexus-utils",
+    "version": [
+      "[,3.0.24)"
+    ]
+  },
+  {
+    "methodId": {
+      "className": "Ole10Native",
+      "filePath": "org/apache/poi/poifs/filesystem/Ole10Native.java",
+      "methodName": "Ole10NativeException"
+    },
+    "packageName": "org.apache.poi:poi",
+    "version": [
+      "[,3.16-beta1)"
+    ]
+  },
+  {
+    "methodId": {
+      "className": "SchemaReader",
+      "filePath": "src/main/java/org/apache/camel/processor/validation/SchemaReader.java",
+      "methodName": "clearCachedSchema"
+    },
+    "packageName": "org.apache.camel:camel-core",
+    "version": [
+      "[,2.17.6)",
+      "[2.18,2.18.3)"
+    ]
+  },
+  {
+    "methodId": {
+      "className": "OpenSslEngine",
+      "filePath": "src/main/java/io/netty/handler/ssl/OpenSslEngine.java",
+      "methodName": "SSL_write"
+    },
+    "packageName": "io.netty:netty-handler",
+    "version": [
+      "[4-alpha,4.0.37.Final)",
+      "[4.1-alpha,4.1.1.Final)"
+    ]
+  },
+  {
+    "methodId": {
+      "className": "ClientCookieEncoder",
+      "filePath": "src/main/java/io/netty/handler/codec/http/Cookie.java",
+      "methodName": "Cookie"
+    },
+    "packageName": "io.netty:netty",
+    "version": [
+      "[3.3,3.9.8.Final)",
+      "[3.10,3.10.3.Final)",
+      "[4.0,4.0.28.Final)",
+      "[4.1-alpha,4.1.0.Beta5)"
+    ]
+  },
+  {
+    "methodId": {
+      "className": "ClientCookieEncoder",
+      "filePath": "src/main/java/io/netty/handler/codec/http/ClientCookieEncoder.java",
+      "methodName": "DefaultCookie"
+    },
+    "packageName": "io.netty:netty",
+    "version": [
+      "[3.3,3.9.8.Final)",
+      "[3.10,3.10.3.Final)",
+      "[4.0,4.0.28.Final)",
+      "[4.1-alpha,4.1.0.Beta5)"
+    ]
+  },
+  {
+    "methodId": {
+      "className": "FileUploadBase",
+      "filePath": "src/main/java/org/apache/commons/fileupload/FileUploadBase.java",
+      "methodName": "InputStream"
+    },
+    "packageName": "commons-fileupload:commons-fileupload",
+    "version": [
+      "[,1.3.2)"
+    ]
+  },
+  {
+    "methodId": {
+      "className": "DiskFileItemSerializeTest",
+      "filePath": "/src/test/java/org/apache/commons/fileupload/DiskFileItemSerializeTest.java",
+      "methodName": "deserialize"
+    },
+    "packageName": "commons-fileupload:commons-fileupload",
+    "version": [
+      "[1.1,1.3.3)"
+    ]
+  },
+  {
+    "methodId": {
+      "className": "IESEngine",
+      "filePath": "org/bouncycastle/crypto/engines/IESEngine.java",
+      "methodName": "getMac"
+    },
+    "packageName": "org.bouncycastle:bcprov-jdk15on",
+    "version": [
+      "[,1.56)"
+    ]
+  },
+  {
+    "methodId": {
+      "className": "Unzip",
+      "filePath": "net/lingala/zip4j/unzip/Unzip.java",
+      "methodName": "initExtractFile"
+    },
+    "packageName": "net.lingala.zip4j:zip4j",
+    "version": [
+      "[,1.3.2)"
+    ]
+  },
+  {
+    "methodId": {
+      "className": "Unpacker",
+      "filePath": "org/zeroturnaround/zip/ZipUtil.java",
+      "methodName": "process"
+    },
+    "packageName": "org.zeroturnaround:zt-zip",
+    "version": [
+      "[,1.13)"
+    ]
+  },
+  {
+    "methodId": {
+      "className": "JakartaMultiPartRequest",
+      "filePath": "org/apache/struts2/dispatcher/multipart/JakartaMultiPartRequest.java",
+      "methodName": "buildErrorMessage"
+    },
+    "packageName": "org.apache.struts:struts2-core",
+    "version": [
+      "[2.5,2.5.10.1)"
+    ]
+  },
+  {
+    "methodId": {
+      "className": null,
+      "filePath": "org.bouncycastle:bcprov-jdk15on",
+      "methodName": "chooseRandomPrime"
+    },
+    "packageName": "org.bouncycastle:bcprov-jdk15on",
+    "version": [
+      "[1.54,1.60)"
+    ]
+  },
+  {
+    "methodId": {
+      "className": "Nat256",
+      "filePath": "org/bouncycastle/math/raw/Nat256.java",
+      "methodName": "square"
+    },
+    "packageName": "org.bouncycastle:bcprov-jdk15on",
+    "version": [
+      "[,1.56)"
+    ]
+  },
+  {
+    "methodId": {
+      "className": "Nat160",
+      "filePath": "org/bouncycastle/math/raw/Nat160.java",
+      "methodName": "square"
+    },
+    "packageName": "org.bouncycastle:bcprov-jdk15on",
+    "version": [
+      "[,1.56)"
+    ]
+  },
+  {
+    "methodId": {
+      "className": "Nat128",
+      "filePath": "org/bouncycastle/math/raw/Nat128.java",
+      "methodName": "square"
+    },
+    "packageName": "org.bouncycastle:bcprov-jdk15on",
+    "version": [
+      "[,1.56)"
+    ]
+  },
+  {
+    "methodId": {
+      "className": "AtomicDoubleArray",
+      "filePath": "com/google/common/util/concurrent/AtomicDoubleArray.java",
+      "methodName": "readObject"
+    },
+    "packageName": "com.google.guava:guava",
+    "version": [
+      "[,24.1.1)"
+    ]
+  },
+  {
+    "methodId": {
+      "className": "URIBuilder",
+      "filePath": "org/apache/http/client/utils/URIBuilder.java",
+      "methodName": "normalizePath"
+    },
+    "packageName": "org.apache.httpcomponents:httpclient",
+    "version": [
+      "[4.2-RC1,4.5.2)"
+    ]
+  },
+  {
+    "methodId": {
+      "className": "URIBuilder",
+      "filePath": "org/apache/http/client/utils/URIUtils.java",
+      "methodName": "normalizePath"
+    },
+    "packageName": "org.apache.httpcomponents:httpclient",
+    "version": [
+      "[4.0,4.1.3]"
+    ]
+  },
+  {
+    "methodId": {
+      "className": "AbstractUnArchiver",
+      "filePath": "org/codehaus/plexus/archiver/AbstractUnArchiver$AbstractUnArchiver.java",
+      "methodName": "extractFile"
+    },
+    "packageName": "org.codehaus.plexus:plexus-archiver",
+    "version": [
+      "[,3.6.0)"
+    ]
+  },
+  {
+    "methodId": {
+      "className": "XMLEntityScanner",
+      "filePath": "org/apache/xerces/impl/XMLEntityScanner.java",
+      "methodName": "scanName"
+    },
+    "packageName": "xerces:xercesimpl",
+    "version": [
+      "(,2.11.0]"
+    ]
+  },
+  {
+    "methodId": {
+      "className": "ReaderBasedJsonParser",
+      "filePath": "fasterxml/jackson/core/json/ReaderBasedJsonParser.java",
+      "methodName": "reportInvalidToken"
+    },
+    "packageName": "com.fasterxml.jackson.core:jackson-core",
+    "version": [
+      "[,2.8.6)"
+    ]
+  },
+  {
+    "methodId": {
+      "className": "DSASigner",
+      "filePath": "org/bouncycastle/crypto/signers/DSASigner.java",
+      "methodName": "getRandomizer"
+    },
+    "packageName": "org.bouncycastle:bcprov-jdk15on",
+    "version": [
+      "[1.51,1.56)"
+    ]
+  },
+  {
+    "methodId": {
+      "className": "DH",
+      "filePath": "org/bouncycastle/jcajce/provider/asymmetric/dh/IESCipher$IESwithAES.java",
+      "methodName": "OldIESwithCipher"
+    },
+    "packageName": "org.bouncycastle:bcprov-jdk15on",
+    "version": [
+      "[,1.56)"
+    ]
+  },
+  {
+    "methodId": {
+      "className": "???? - no commit",
+      "filePath": "org/apache/struts/util/RequestUtils.java",
+      "methodName": "populate"
+    },
+    "packageName": "struts:struts",
+    "version": [
+      "[,1.3.10]"
+    ]
+  },
+  {
+    "methodId": {
+      "className": "DefaultMultipartHttpServletRequest",
+      "filePath": "org/springframework/web/multipart/support/DefaultMultipartHttpServletRequest.java",
+      "methodName": "getParameterNames"
+    },
+    "packageName": "org.springframework:spring-core",
+    "version": [
+      "[3,3.2.9)",
+      "[4,4.0.5)"
+    ]
+  },
+  {
+    "methodId": {
+      "className": "DSASigner",
+      "filePath": "org/bouncycastle/jcajce/provider/asymmetric/dsa/DSASigner.java",
+      "methodName": "derDecode"
+    },
+    "packageName": "org.bouncycastle:bcprov-jdk15on",
+    "version": [
+      "[,1.56)"
+    ]
+  },
+  {
+    "methodId": {
+      "className": "KeyPairGeneratorSpi",
+      "filePath": "org/bouncycastle/jcajce/provider/asymmetric/dsa/KeyPairGeneratorSpi.java",
+      "methodName": "generateKeyPair"
+    },
+    "packageName": "org.bouncycastle:bcprov-jdk15on",
+    "version": [
+      "[,1.56)"
+    ]
+  },
+  {
+    "methodId": {
+      "className": "PayloadNameRequestWrapper",
+      "filePath": "net/bull/javamelody/PayloadNameRequestWrapper.java",
+      "methodName": "parseSoapMethodName"
+    },
+    "packageName": "net.bull.javamelody:javamelody-core",
+    "version": [
+      "[,1.74.0)"
+    ]
+  }
+]
