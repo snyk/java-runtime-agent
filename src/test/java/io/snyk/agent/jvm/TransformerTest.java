@@ -53,13 +53,13 @@ class TransformerTest {
 
         assertFalse(exampleChanges("Foo",
                 "filter.foo.artifact = maven:io.snyk.example:example",
-                "filter.foo.version = <1.2.0",
+                "filter.foo.version = [,1.2.0)",
                 "filter.foo.paths = io/snyk/**"),
                 "We know where the io.snyk classes are from, they're newer than stated");
 
         assertTrue(exampleChanges("Foo",
                 "filter.foo.artifact = maven:io.snyk.example:example",
-                "filter.foo.version = <1.3.0",
+                "filter.foo.version = [,1.3.0)",
                 "filter.foo.paths = io/snyk/**"),
                 "We know where the io.snyk classes are from, they're older than stated");
     }

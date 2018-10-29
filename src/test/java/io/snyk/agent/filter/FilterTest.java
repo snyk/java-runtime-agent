@@ -31,7 +31,7 @@ class FilterTest {
     void testVersionLessThan() {
         final Filter filter = new Filter("foo",
                 Optional.of("maven:io.snyk:snyk-agent"),
-                Optional.of(VersionFilter.parse("<3")),
+                Optional.of(VersionFilter.parse("[,3)")),
                 Collections.emptyList());
 
         assertTrue(filter.testArtifacts(new TestLogger(), Collections.emptyList()),

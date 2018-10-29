@@ -207,14 +207,6 @@ public class ReportingWorker implements Runnable {
                 msg.append(",\"artifact\":");
                 Json.appendString(msg, artifact);
             });
-            filter.version.ifPresent(version -> {
-                msg.append(",\"version\":");
-                Json.appendString(msg, version.version.toString());
-
-                // TODO: this isn't great, in future this will allow other things...
-                msg.append(",\"versionDirection\":");
-                msg.append(version.direction);
-            });
             msg.append(",\"paths\":[");
             filter.pathFilters.forEach(pathFilter -> {
                 msg.append("{\"className\":");
