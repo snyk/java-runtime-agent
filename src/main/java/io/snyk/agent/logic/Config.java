@@ -164,6 +164,7 @@ public class Config {
 
             if ("skipBuiltInRules".equals(key)) {
                 builder.skipBuiltInRules = Boolean.parseBoolean(value);
+                continue;
             }
 
             if ("startupDelayMs".equals(key)) {
