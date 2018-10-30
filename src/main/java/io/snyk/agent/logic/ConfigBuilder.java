@@ -21,12 +21,12 @@ class ConfigBuilder {
     boolean trackBranchingMethods;
     boolean debugLoggingEnabled;
     boolean skipBuiltInRules;
+    boolean skipMetaPosts;
 
-    Config build() throws MalformedURLException {
+    Config build() {
         return new Config(projectId, filters, homeBaseUrl, homeBasePostLimit,
                 startupDelayMs, heartBeatIntervalMs, reportIntervalMs,
                 trackClassLoading, trackAccessors, trackBranchingMethods,
-                debugLoggingEnabled,
-                skipBuiltInRules);
+                debugLoggingEnabled, skipBuiltInRules, skipMetaPosts);
     }
 }

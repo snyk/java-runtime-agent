@@ -98,7 +98,10 @@ public class ReportingWorker implements Runnable {
     void doPosting(UseCounter.Drain from, Poster poster)
             throws IOException {
         final String prefix = jsonHeader().toString();
-        poster.sendFragment(prefix, "\"heartbeat\": true");
+
+        if (!config.skipMetaPosts) {
+            poster.sendFragment(prefix, "\"heartbeat\": true");
+        }
 
         final long now = System.currentTimeMillis();
 
@@ -106,7 +109,11 @@ public class ReportingWorker implements Runnable {
         if (Math.abs(now - this.lastSuccessfulBeacon) < config.reportIntervalMs) {
             return;
         }
-        poster.sendFragment(prefix, buildMeta());
+
+        if (!config.skipMetaPosts) {
+            poster.sendFragment(prefix, buildMeta());
+        }
+
         postArray(poster, prefix, "eventsToSend", from.methodEntries.iterator(), this::appendMethodEntry);
         postArray(poster, prefix, "eventsToSend", from.loadClasses.entrySet().iterator(), this::appendLoadClass);
         postArray(poster, prefix, "errors", dataTracker.errors.iterator(), this::appendError);
