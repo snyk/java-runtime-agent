@@ -148,7 +148,7 @@ class ReportingWorkerTest {
         onlyConfig(Arrays.asList(
                 "filter.foo.paths = foo/**",
                 "filter.bar.paths = bar/**#baz",
-                "filter.bar.version = <1.3.3",
+                "filter.bar.version = [,1.3.3)",
                 "filter.bar.artifact = maven:foo:bar"
         ));
     }
