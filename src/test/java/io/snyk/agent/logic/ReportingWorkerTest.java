@@ -67,10 +67,7 @@ class ReportingWorkerTest {
                 Config.fromLinesWithoutDefault(configs),
                 dataTracker);
         reportingWorker.doPosting(drain, poster);
-        assertValidJson(new String(reportingWorker.buildFullMessage(
-                reportingWorker.jsonHeader().toString(),
-                "\"fragment\": true"),
-                StandardCharsets.UTF_8));
+        assertValidJson(reportingWorker.jsonHeader().toString() + "\"fragment\": true}");
 
         assertFalse(postings.isEmpty(), "at least the metadata should be sent");
 
