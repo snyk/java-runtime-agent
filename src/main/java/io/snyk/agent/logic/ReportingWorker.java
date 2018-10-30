@@ -85,7 +85,8 @@ public class ReportingWorker implements Runnable {
         }
     }
 
-    private void work(UseCounter.Drain drain) {
+    // @VisibleForTesting
+    void work(UseCounter.Drain drain) {
         try {
             doPosting(drain, this.poster);
         } catch (Exception e) {
@@ -120,9 +121,10 @@ public class ReportingWorker implements Runnable {
                                Iterator<T> array,
                                BiConsumer<StringBuilder, T> appender)
             throws IOException {
+        int fragmentNumber = 0;
         while (array.hasNext()) {
             final StringBuilder msg = new StringBuilder(4096);
-            msg.append("\"" + fieldName + "\":[\n");
+            msg.append("\"").append(fieldName).append("\":[\n");
 
             // guarantee progress by always sending at least one event
             appender.accept(msg, array.next());
@@ -135,6 +137,10 @@ public class ReportingWorker implements Runnable {
             msg.append("]");
 
             poster.sendFragment(prefix, msg.toString());
+
+            fragmentNumber++;
+
+            log.info(fieldName + ": sent part " + fragmentNumber + ", chars: " + msg.length());
         }
     }
 
