@@ -39,19 +39,18 @@ public class Rewriter {
     public byte[] rewrite(ClassReader reader) {
         final ClassNode cn = AsmUtil.parse(reader);
         for (MethodNode method : cn.methods) {
-            if (!config.filters.isEmpty()) {
-                final Optional<Filter> matching = config.filters.stream()
-                        .filter(filter -> filter.testMethod(cn.name, method.name))
-                        .findAny();
+            final Optional<Filter> matching = config.filters.stream()
+                    .filter(filter -> filter.testMethod(cn.name, method.name))
+                    .findAny();
 
-                if (!matching.isPresent()) {
-                    continue;
-                }
-
-                matching.get().matches.incrementAndGet();
+            if (!matching.isPresent()) {
+                continue;
             }
 
-            final String logName = cn.name + "#" + method.name;
+            final Filter filter = matching.get();
+            filter.matches.incrementAndGet();
+
+            final String logName = filter.name + ": " + cn.name + "#" + method.name;
 
             if (InstrumentationFilter.skipMethod(cn, method)) {
                 log.info("rewrite requested, but disallowed: " + logName);

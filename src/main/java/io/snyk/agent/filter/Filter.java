@@ -34,6 +34,9 @@ public class Filter {
         this.name = name;
         this.artifact = artifact;
         this.version = version;
+        if (pathFilters.isEmpty()) {
+            throw new IllegalStateException("filter error: " + name + ".paths must be provided");
+        }
         this.pathFilters = pathFilters;
     }
 
@@ -87,18 +90,10 @@ public class Filter {
     }
 
     public boolean testClassName(String className) {
-        if (pathFilters.isEmpty()) {
-            return true;
-        }
-
         return pathFilters.stream().anyMatch(filter -> filter.testClass(className));
     }
 
     public boolean testMethod(String className, String methodName) {
-        if (pathFilters.isEmpty()) {
-            return true;
-        }
-
         return pathFilters.stream().anyMatch(filter -> filter.testMethod(className, methodName));
     }
 }

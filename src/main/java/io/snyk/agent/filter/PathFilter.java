@@ -47,13 +47,13 @@ public class PathFilter {
         return new PathFilter(className, classNameIsPrefix, methodName);
     }
 
-    public boolean testClass(final String actualClassName) {
+    boolean testClass(final String actualClassName) {
         return classNameIsPrefix
                 ? actualClassName.startsWith(className)
                 : actualClassName.equals(className);
     }
 
-    public boolean testMethod(final String actualClassName, final String actualMethodName) {
+    boolean testMethod(final String actualClassName, final String actualMethodName) {
         return testClass(actualClassName) && methodName.map(actualMethodName::equals).orElse(true);
 
     }

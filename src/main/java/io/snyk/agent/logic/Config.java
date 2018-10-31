@@ -50,6 +50,10 @@ public class Config {
             throw new IllegalStateException("projectId is required");
         }
         this.projectId = projectId;
+        if (filters.isEmpty()) {
+            // unlikely: they should be using the non-empty built-in filters
+            throw new IllegalStateException("no filters provided");
+        }
         this.filters = Collections.unmodifiableList(filters);
         this.homeBaseUrl = URI.create(null != homeBaseUrl ? homeBaseUrl : "https://homebase.snyk.io/api/v1/beacon");
         if (null == homeBasePostLimit) {

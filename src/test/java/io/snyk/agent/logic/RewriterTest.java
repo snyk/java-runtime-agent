@@ -23,6 +23,7 @@ class RewriterTest {
                 TEST_LOCATION,
                 Config.fromLinesWithoutDefault(
                         "projectId=ab95b1fb-4fe0-497d-aba0-5a1d85db0827",
+                        "filter.foo.paths=**",
                         "trackClassLoading=true"
                 ), new TestLogger()).rewrite(new ClassReader(name));
         final Class<?> clazz = new DefinerLoader().define(name, bytes);

@@ -21,7 +21,7 @@ class TransformerTest {
     @Test
     void testNoConfig() throws IOException {
         assertTrue(exampleChanges("Foo",
-                ""));
+                "filter.all.paths = **"));
     }
 
     @Test

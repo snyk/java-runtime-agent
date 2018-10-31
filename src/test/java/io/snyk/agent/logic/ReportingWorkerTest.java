@@ -68,6 +68,7 @@ class ReportingWorkerTest {
 
         final List<String> configs = Lists.newArrayList(configLines);
         configs.add("projectId=1f9378b7-46fa-41ea-a156-98f7a8930ee1");
+        configs.add("filter.foo.paths=**");
         final ReportingWorker reportingWorker = new ReportingWorker(new TestLogger(),
                 Config.fromLinesWithoutDefault(configs.toArray(new String[0])),
                 dataTracker,
