@@ -24,6 +24,9 @@ public class Config {
     public final List<Filter> filters;
     public final URI homeBaseUrl;
     public final long homeBasePostLimit;
+    public final long startupDelayMs;
+    public final long heartBeatIntervalMs;
+    public final long reportIntervalMs;
     public final boolean trackClassLoading;
     public final boolean debugLoggingEnabled;
     public final boolean trackBranchingMethods;
@@ -36,6 +39,9 @@ public class Config {
            List<Filter> filters,
            String homeBaseUrl,
            Long homeBasePostLimit,
+           long startupDelayMs,
+           long heartBeatIntervalMs,
+           long reportIntervalMs,
            boolean trackClassLoading,
            boolean trackAccessors,
            boolean trackBranchingMethods,
@@ -52,6 +58,9 @@ public class Config {
         } else {
             this.homeBasePostLimit = homeBasePostLimit;
         }
+        this.startupDelayMs = startupDelayMs;
+        this.heartBeatIntervalMs = heartBeatIntervalMs;
+        this.reportIntervalMs = reportIntervalMs;
         this.trackClassLoading = trackClassLoading;
         this.trackAccessors = trackAccessors;
         this.debugLoggingEnabled = debugLoggingEnabled;
@@ -147,6 +156,20 @@ public class Config {
 
             if ("skipBuiltInRules".equals(key)) {
                 builder.skipBuiltInRules = Boolean.parseBoolean(value);
+            }
+
+            if ("startupDelayMs".equals(key)) {
+                builder.startupDelayMs = Long.parseLong(value);
+                continue;
+            }
+
+            if ("heartBeatIntervalMs".equals(key)) {
+                builder.heartBeatIntervalMs = Long.parseLong(value);
+                continue;
+            }
+
+            if ("reportIntervalMs".equals(key)) {
+                builder.reportIntervalMs = Long.parseLong(value);
                 continue;
             }
 
