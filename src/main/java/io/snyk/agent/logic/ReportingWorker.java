@@ -85,7 +85,8 @@ public class ReportingWorker implements Runnable {
         }
     }
 
-    private void work(UseCounter.Drain drain) {
+    // @VisibleForTesting
+    void work(UseCounter.Drain drain) {
         try {
             doPosting(drain, this.poster);
         } catch (Exception e) {
@@ -96,8 +97,11 @@ public class ReportingWorker implements Runnable {
 
     void doPosting(UseCounter.Drain from, Poster poster)
             throws IOException {
-        final String prefix = jsonHeader().toString();
-        poster.sendFragment(prefix, "\"heartbeat\": true");
+        final byte[] prefix = jsonHeader().toString().getBytes(StandardCharsets.UTF_8);
+
+        if (!config.skipMetaPosts) {
+            poster.sendFragment(prefix, "\"heartbeat\": true");
+        }
 
         final long now = System.currentTimeMillis();
 
@@ -105,7 +109,11 @@ public class ReportingWorker implements Runnable {
         if (Math.abs(now - this.lastSuccessfulBeacon) < config.reportIntervalMs) {
             return;
         }
-        poster.sendFragment(prefix, buildMeta());
+
+        if (!config.skipMetaPosts) {
+            poster.sendFragment(prefix, buildMeta());
+        }
+
         postArray(poster, prefix, "eventsToSend", from.methodEntries.iterator(), this::appendMethodEntry);
         postArray(poster, prefix, "eventsToSend", from.loadClasses.entrySet().iterator(), this::appendLoadClass);
         postArray(poster, prefix, "errors", dataTracker.errors.iterator(), this::appendError);
@@ -115,14 +123,15 @@ public class ReportingWorker implements Runnable {
     }
 
     private <T> void postArray(Poster poster,
-                               String prefix,
+                               byte[] prefix,
                                String fieldName,
                                Iterator<T> array,
                                BiConsumer<StringBuilder, T> appender)
             throws IOException {
+        int fragmentNumber = 0;
         while (array.hasNext()) {
             final StringBuilder msg = new StringBuilder(4096);
-            msg.append("\"" + fieldName + "\":[\n");
+            msg.append("\"").append(fieldName).append("\":[\n");
 
             // guarantee progress by always sending at least one event
             appender.accept(msg, array.next());
@@ -135,6 +144,10 @@ public class ReportingWorker implements Runnable {
             msg.append("]");
 
             poster.sendFragment(prefix, msg.toString());
+
+            fragmentNumber++;
+
+            log.info(fieldName + ": sent part " + fragmentNumber + ", chars: " + msg.length());
         }
     }
 
@@ -342,7 +355,7 @@ public class ReportingWorker implements Runnable {
     }
 
     interface Poster {
-        void sendFragment(String prefix, CharSequence msg) throws IOException;
+        void sendFragment(byte[] prefix, CharSequence msg) throws IOException;
     }
 
     class StdLibHttpPoster implements Poster, AutoCloseable {
@@ -355,17 +368,20 @@ public class ReportingWorker implements Runnable {
         }
 
         @Override
-        public void sendFragment(String prefix, CharSequence msg) throws IOException {
-            final byte[] bytes = buildFullMessage(prefix, msg);
+        public void sendFragment(byte[] prefix, CharSequence msg) throws IOException {
+            final byte[] middle = msg.toString().getBytes(StandardCharsets.UTF_8);
+            final int totalLen = prefix.length + middle.length + 1 /* closing brace */;
 
             final HttpURLConnection conn = (HttpURLConnection)
                     destination.openConnection();
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
-            conn.setFixedLengthStreamingMode(bytes.length);
+            conn.setFixedLengthStreamingMode(totalLen);
             conn.setDoOutput(true);
             try (final OutputStream body = conn.getOutputStream()) {
-                body.write(bytes);
+                body.write(prefix);
+                body.write(middle);
+                body.write('}');
             }
             try (final InputStream response = conn.getInputStream()) {
                 final byte[] buffer = new byte[16 * 1024];
@@ -385,10 +401,6 @@ public class ReportingWorker implements Runnable {
         }
     }
 
-    public byte[] buildFullMessage(String prefix, CharSequence msg) {
-        return (prefix + msg + "}").getBytes(StandardCharsets.UTF_8);
-    }
-
     class DirectoryWritingPoster implements Poster {
 
         private final File root;
@@ -402,8 +414,13 @@ public class ReportingWorker implements Runnable {
         }
 
         @Override
-        public void sendFragment(String prefix, CharSequence msg) throws IOException {
-            Files.write(Paths.get(root.getPath(), "post-" + messageNumber + ".json"), buildFullMessage(prefix, msg));
+        public void sendFragment(byte[] prefix, CharSequence msg) throws IOException {
+            final String fileName = "post-" + messageNumber + ".json";
+            try (final FileOutputStream fos = new FileOutputStream(new File(root, fileName))) {
+                fos.write(prefix);
+                fos.write(msg.toString().getBytes(StandardCharsets.UTF_8));
+                fos.write('}');
+            }
             messageNumber++;
         }
     }

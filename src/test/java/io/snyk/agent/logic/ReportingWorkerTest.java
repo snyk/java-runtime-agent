@@ -12,8 +12,11 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -67,10 +70,7 @@ class ReportingWorkerTest {
                 Config.fromLinesWithoutDefault(configs),
                 dataTracker);
         reportingWorker.doPosting(drain, poster);
-        assertValidJson(new String(reportingWorker.buildFullMessage(
-                reportingWorker.jsonHeader().toString(),
-                "\"fragment\": true"),
-                StandardCharsets.UTF_8));
+        assertValidJson(reportingWorker.jsonHeader().toString() + "\"fragment\": true}");
 
         assertFalse(postings.isEmpty(), "at least the metadata should be sent");
 
@@ -172,5 +172,49 @@ class ReportingWorkerTest {
         final StringBuilder sb = new StringBuilder("hello");
         ReportingWorker.trimRightCommaSpacing(sb);
         assertEquals("hello", sb.toString());
+    }
+
+    public static void main(String[] args) throws Exception {
+        final TestLogger log = new TestLogger();
+        final DataTracker tracker = new DataTracker(log);
+        final ReportingWorker worker = new ReportingWorker(log, Config.fromLinesWithoutDefault(Arrays.asList(
+                "projectId=0153525f-5a99-4efe-a84f-454f12494033",
+                "homeBaseUrl=http://localhost:8001/api/v1/beacon",
+                "skipMetaPosts=true",
+                "reportIntervalMs=0"
+        )), tracker);
+
+        final int values = 4_096;
+        final Set<String> fakeEntries = new HashSet<>(values);
+        for (int i = 0; i < values; i++) {
+            fakeEntries.add(String.format(
+                    "foooooooooooooooooooooooooooooooo%1$s:baaaaaaaaaaaaaaaaaaaaaaaaaaaaar%1$s:baaaaaaaaaaaaaaaaaaaaaaaaz%1$s:quuuuuuuuuuuuuuuuuuuux%1$s",
+                    i));
+        }
+
+        final ExecutorService ex = Executors.newCachedThreadPool();
+
+        final long min_time_ms = 250;
+
+        final Callable<Object> postForever = () -> {
+            while (true) {
+                final long start = System.currentTimeMillis();
+                final UseCounter.Drain drain = new UseCounter.Drain();
+                drain.methodEntries.addAll(fakeEntries);
+                worker.work(drain);
+
+                final long duration = System.currentTimeMillis() - start;
+
+                System.out.println("request took " + duration + "ms");
+
+                if (duration < min_time_ms) {
+                    Thread.sleep(min_time_ms - duration);
+                }
+            }
+        };
+        for (int thread = 0; thread < 4; thread++) {
+            ex.submit(postForever);
+        }
+        ex.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
     }
 }

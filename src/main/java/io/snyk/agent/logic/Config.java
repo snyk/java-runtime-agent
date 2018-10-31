@@ -32,6 +32,7 @@ public class Config {
     public final boolean trackBranchingMethods;
     public final boolean trackAccessors;
     final boolean skipBuiltInRules;
+    public final boolean skipMetaPosts;
 
     private static final long DEFAULT_POST_LIMIT = 1024 * 1024;
 
@@ -46,7 +47,8 @@ public class Config {
            boolean trackAccessors,
            boolean trackBranchingMethods,
            boolean debugLoggingEnabled,
-           boolean skipBuiltInRules) throws MalformedURLException {
+           boolean skipBuiltInRules,
+           boolean skipMetaPosts) {
         if (null == projectId) {
             throw new IllegalStateException("projectId is required");
         }
@@ -66,6 +68,7 @@ public class Config {
         this.debugLoggingEnabled = debugLoggingEnabled;
         this.trackBranchingMethods = trackBranchingMethods;
         this.skipBuiltInRules = skipBuiltInRules;
+        this.skipMetaPosts = skipMetaPosts;
     }
 
     public static Config fromFileWithDefault(String path) {
@@ -146,6 +149,11 @@ public class Config {
 
             if ("debugLoggingEnabled".equals(key)) {
                 builder.debugLoggingEnabled = Boolean.parseBoolean(value);
+                continue;
+            }
+
+            if ("skipMetaPosts".equals(key)) {
+                builder.skipMetaPosts = Boolean.parseBoolean(value);
                 continue;
             }
 
