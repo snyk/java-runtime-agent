@@ -15,9 +15,7 @@ public class Rewriter {
     private final String ourInternalName;
     private final ToIntFunction<String> allocateNewId;
     private final String sourceLocation;
-    private final boolean trackClassLoading;
-    private final boolean trackAccessors;
-    private final boolean trackBranchingMethods;
+    private final Config config;
 
     // This Class<?> must implement the same "static interface" as LandingZone.class.
     // There's no way to express this in Java. The marked public static methods must
@@ -25,15 +23,11 @@ public class Rewriter {
     public Rewriter(Class<?> tracker,
                     ToIntFunction<String> allocateNewId,
                     String sourceLocation,
-                    boolean trackClassLoading,
-                    boolean trackAccessors,
-                    boolean trackBranchingMethods) {
+                    Config config) {
         this.ourInternalName = tracker.getName().replace('.', '/');
         this.allocateNewId = allocateNewId;
         this.sourceLocation = sourceLocation;
-        this.trackClassLoading = trackClassLoading;
-        this.trackAccessors = trackAccessors;
-        this.trackBranchingMethods = trackBranchingMethods;
+        this.config = config;
     }
 
     public byte[] rewrite(ClassReader reader) {
@@ -43,12 +37,12 @@ public class Rewriter {
                 continue;
             }
 
-            final boolean includeWrtAccessors = trackAccessors || !InstrumentationFilter.isAccessor(method);
+            final boolean includeWrtAccessors = config.trackAccessors || !InstrumentationFilter.isAccessor(method);
             if (!includeWrtAccessors) {
                 continue;
             }
 
-            final boolean includeWrtBranching = trackBranchingMethods || InstrumentationFilter.branches(cn, method);
+            final boolean includeWrtBranching = config.trackBranchingMethods || InstrumentationFilter.branches(cn, method);
             if (!includeWrtBranching) {
                 continue;
             }
@@ -62,7 +56,7 @@ public class Rewriter {
         final String tag = clazzInternalName + ":" + method.name +
                 method.desc + // using desc, not signature, as it's always available
                 ":" + sourceLocation;
-        if (trackClassLoading) {
+        if (config.trackClassLoading) {
             addInspectionOfLoadClassCalls(method, tag);
         }
         addInspectionOfMethodEntry(method, tag);

@@ -71,7 +71,7 @@ class TransformerTest {
         final List<String> configItems = Lists.newArrayList(config);
         configItems.add("projectId=b2c2d38f-f147-4010-b92d-3dea94893d5b");
         final Transformer transformer = new Transformer(log,
-                Config.fromLinesWithoutDefault(configItems),
+                Config.fromLinesWithoutDefault(configItems.toArray(new String[0])),
                 new DataTracker(log));
         final byte[] originalBytes = ByteStreams.toByteArray(classLoader.getResourceAsStream(
                 "io/snyk/example/" + clazz + ".class"));
