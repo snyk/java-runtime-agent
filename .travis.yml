@@ -4,7 +4,7 @@ jdk:
   - oraclejdk9
 script:
 - ./gradlew build test distZip
-- git clone --depth 1 https://github.com/snyk/java-goof
+- git clone --depth 1 --branch java9 https://github.com/snyk/java-goof
 - e2e/test-script.sh
 branches:
   only:

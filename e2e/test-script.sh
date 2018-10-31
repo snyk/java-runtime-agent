@@ -21,7 +21,7 @@ rm -f java-goof/snyk-agent-*.log
 (
   cd java-goof &&
   MAVEN_OPTS="-javaagent:${AGENT_JAR}=file://${TEMP_DIR}/temp.properties" \
-    mvn tomcat7:run
+    exec mvn tomcat7:run
 ) &
 
 TOMCAT_PID=$!
@@ -44,11 +44,13 @@ done
 sleep 6
 
 # show the reports
-tail -n5000 ${TEMP_DIR}/snyk-logs/agent-*.log
+cat ${TEMP_DIR}/snyk-logs/agent-*.log
 jq --color-output . ${TEMP_DIR}/*.json
 
 # we must have hit the methodEntry
-fgrep org/apache/struts2/dispatcher/multipart/JakartaMultiPartRequest ${TEMP_DIR}/*.json >/dev/null || (
+jq '.eventsToSend[].methodEntry.methodName' ${TEMP_DIR}/*.json | fgrep org/apache/struts2/dispatcher/multipart/JakartaMultiPartRequest >/dev/null || (
     echo Class was never mentioned...
     exit 4
 )
+
+echo 'Success! The "Cannot iterate over null" warnings are from non-winning files.'
