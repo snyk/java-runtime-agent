@@ -3,6 +3,7 @@ package io.snyk.agent.logic;
 
 import com.google.common.collect.Sets;
 import io.snyk.agent.testutil.DefinerLoader;
+import io.snyk.agent.testutil.TestLogger;
 import io.snyk.agent.testutil.TestTracker;
 import io.snyk.asm.ClassReader;
 import org.junit.jupiter.api.Test;
@@ -23,7 +24,7 @@ class RewriterTest {
                 Config.fromLinesWithoutDefault(
                         "projectId=ab95b1fb-4fe0-497d-aba0-5a1d85db0827",
                         "trackClassLoading=true"
-                )).rewrite(new ClassReader(name));
+                ), new TestLogger()).rewrite(new ClassReader(name));
         final Class<?> clazz = new DefinerLoader().define(name, bytes);
         final Object instance = clazz.newInstance();
         assertNotNull(clazz.getDeclaredMethod("returnLambda").invoke(instance));

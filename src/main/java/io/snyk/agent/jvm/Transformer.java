@@ -49,7 +49,7 @@ class Transformer implements ClassFileTransformer {
                 }
             }
 
-            log.info("classloader futzing detected: " + className);
+            log.debug("classloader futzing detected: " + className);
             return null;
         }
 
@@ -84,7 +84,7 @@ class Transformer implements ClassFileTransformer {
             return null;
         }
 
-        return new Rewriter(LandingZone.class, LandingZone.SEEN_SET::add, info.toLocation(), config)
+        return new Rewriter(LandingZone.class, LandingZone.SEEN_SET::add, info.toLocation(), config, log)
                 .rewrite(reader);
     }
 

@@ -8,7 +8,7 @@ import java.util.function.Predicate;
  *
  * The tests have examples.
  */
-public class PathFilter implements Predicate<String> {
+public class PathFilter {
     public final String className;
     public final boolean classNameIsPrefix;
     public final Optional<String> methodName;
@@ -53,20 +53,8 @@ public class PathFilter implements Predicate<String> {
                 : actualClassName.equals(className);
     }
 
-    @Override
-    public boolean test(final String input) {
-        final String[] parts = input.split("#|\\(", 3);
-        final String actualClassName = parts[0];
-        final String actualMethodName = parts[1];
+    public boolean testMethod(final String actualClassName, final String actualMethodName) {
+        return testClass(actualClassName) && methodName.map(actualMethodName::equals).orElse(true);
 
-        if (!testClass(actualClassName)) {
-            return false;
-        }
-
-        if (methodName.isPresent()) {
-            return actualMethodName.equals(methodName.get());
-        }
-
-        return true;
     }
 }

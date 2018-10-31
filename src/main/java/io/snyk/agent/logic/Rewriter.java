@@ -1,10 +1,13 @@
 package io.snyk.agent.logic;
 
+import io.snyk.agent.filter.Filter;
 import io.snyk.agent.util.AsmUtil;
+import io.snyk.agent.util.Log;
 import io.snyk.asm.ClassReader;
 import io.snyk.asm.Opcodes;
 import io.snyk.asm.tree.*;
 
+import java.util.Optional;
 import java.util.function.ToIntFunction;
 
 /**
@@ -16,6 +19,7 @@ public class Rewriter {
     private final ToIntFunction<String> allocateNewId;
     private final String sourceLocation;
     private final Config config;
+    private final Log log;
 
     // This Class<?> must implement the same "static interface" as LandingZone.class.
     // There's no way to express this in Java. The marked public static methods must
@@ -23,30 +27,50 @@ public class Rewriter {
     public Rewriter(Class<?> tracker,
                     ToIntFunction<String> allocateNewId,
                     String sourceLocation,
-                    Config config) {
+                    Config config,
+                    Log log) {
         this.ourInternalName = tracker.getName().replace('.', '/');
         this.allocateNewId = allocateNewId;
         this.sourceLocation = sourceLocation;
         this.config = config;
+        this.log = log;
     }
 
     public byte[] rewrite(ClassReader reader) {
         final ClassNode cn = AsmUtil.parse(reader);
         for (MethodNode method : cn.methods) {
+            if (!config.filters.isEmpty()) {
+                final Optional<Filter> matching = config.filters.stream()
+                        .filter(filter -> filter.testMethod(cn.name, method.name))
+                        .findAny();
+
+                if (!matching.isPresent()) {
+                    continue;
+                }
+
+                matching.get().matches.incrementAndGet();
+            }
+
+            final String logName = cn.name + "#" + method.name;
+
             if (InstrumentationFilter.skipMethod(cn, method)) {
+                log.info("rewrite requested, but disallowed: " + logName);
                 continue;
             }
 
             final boolean includeWrtAccessors = config.trackAccessors || !InstrumentationFilter.isAccessor(method);
             if (!includeWrtAccessors) {
+                log.info("rewrite requested, but accessor: " + logName);
                 continue;
             }
 
             final boolean includeWrtBranching = config.trackBranchingMethods || InstrumentationFilter.branches(cn, method);
             if (!includeWrtBranching) {
+                log.info("rewrite requested, but branching: " + logName);
                 continue;
             }
 
+            log.info("rewrite: " + logName);
             rewriteMethod(cn.name, method);
         }
         return AsmUtil.byteArray(cn);

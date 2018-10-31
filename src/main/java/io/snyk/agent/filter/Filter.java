@@ -3,6 +3,7 @@ package io.snyk.agent.filter;
 import io.snyk.agent.util.Log;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -23,6 +24,8 @@ public class Filter {
     public final Optional<String> artifact;
     public final Optional<VersionFilter> version;
     public final List<PathFilter> pathFilters;
+
+    public final AtomicLong matches = new AtomicLong();
 
     public Filter(String name,
                   Optional<String> artifact,
@@ -91,14 +94,11 @@ public class Filter {
         return pathFilters.stream().anyMatch(filter -> filter.testClass(className));
     }
 
-    public boolean testPath(Log log, String path) {
+    public boolean testMethod(String className, String methodName) {
         if (pathFilters.isEmpty()) {
-            log.debug("filter: " + this.name + ": path: " + path + ": no filters");
             return true;
         }
 
-        final boolean result = pathFilters.stream().anyMatch(filter -> filter.test(path));
-        log.debug("filter: " + this.name + ": path: " + path + ": " + result);
-        return result;
+        return pathFilters.stream().anyMatch(filter -> filter.testMethod(className, methodName));
     }
 }

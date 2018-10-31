@@ -2,6 +2,7 @@ package io.snyk.agent.logic;
 
 import io.snyk.agent.jvm.LandingZone;
 import io.snyk.agent.util.AsmUtil;
+import io.snyk.agent.util.Log;
 import io.snyk.asm.ClassReader;
 import io.snyk.asm.tree.ClassNode;
 import org.openjdk.jmh.annotations.*;
@@ -43,7 +44,8 @@ public class RewritePerformance {
                 LandingZone.SEEN_SET::add,
                 "13371337:tests",
                 Config.fromLinesWithoutDefault(
-                        "projectId=ab95b1fb-4fe0-497d-aba0-5a1d85db0827"))
+                        "projectId=ab95b1fb-4fe0-497d-aba0-5a1d85db0827"),
+                new NullLogger())
                 .rewrite(classReaderBlackHole);
     }
 
@@ -54,7 +56,7 @@ public class RewritePerformance {
                 "13371337:tests",
                 Config.fromLinesWithoutDefault(
                         "projectId=ab95b1fb-4fe0-497d-aba0-5a1d85db0827"
-                )).rewrite(new ClassReader(classBlackHole));
+                ), new NullLogger()).rewrite(new ClassReader(classBlackHole));
     }
 
 
@@ -207,4 +209,26 @@ public class RewritePerformance {
             61, 0, 0, 0, 2, 0, 62, 0, 93, 0, 0, 0, 10, 0, 1, 0, 91, 0, 95, 0, 92, 0, 25, 0,
             64, 0, 0, 0, 12, 0, 1, 0, 65, 0, 3, 0, 66, 0, 67, 0, 68,
     };
+}
+
+class NullLogger implements Log {
+    @Override
+    public void debug(String msg) {
+    }
+
+    @Override
+    public void info(String msg) {
+    }
+
+    @Override
+    public void warn(String msg) {
+    }
+
+    @Override
+    public void stackTrace(Throwable e) {
+    }
+
+    @Override
+    public void flushInitMessage(String initMessage) {
+    }
 }
