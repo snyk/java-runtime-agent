@@ -415,8 +415,8 @@ public class ReportingWorker implements Runnable {
 
         @Override
         public void sendFragment(byte[] prefix, CharSequence msg) throws IOException {
-            try (final FileOutputStream fos = new FileOutputStream(new File(root,
-                    "post-" + messageNumber + ".json"))) {
+            final String fileName = "post-" + messageNumber + ".json";
+            try (final FileOutputStream fos = new FileOutputStream(new File(root, fileName))) {
                 fos.write(prefix);
                 fos.write(msg.toString().getBytes(StandardCharsets.UTF_8));
                 fos.write('}');
