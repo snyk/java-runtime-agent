@@ -17,7 +17,9 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -68,9 +70,9 @@ class ReportingWorkerTest {
         configs.add("projectId=1f9378b7-46fa-41ea-a156-98f7a8930ee1");
         final ReportingWorker reportingWorker = new ReportingWorker(new TestLogger(),
                 Config.fromLinesWithoutDefault(configs),
-                dataTracker);
-        reportingWorker.doPosting(drain, poster);
-        assertValidJson(reportingWorker.jsonHeader().toString() + "\"fragment\": true}");
+                dataTracker,
+                poster);
+        reportingWorker.sendIfNecessary(() -> drain);
 
         assertFalse(postings.isEmpty(), "at least the metadata should be sent");
 
@@ -174,6 +176,33 @@ class ReportingWorkerTest {
         assertEquals("hello", sb.toString());
     }
 
+    @Test
+    void supplierNotUsed() throws IOException {
+        final AtomicLong used = new AtomicLong();
+        final Supplier<UseCounter.Drain> supplier = () -> {
+            used.incrementAndGet();
+            return new UseCounter.Drain();
+        };
+
+        final ReportingWorker.Poster poster = (_prefix, _message) -> {};
+
+        final TestLogger log = new TestLogger();
+        final ReportingWorker worker = new ReportingWorker(log, Config.fromLinesWithoutDefault(Arrays.asList(
+                "projectId=0153525f-5a99-4efe-a84f-454f12494033",
+                "filter.foo.paths = **",
+                "homeBaseUrl = invalid://url"
+        )), new DataTracker(log), poster);
+
+        worker.sendIfNecessary(supplier);
+        assertEquals(1, used.longValue(), "should have read the supplier, to send");
+
+        worker.sendIfNecessary(supplier);
+        assertEquals(1, used.longValue(), "shouldn't have read the supplier again, last send was a success");
+
+        // note: technically there's a race condition here; the second call must happen before the "events" timeout
+        // ..but currently the timeout is >1 minute, and the test takes <1ms
+    }
+
     public static void main(String[] args) throws Exception {
         final TestLogger log = new TestLogger();
         final DataTracker tracker = new DataTracker(log);
@@ -201,7 +230,7 @@ class ReportingWorkerTest {
                 final long start = System.currentTimeMillis();
                 final UseCounter.Drain drain = new UseCounter.Drain();
                 drain.methodEntries.addAll(fakeEntries);
-                worker.work(drain);
+                worker.sendIfNecessary(() -> drain);
 
                 final long duration = System.currentTimeMillis() - start;
 

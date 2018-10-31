@@ -14,10 +14,10 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -45,18 +45,23 @@ public class ReportingWorker implements Runnable {
     }
 
     public ReportingWorker(Log log, Config config, DataTracker dataTracker) throws MalformedURLException {
+        this(log, config, dataTracker, computePoster(log, config));
+    }
+
+    // @VisibleForTesting
+    ReportingWorker(Log log, Config config, DataTracker dataTracker, Poster poster) {
         this.log = log;
         this.config = config;
         this.dataTracker = dataTracker;
+        this.poster = poster;
+    }
 
-        log.info("detected vmVendor: " + vmVendor);
+    private static Poster computePoster(Log log, Config config) throws MalformedURLException {
         switch (config.homeBaseUrl.getScheme()) {
             case "file":
-                poster = new DirectoryWritingPoster(config.homeBaseUrl);
-                break;
+                return new DirectoryWritingPoster(config.homeBaseUrl);
             default:
-                poster = new StdLibHttpPoster(config.homeBaseUrl.toURL());
-                break;
+                return new StdLibHttpPoster(log, config.homeBaseUrl.toURL());
         }
     }
 
@@ -71,7 +76,7 @@ public class ReportingWorker implements Runnable {
         }
         while (true) {
             try {
-                work(LandingZone.SEEN_SET.drain());
+                sendIfNecessary(LandingZone.SEEN_SET::drain);
             } catch (Throwable t) {
                 log.warn("agent issue");
                 log.stackTrace(t);
@@ -85,18 +90,10 @@ public class ReportingWorker implements Runnable {
         }
     }
 
-    // @VisibleForTesting
-    void work(UseCounter.Drain drain) {
-        try {
-            doPosting(drain, this.poster);
-        } catch (Exception e) {
-            log.warn("reporting failed");
-            log.stackTrace(e);
-        }
-    }
-
-    void doPosting(UseCounter.Drain from, Poster poster)
-            throws IOException {
+    /**
+     * @param drainMaker Where to drain events from. Will not be called if it's only time for heartbeats.
+     */
+    void sendIfNecessary(Supplier<UseCounter.Drain> drainMaker) throws IOException {
         final byte[] prefix = jsonHeader().toString().getBytes(StandardCharsets.UTF_8);
 
         if (!config.skipMetaPosts) {
@@ -114,6 +111,7 @@ public class ReportingWorker implements Runnable {
             poster.sendFragment(prefix, buildMeta());
         }
 
+        final UseCounter.Drain from = drainMaker.get();
         postArray(poster, prefix, "eventsToSend", from.methodEntries.iterator(), this::appendMethodEntry);
         postArray(poster, prefix, "eventsToSend", from.loadClasses.entrySet().iterator(), this::appendLoadClass);
         postArray(poster, prefix, "errors", dataTracker.errors.iterator(), this::appendError);
@@ -151,7 +149,7 @@ public class ReportingWorker implements Runnable {
         }
     }
 
-    CharSequence jsonHeader() {
+    private CharSequence jsonHeader() {
         final StringBuilder msg = new StringBuilder(4096);
         msg.append("{\"projectId\":");
         Json.appendString(msg, config.projectId);
@@ -358,12 +356,14 @@ public class ReportingWorker implements Runnable {
         void sendFragment(byte[] prefix, CharSequence msg) throws IOException;
     }
 
-    class StdLibHttpPoster implements Poster, AutoCloseable {
+    static class StdLibHttpPoster implements Poster, AutoCloseable {
 
+        private final Log log;
         private final URL destination;
         private HttpURLConnection lastConnection = null;
 
-        StdLibHttpPoster(URL destination) {
+        StdLibHttpPoster(Log log, URL destination) {
+            this.log = log;
             this.destination = destination;
         }
 
@@ -401,7 +401,7 @@ public class ReportingWorker implements Runnable {
         }
     }
 
-    class DirectoryWritingPoster implements Poster {
+    static class DirectoryWritingPoster implements Poster {
 
         private final File root;
         long messageNumber = 0;
