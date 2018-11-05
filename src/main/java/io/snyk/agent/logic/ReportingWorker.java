@@ -15,6 +15,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
@@ -197,7 +198,9 @@ public class ReportingWorker implements Runnable {
         Json.appendString(msg, sourceUrl);
         msg.append(",\"sourceCrc32c\":");
         Json.appendString(msg, classCrc32c);
-        msg.append("}},\n");
+        msg.append("},\"timestamp\":");
+        Json.appendString(msg, DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
+        msg.append("},\n");
     }
 
     private void appendLoadClass(StringBuilder msg, Map.Entry<String, HashSet<String>> entry) {
