@@ -10,10 +10,7 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.nio.file.Files;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -53,6 +50,10 @@ public class Config {
             throw new IllegalStateException("projectId is required");
         }
         this.projectId = projectId;
+        if (filters.isEmpty()) {
+            // unlikely: they should be using the non-empty built-in filters
+            throw new IllegalStateException("no filters provided");
+        }
         this.filters = Collections.unmodifiableList(filters);
         this.homeBaseUrl = URI.create(null != homeBaseUrl ? homeBaseUrl : "https://homebase.snyk.io/api/v1/beacon");
         if (null == homeBasePostLimit) {
@@ -96,11 +97,11 @@ public class Config {
     }
 
     // @VisibleForTesting
-    public static Config fromLinesWithoutDefault(Iterable<String> lines) throws MalformedURLException {
-        return builderFromLines(lines).build();
+    public static Config fromLinesWithoutDefault(String... lines) {
+        return builderFromLines(Arrays.asList(lines)).build();
     }
 
-    private static ConfigBuilder builderFromLines(Iterable<String> lines) throws MalformedURLException {
+    private static ConfigBuilder builderFromLines(Iterable<String> lines) {
         final ConfigBuilder builder = new ConfigBuilder();
         final Map<String, Filter.Builder> filters = new HashMap<>();
 

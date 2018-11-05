@@ -3,6 +3,7 @@ package io.snyk.agent.filter;
 import io.snyk.agent.util.Log;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -24,6 +25,8 @@ public class Filter {
     public final Optional<VersionFilter> version;
     public final List<PathFilter> pathFilters;
 
+    public final AtomicLong matches = new AtomicLong();
+
     public Filter(String name,
                   Optional<String> artifact,
                   Optional<VersionFilter> version,
@@ -31,6 +34,9 @@ public class Filter {
         this.name = name;
         this.artifact = artifact;
         this.version = version;
+        if (pathFilters.isEmpty()) {
+            throw new IllegalStateException("filter error: " + name + ".paths must be provided");
+        }
         this.pathFilters = pathFilters;
     }
 
@@ -84,21 +90,10 @@ public class Filter {
     }
 
     public boolean testClassName(String className) {
-        if (pathFilters.isEmpty()) {
-            return true;
-        }
-
         return pathFilters.stream().anyMatch(filter -> filter.testClass(className));
     }
 
-    public boolean testPath(Log log, String path) {
-        if (pathFilters.isEmpty()) {
-            log.debug("filter: " + this.name + ": path: " + path + ": no filters");
-            return true;
-        }
-
-        final boolean result = pathFilters.stream().anyMatch(filter -> filter.test(path));
-        log.debug("filter: " + this.name + ": path: " + path + ": " + result);
-        return result;
+    public boolean testMethod(String className, String methodName) {
+        return pathFilters.stream().anyMatch(filter -> filter.testMethod(className, methodName));
     }
 }

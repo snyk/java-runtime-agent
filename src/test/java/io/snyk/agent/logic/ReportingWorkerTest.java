@@ -68,8 +68,9 @@ class ReportingWorkerTest {
 
         final List<String> configs = Lists.newArrayList(configLines);
         configs.add("projectId=1f9378b7-46fa-41ea-a156-98f7a8930ee1");
+        configs.add("filter.foo.paths=**");
         final ReportingWorker reportingWorker = new ReportingWorker(new TestLogger(),
-                Config.fromLinesWithoutDefault(configs),
+                Config.fromLinesWithoutDefault(configs.toArray(new String[0])),
                 dataTracker,
                 poster);
         reportingWorker.sendIfNecessary(() -> drain);
@@ -187,11 +188,11 @@ class ReportingWorkerTest {
         final ReportingWorker.Poster poster = (_prefix, _message) -> {};
 
         final TestLogger log = new TestLogger();
-        final ReportingWorker worker = new ReportingWorker(log, Config.fromLinesWithoutDefault(Arrays.asList(
+        final ReportingWorker worker = new ReportingWorker(log, Config.fromLinesWithoutDefault(
                 "projectId=0153525f-5a99-4efe-a84f-454f12494033",
                 "filter.foo.paths = **",
                 "homeBaseUrl = invalid://url"
-        )), new DataTracker(log), poster);
+        ), new DataTracker(log), poster);
 
         worker.sendIfNecessary(supplier);
         assertEquals(1, used.longValue(), "should have read the supplier, to send");
@@ -206,12 +207,12 @@ class ReportingWorkerTest {
     public static void main(String[] args) throws Exception {
         final TestLogger log = new TestLogger();
         final DataTracker tracker = new DataTracker(log);
-        final ReportingWorker worker = new ReportingWorker(log, Config.fromLinesWithoutDefault(Arrays.asList(
+        final ReportingWorker worker = new ReportingWorker(log, Config.fromLinesWithoutDefault(
                 "projectId=0153525f-5a99-4efe-a84f-454f12494033",
                 "homeBaseUrl=http://localhost:8001/api/v1/beacon",
                 "skipMetaPosts=true",
                 "reportIntervalMs=0"
-        )), tracker);
+        ), tracker);
 
         final int values = 4_096;
         final Set<String> fakeEntries = new HashSet<>(values);

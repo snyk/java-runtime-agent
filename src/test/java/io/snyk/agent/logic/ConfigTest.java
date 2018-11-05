@@ -24,8 +24,9 @@ class ConfigTest {
     void skipFilters() throws IOException {
         loadConfig(Arrays.asList(
                 "projectId=a9fe5eb7-88f1-43da-86ae-9b7b15d9049d",
+                "filter.foo.paths = something/must/Be#provided",
                 "skipBuiltInRules = true"
-        ), config -> assertEquals(0, config.filters.size()));
+        ), config -> assertEquals(1, config.filters.size()));
     }
 
     private void loadConfig(List<String> lines, Consumer<Config> check) throws IOException {

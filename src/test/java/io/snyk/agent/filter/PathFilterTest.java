@@ -10,29 +10,26 @@ class PathFilterTest {
     @Test
     void testMatching() {
         final PathFilter fooBarExplicit = PathFilter.parse("io.snyk.Foo#bar");
-        assertTrue(fooBarExplicit.test("io.snyk.Foo#bar"));
-        assertFalse(fooBarExplicit.test("io.snyk.quux.Foo#bar"));
+        assertTrue(fooBarExplicit.testMethod("io.snyk.Foo", "bar"));
+        assertFalse(fooBarExplicit.testMethod("io.snyk.quux.Foo", "bar"));
 
         final PathFilter fooExplicit = PathFilter.parse("io.snyk.Foo");
 
-        assertTrue(fooExplicit.test("io.snyk.Foo#bar"));
-        assertTrue(fooExplicit.test("io.snyk.Foo#baz"));
+        assertTrue(fooExplicit.testMethod("io.snyk.Foo", "bar"));
+        assertTrue(fooExplicit.testMethod("io.snyk.Foo", "baz"));
 
         final PathFilter fooBarWild = PathFilter.parse("io.snyk.**#fooBar");
-        assertTrue(fooBarWild.test("io.snyk.foo.Agent#fooBar"));
-        assertTrue(fooBarWild.test("io.snyk.foo.Agent#fooBar()"));
-        assertTrue(fooBarWild.test("io.snyk.foo.Agent#fooBar(Z)"));
+        assertTrue(fooBarWild.testMethod("io.snyk.foo.Agent", "fooBar"));
 
-        assertTrue(fooBarWild.test("io.snyk.Agent#fooBar"));
+        assertTrue(fooBarWild.testMethod("io.snyk.Agent", "fooBar"));
         // invalid, but accepted
-        assertTrue(fooBarWild.test("io.snyk.#fooBar"));
-        assertTrue(fooBarWild.test("io.snyk.Agent#fooBar(nonsense here)"));
+        assertTrue(fooBarWild.testMethod("io.snyk.", "fooBar"));
 
-        assertFalse(fooBarWild.test("nio.snyk.Agent#fooBar"));
-        assertFalse(fooBarWild.test("io.snykn.Agent#fooBar"));
-        assertFalse(fooBarWild.test("io.snyk.Agent#fooBa"));
-        assertFalse(fooBarWild.test("io.snyk.Agent#ooBar"));
-        assertFalse(fooBarWild.test("io.snyk.Agent#nfooBar"));
-        assertFalse(fooBarWild.test("io.snyk.Agent#fooBarn"));
+        assertFalse(fooBarWild.testMethod("nio.snyk.Agent", "fooBar"));
+        assertFalse(fooBarWild.testMethod("io.snykn.Agent", "fooBar"));
+        assertFalse(fooBarWild.testMethod("io.snyk.Agent", "fooBa"));
+        assertFalse(fooBarWild.testMethod("io.snyk.Agent", "ooBar"));
+        assertFalse(fooBarWild.testMethod("io.snyk.Agent", "nfooBar"));
+        assertFalse(fooBarWild.testMethod("io.snyk.Agent", "fooBarn"));
     }
 }

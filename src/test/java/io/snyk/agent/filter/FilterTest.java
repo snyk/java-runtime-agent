@@ -17,7 +17,7 @@ class FilterTest {
         final Filter filter = new Filter("foo",
                 Optional.of("maven:io.snyk:snyk-agent"),
                 Optional.empty(),
-                Collections.emptyList());
+                Collections.singletonList(PathFilter.parse("**")));
 
         assertTrue(filter.testArtifacts(new TestLogger(), Collections.emptyList()),
                 "a class that we know nothing about the heritage of");
@@ -32,7 +32,7 @@ class FilterTest {
         final Filter filter = new Filter("foo",
                 Optional.of("maven:io.snyk:snyk-agent"),
                 Optional.of(VersionFilter.parse("[,3)")),
-                Collections.emptyList());
+                Collections.singletonList(PathFilter.parse("**")));
 
         assertTrue(filter.testArtifacts(new TestLogger(), Collections.emptyList()),
                 "a class that we know nothing about the heritage of");

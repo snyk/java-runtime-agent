@@ -49,7 +49,7 @@ class Transformer implements ClassFileTransformer {
                 }
             }
 
-            log.info("classloader futzing detected: " + className);
+            log.debug("classloader futzing detected: " + className);
             return null;
         }
 
@@ -84,16 +84,11 @@ class Transformer implements ClassFileTransformer {
             return null;
         }
 
-        return new Rewriter(LandingZone.class, LandingZone.SEEN_SET::add, info.toLocation(), config.trackClassLoading, config.trackAccessors,
-                config.trackBranchingMethods)
+        return new Rewriter(LandingZone.class, LandingZone.SEEN_SET::add, info.toLocation(), config, log)
                 .rewrite(reader);
     }
 
     private boolean shouldProcessClass(String className, ClassInfo.ExtraInfo info) {
-        if (config.filters.isEmpty()) {
-            return true;
-        }
-
         return config.filters.stream()
                 .anyMatch(f -> f.testArtifacts(log, info.extra) && f.testClassName(className));
     }
