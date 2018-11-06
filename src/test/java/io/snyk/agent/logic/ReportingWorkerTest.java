@@ -206,15 +206,9 @@ class ReportingWorkerTest {
 
     public static void main(String[] args) throws Exception {
         final TestLogger log = new TestLogger();
-        final DataTracker tracker = new DataTracker(log);
-        final ReportingWorker worker = new ReportingWorker(log, Config.fromLinesWithoutDefault(
-                "projectId=0153525f-5a99-4efe-a84f-454f12494033",
-                "homeBaseUrl=http://localhost:8001/api/v1/beacon",
-                "skipMetaPosts=true",
-                "reportIntervalMs=0"
-        ), tracker);
 
-        final int values = 4_096;
+
+        final int values = 10;
         final Set<String> fakeEntries = new HashSet<>(values);
         for (int i = 0; i < values; i++) {
             fakeEntries.add(String.format(
@@ -224,10 +218,19 @@ class ReportingWorkerTest {
 
         final ExecutorService ex = Executors.newCachedThreadPool();
 
-        final long min_time_ms = 250;
+        final long min_time_ms = 100;
+        final int events = 1_000;
 
         final Callable<Object> postForever = () -> {
-            while (true) {
+            final DataTracker tracker = new DataTracker(log);
+            final ReportingWorker worker = new ReportingWorker(log, Config.fromLinesWithDefault(Arrays.asList(
+                    "projectId=f0045540-2fa3-4d42-8f64-815d770951c4",
+                    "homeBaseUrl=http://homebase.dev.snyk.io/api/v1/beacon",
+                    "skipMetaPosts=true",
+                    "reportIntervalMs=0"
+            )), tracker);
+
+            for (int event = 0; event < events; ++event) {
                 final long start = System.currentTimeMillis();
                 final UseCounter.Drain drain = new UseCounter.Drain();
                 drain.methodEntries.addAll(fakeEntries);
@@ -235,16 +238,19 @@ class ReportingWorkerTest {
 
                 final long duration = System.currentTimeMillis() - start;
 
-                System.out.println("request took " + duration + "ms");
+                System.out.println("request " + event + " took " + duration + "ms");
 
                 if (duration < min_time_ms) {
                     Thread.sleep(min_time_ms - duration);
                 }
             }
+
+            return null;
         };
-        for (int thread = 0; thread < 4; thread++) {
+        for (int thread = 0; thread < 19; thread++) {
             ex.submit(postForever);
         }
+        ex.shutdown();
         ex.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
     }
 }

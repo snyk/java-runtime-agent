@@ -7,7 +7,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.util.*;
@@ -75,16 +74,21 @@ public class Config {
     public static Config fromFileWithDefault(String path) {
         try {
             InitLog.loading("loading config from: " + path);
-            final ConfigBuilder intermediate = builderFromLines(Files.readAllLines(new File(path).toPath()));
+            return fromLinesWithDefault(Files.readAllLines(new File(path).toPath()));
+        } catch (IOException e) {
+            InitLog.loading("error reading config file");
+            throw new IllegalStateException(e);
+        }
+    }
+
+    public static Config fromLinesWithDefault(List<String> lines) {
+            final ConfigBuilder intermediate = builderFromLines(lines);
             if (!intermediate.skipBuiltInRules) {
                 InitLog.loading("adding built-in filters");
                 intermediate.filters.addAll(loadBuiltInFilters());
             }
             return intermediate.build();
-        } catch (IOException e) {
-            InitLog.loading("error reading config file");
-            throw new IllegalStateException(e);
-        }
+
     }
 
     private static List<Filter> loadBuiltInFilters() {
