@@ -109,6 +109,9 @@ distributions {
             from("src/main/resources") {
                 include "version.txt"
             }
+            from("./") {
+                include "LICENSE"
+            }
         }
     }
 }
