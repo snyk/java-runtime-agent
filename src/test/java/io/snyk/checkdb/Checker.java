@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class Checker {
     @Test
-    public void check() throws PlexusContainerException, ComponentLookupException, IOException {
+    public void check() throws PlexusContainerException, ComponentLookupException, IOException, InterruptedException {
         final Config config = defaultConfig();
         try (final MavenIndex index = new MavenIndex()) {
             index.maybeUpdateIndex();
@@ -30,26 +30,35 @@ public class Checker {
                 final String stringArtifact = filter.artifact.get();
                 final String[] parts = stringArtifact.split(":", 3);
                 final List<String> versions = new ArrayList<>(20);
-                for (ArtifactInfo ai : index.find(parts[1], parts[2])) {
+                final String groupId = parts[1];
+                final String artifactId = parts[2];
+                for (ArtifactInfo ai : index.find(groupId, artifactId)) {
                     versions.add(ai.getVersion());
                 }
-                check(filter, versions);
+                final String version = findCandidateVersion(filter, versions);
+
+                index.fetch(groupId, artifactId, version);
             }
         }
     }
 
-    void check(Filter filter, List<String> versions) {
+    String findCandidateVersion(Filter filter, List<String> versions) {
         final String debugKey = "filter " + filter.name + " (" + filter.artifact + "): ";
         assertFalse(versions.isEmpty(), debugKey + "no matching artifact:group");
 
         final VersionFilter versionFilter = filter.version.get();
         final List<String> matchingVersions = versions.stream()
-                .filter(versionFilter::test)
+                .filter(versionFilter)
                 .collect(Collectors.toList());
 
         System.out.println(debugKey + matchingVersions.size() + "/" + versions.size() + " match");
 
         assertFalse(matchingVersions.isEmpty(), debugKey + "none of the versions match");
+
+        // Don't really care which version here. Would like to pick a random one? Or all of them?
+        // Lexicographically first is close enough to random for me.
+        Collections.sort(matchingVersions);
+        return matchingVersions.get(0);
     }
 
     private Config defaultConfig() throws IOException {
