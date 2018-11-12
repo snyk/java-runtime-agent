@@ -1,6 +1,7 @@
 package io.snyk.agent.logic;
 
 import io.snyk.agent.jvm.LandingZone;
+import io.snyk.agent.jvm.Version;
 import io.snyk.agent.util.Json;
 import io.snyk.agent.util.Log;
 import io.snyk.agent.util.UseCounter;
@@ -30,6 +31,7 @@ public class ReportingWorker implements Runnable {
     private final String vmVersion;
     private final String hostName = computeHostName();
     private final UUID agentId = UUID.randomUUID();
+    private final String agentVersion = Version.extendedVersionInfo();
 
     private final Log log;
     private final Config config;
@@ -158,7 +160,9 @@ public class ReportingWorker implements Runnable {
         Json.appendString(msg, Instant.now().toString());
 
         msg.append(", \"systemInfo\":{\n");
-        msg.append("   \"hostName\":");
+        msg.append("   \"agentVersion\":");
+        Json.appendString(msg, agentVersion);
+        msg.append(",  \"hostName\":");
         Json.appendString(msg, hostName);
         msg.append(",  \"jvm\":{");
         msg.append("\"vmName\":");
