@@ -708,7 +708,7 @@
       "filePath": "org/apache/xerces/impl/XMLEntityScanner.java",
       "methodName": "scanName"
     },
-    "packageName": "xerces:xercesimpl",
+    "packageName": "xerces:xercesImpl",
     "version": [
       "(,2.11.0]"
     ]
