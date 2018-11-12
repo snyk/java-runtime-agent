@@ -611,7 +611,7 @@
     },
     "packageName": "org.apache.struts:struts2-core",
     "version": [
-      "[2.5,2.5.10.1)"
+      "[,2.5.10.1)"
     ]
   },
   {
