@@ -55,6 +55,13 @@ public class PathFilter {
 
     boolean testMethod(final String actualClassName, final String actualMethodName) {
         return testClass(actualClassName) && methodName.map(actualMethodName::equals).orElse(true);
+    }
 
+    @Override
+    public String toString() {
+        return "PathFilter [" + className
+                + (classNameIsPrefix ? "*" : "")
+                + (methodName.isPresent() ? " ..and method" : "")
+                + " ]";
     }
 }
