@@ -30,6 +30,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class MavenIndex implements Closeable {
 
 
@@ -42,6 +44,7 @@ public class MavenIndex implements Closeable {
     private final Wagon httpWagon;
 
     final IndexingContext centralContext;
+    private final String home = System.getProperty("user.home");
 
     public MavenIndex()
             throws PlexusContainerException, ComponentLookupException, IOException {
@@ -60,7 +63,7 @@ public class MavenIndex implements Closeable {
         // lookup wagon used to remotely fetch index
         this.httpWagon = plexusContainer.lookup(Wagon.class, "http");
 
-        final File cache = new File(System.getProperty("user.home"), ".m2/snyk-index");
+        final File cache = new File(home, ".m2/snyk-index");
         // Files where local cache is (if any) and Lucene Index should be located
         final File centralLocalCache = new File(cache, "central-cache");
         final File centralIndexDir = new File(cache, "central-index");
@@ -97,6 +100,7 @@ public class MavenIndex implements Closeable {
         final TransferListener listener = new AbstractTransferListener() {
             public void transferStarted(TransferEvent transferEvent) {
                 System.out.print("  Downloading " + transferEvent.getResource().getName());
+                System.out.flush();
             }
 
             public void transferProgress(TransferEvent transferEvent, byte[] buffer, int length) {
@@ -133,7 +137,8 @@ public class MavenIndex implements Closeable {
         query.add(artifactIdQ, Occur.MUST);
 
         query.add(new BooleanQuery.Builder()
-                .add(indexer.constructQuery(MAVEN.PACKAGING, new SourcedSearchExpression("jar")),Occur.SHOULD)
+                .add(indexer.constructQuery(MAVEN.PACKAGING, new SourcedSearchExpression("jar")), Occur.SHOULD)
+                .add(indexer.constructQuery(MAVEN.PACKAGING, new SourcedSearchExpression("pom")), Occur.SHOULD)
                 .add(indexer.constructQuery(MAVEN.PACKAGING, new SourcedSearchExpression("bundle")), Occur.SHOULD)
                 .build(), Occur.MUST);
 
@@ -172,5 +177,30 @@ public class MavenIndex implements Closeable {
         } finally {
             centralContext.releaseIndexSearcher(searcher);
         }
+    }
+
+    File fetch(String group, String artifact, String version) throws IOException, InterruptedException {
+        // I tried to do this with plugins but I can't get it to work
+        // Let's test the idea the horrible way, then maybe fix it later.
+
+        final File wanted = new File(new File(home, ".m2/repository").getAbsolutePath() +
+                "/" + group.replace('.', '/') +
+                "/" + artifact +
+                "/" + version +
+                "/" + artifact + "-" + version + ".jar");
+
+        if (wanted.isFile()) {
+            return wanted;
+        }
+
+        assertEquals(0, new ProcessBuilder("mvn", "org.apache.maven.plugins:maven-dependency-plugin:3.1.1:get",
+                "-Dartifact=" + group + ":" + artifact + ":" + version, "-Dtransitive=false")
+                .start().waitFor());
+
+        if (!wanted.isFile()) {
+            throw new IllegalStateException("download succeeded hasn't produced the file we wanted: " + wanted);
+        }
+
+        return wanted;
     }
 }
