@@ -19,6 +19,7 @@ class EntryPoint {
             String agentArguments,
             Instrumentation instrumentation) throws MalformedURLException {
         InitLog.loading("startup: " + Version.extendedVersionInfo());
+        InitLog.loading("If you have any issues during this beta, please contact runtime@snyk.io");
 
         final File configFile = ConfigSearch.find(agentArguments);
 
