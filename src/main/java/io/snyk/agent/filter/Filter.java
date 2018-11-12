@@ -84,9 +84,7 @@ public class Filter {
             });
         }
 
-        final boolean result = matching.findAny().isPresent();
-        log.debug("filter: " + this.name + ": artifact: " + artifact + ": " + result);
-        return result;
+        return matching.findAny().isPresent();
     }
 
     public boolean testClassName(String className) {

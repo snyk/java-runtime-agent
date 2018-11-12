@@ -1,16 +1,18 @@
-package io.snyk.agent;
+package io.snyk.checkdb;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.MultiFields;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.util.Bits;
-import org.apache.maven.artifact.versioning.ComparableVersion;
-import org.apache.maven.index.ArtifactInfo;
-import org.apache.maven.index.Indexer;
+import org.apache.maven.index.*;
 import org.apache.maven.index.context.IndexCreator;
 import org.apache.maven.index.context.IndexUtils;
 import org.apache.maven.index.context.IndexingContext;
+import org.apache.maven.index.expr.SourcedSearchExpression;
 import org.apache.maven.index.updater.*;
 import org.apache.maven.wagon.Wagon;
 import org.apache.maven.wagon.events.TransferEvent;
@@ -18,23 +20,18 @@ import org.apache.maven.wagon.events.TransferListener;
 import org.apache.maven.wagon.observers.AbstractTransferListener;
 import org.codehaus.plexus.*;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
-import org.eclipse.aether.version.InvalidVersionSpecificationException;
 
+import java.io.Closeable;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.time.Instant;
-import java.time.ZoneOffset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.function.Consumer;
 
-import static java.time.format.DateTimeFormatter.ISO_DATE;
+public class MavenIndex implements Closeable {
 
-public class FindMavens {
-    public static void main(String[] args)
-            throws Exception {
-        new FindMavens().perform();
-    }
 
     private final PlexusContainer plexusContainer;
 
@@ -44,10 +41,10 @@ public class FindMavens {
 
     private final Wagon httpWagon;
 
-    private IndexingContext centralContext;
+    final IndexingContext centralContext;
 
-    public FindMavens()
-            throws PlexusContainerException, ComponentLookupException {
+    public MavenIndex()
+            throws PlexusContainerException, ComponentLookupException, IOException {
         // here we create Plexus container, the Maven default IoC container
         // Plexus falls outside of MI scope, just accept the fact that
         // MI is a Plexus component ;)
@@ -63,16 +60,12 @@ public class FindMavens {
         // lookup wagon used to remotely fetch index
         this.httpWagon = plexusContainer.lookup(Wagon.class, "http");
 
-    }
-
-    private void perform()
-            throws IOException, ComponentLookupException, InvalidVersionSpecificationException {
-        final File cache = new File(System.getProperty("user.home"), ".cache/snyk-index");
+        final File cache = new File(System.getProperty("user.home"), ".m2/snyk-index");
         // Files where local cache is (if any) and Lucene Index should be located
         final File centralLocalCache = new File(cache, "central-cache");
         final File centralIndexDir = new File(cache, "central-index");
-        assert centralLocalCache.mkdirs();
-        assert centralIndexDir.mkdirs();
+        assert centralLocalCache.isDirectory() || centralLocalCache.mkdirs();
+        assert centralIndexDir.isDirectory() || centralIndexDir.mkdirs();
 
         // Creators we want to use (search for fields it defines)
         final List<IndexCreator> indexers = new ArrayList<>();
@@ -83,100 +76,11 @@ public class FindMavens {
         // Create context for central repository index
         centralContext = indexer.createIndexingContext("central-context", "central", centralLocalCache, centralIndexDir,
                 "http://repo1.maven.org/maven2", null, true, true, indexers);
+    }
 
-        maybeUpdateIndex();
-        walk();
-
-        // close cleanly
+    @Override
+    public void close() throws IOException {
         indexer.closeIndexingContext(centralContext, false);
-    }
-
-    static class DatedVersion {
-        final long date;
-        final ComparableVersion version;
-
-        DatedVersion(long date, ComparableVersion version) {
-            this.date = date;
-            this.version = version;
-        }
-    }
-
-    private void walk() throws IOException {
-        // two years
-        final long MAX_AGE = 1000L * 60 * 60 * 24 * 365 * 2;
-
-        final Map<String, DatedVersion> latest = new HashMap<>(16 * 4096);
-
-        final IndexSearcher searcher = centralContext.acquireIndexSearcher();
-        try {
-            final IndexReader ir = searcher.getIndexReader();
-            final Bits liveDocs = MultiFields.getLiveDocs(ir);
-            for (int i = 0; i < ir.maxDoc(); i++) {
-                if (liveDocs != null && !liveDocs.get(i)) {
-                    continue;
-                }
-
-                final Document doc = ir.document(i);
-                final ArtifactInfo ai = IndexUtils.constructArtifactInfo(doc, centralContext);
-
-                if (null == ai) {
-                    // TODO: I don't understand why this happens; the demo code doesn't expect it
-                    continue;
-                }
-
-                if (null != ai.getClassifier() && !"main".equals(ai.getClassifier())) {
-                    continue;
-                }
-
-                final long modified = ai.getLastModified();
-                final ComparableVersion version = new ComparableVersion(ai.getVersion());
-
-                final String key = ai.getGroupId() + ":" + ai.getArtifactId();
-
-                latest.compute(key, (_key, old) -> {
-                    if (null == old) {
-                        // no existing version, so use this
-                        return new DatedVersion(modified, version);
-                    }
-
-                    // positive for this being newer
-                    final long timeDifference = modified - old.date;
-                    if (version.compareTo(old.version) > 0) {
-                        if (timeDifference > -MAX_AGE) {
-                            // we're newer, and not depressingly old
-                            return new DatedVersion(modified, version);
-                        } else {
-                            // e.g. https://search.maven.org/search?q=g:org.glassfish.web%20AND%20a:webtier-all&core=gav
-                            System.err.println("update too old: " + key + ": "
-                                    + old.version + " -> " + version + " in "
-                                    + toDate(old.date)
-                                    + " -> "
-                                    + toDate(modified));
-                        }
-                    }
-
-                    return old;
-                });
-            }
-        } finally {
-            centralContext.releaseIndexSearcher(searcher);
-        }
-
-        System.err.println(latest.size() + " records");
-
-        final List<String> strings = new ArrayList<>(latest.keySet());
-        Collections.sort(strings);
-
-        try (final PrintWriter pw = new PrintWriter(new FileOutputStream("artifacts.lst"))) {
-            for (String gav : strings) {
-                pw.println(gav + ":" + latest.get(gav).version);
-            }
-        }
-    }
-
-    private String toDate(long date) {
-        // I really don't like these APIs.
-        return ISO_DATE.format(Instant.ofEpochMilli(date).atZone(ZoneOffset.UTC));
     }
 
     // Update the index (incremental update will happen if this is not 1st run and files are not deleted)
@@ -184,7 +88,8 @@ public class FindMavens {
     // since this block will always emit at least one HTTP GET. Central indexes are updated once a week, but
     // other index sources might have different index publishing frequency.
     // Preferred frequency is once a week.
-    private void maybeUpdateIndex() throws IOException {
+    // TODO: incremental update can take like 20 minutes of CPU time, vs. downloading a 500MB file: poor trade-off
+    void maybeUpdateIndex() throws IOException {
         System.out.println("Updating Index...");
 
         // Create ResourceFetcher implementation to be used with IndexUpdateRequest
@@ -217,4 +122,55 @@ public class FindMavens {
         }
     }
 
+    IteratorSearchResponse find(String group, String artifact) throws IOException {
+        final Query groupIdQ =
+                indexer.constructQuery(MAVEN.GROUP_ID, new SourcedSearchExpression(group));
+        final Query artifactIdQ =
+                indexer.constructQuery(MAVEN.ARTIFACT_ID, new SourcedSearchExpression(artifact));
+        final BooleanQuery.Builder query = new BooleanQuery.Builder();
+
+        query.add(groupIdQ, Occur.MUST);
+        query.add(artifactIdQ, Occur.MUST);
+
+        query.add(new BooleanQuery.Builder()
+                .add(indexer.constructQuery(MAVEN.PACKAGING, new SourcedSearchExpression("jar")),Occur.SHOULD)
+                .add(indexer.constructQuery(MAVEN.PACKAGING, new SourcedSearchExpression("bundle")), Occur.SHOULD)
+                .build(), Occur.MUST);
+
+        // we want main artifacts only (no classifier)
+        query.add(indexer.constructQuery(MAVEN.CLASSIFIER, new SourcedSearchExpression(Field.NOT_PRESENT)),
+                Occur.MUST_NOT);
+
+        return indexer.searchIterator(new IteratorSearchRequest(query.build(),
+                Collections.singletonList(centralContext)));
+    }
+
+    void forEach(Consumer<ArtifactInfo> callback) throws IOException {
+        final IndexSearcher searcher = centralContext.acquireIndexSearcher();
+        try {
+            final IndexReader ir = searcher.getIndexReader();
+            final Bits liveDocs = MultiFields.getLiveDocs(ir);
+            for (int i = 0; i < ir.maxDoc(); i++) {
+                if (liveDocs != null && !liveDocs.get(i)) {
+                    continue;
+                }
+
+                final Document doc = ir.document(i);
+                final ArtifactInfo ai = IndexUtils.constructArtifactInfo(doc, centralContext);
+
+                if (null == ai) {
+                    // TODO: I don't understand why this happens; the demo code doesn't expect it
+                    continue;
+                }
+
+                if (null != ai.getClassifier() && !"main".equals(ai.getClassifier())) {
+                    continue;
+                }
+
+                callback.accept(ai);
+            }
+        } finally {
+            centralContext.releaseIndexSearcher(searcher);
+        }
+    }
 }
