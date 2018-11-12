@@ -19,9 +19,10 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class Checker {
+class IntegratedFilterValidation {
     @Test
-    public void check() throws PlexusContainerException, ComponentLookupException, IOException, InterruptedException {
+    void validateFilters()
+            throws PlexusContainerException, ComponentLookupException, IOException, InterruptedException {
         final Config config = defaultConfig();
         try (final MavenIndex index = new MavenIndex()) {
             index.maybeUpdateIndex();
@@ -42,7 +43,7 @@ public class Checker {
         }
     }
 
-    String findCandidateVersion(Filter filter, List<String> versions) {
+    private String findCandidateVersion(Filter filter, List<String> versions) {
         final String debugKey = "filter " + filter.name + " (" + filter.artifact + "): ";
         assertFalse(versions.isEmpty(), debugKey + "no matching artifact:group");
 
