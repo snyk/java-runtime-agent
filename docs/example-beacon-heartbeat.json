@@ -2,6 +2,7 @@
   "projectId": "0153525f-5a99-4efe-a84f-454f12494033",
   "timestamp": "2018-10-16T13:57:40.640023Z",
   "systemInfo": {
+    "agentVersion": "git:ff38a7a",
     "hostName": "anoia.goeswhere.com",
     "jvm": {
       "vmName": "30591@anoia.goeswhere.com",
