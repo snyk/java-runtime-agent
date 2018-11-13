@@ -144,7 +144,8 @@ public class MavenIndex implements Closeable {
         query.add(artifactIdQ, Occur.MUST);
 
         query.add(new BooleanQuery.Builder()
-                .add(indexer.constructQuery(MAVEN.PACKAGING, new SourcedSearchExpression("jar")),Occur.SHOULD)
+                .add(indexer.constructQuery(MAVEN.PACKAGING, new SourcedSearchExpression("jar")), Occur.SHOULD)
+                .add(indexer.constructQuery(MAVEN.PACKAGING, new SourcedSearchExpression("pom")), Occur.SHOULD)
                 .add(indexer.constructQuery(MAVEN.PACKAGING, new SourcedSearchExpression("bundle")), Occur.SHOULD)
                 .build(), Occur.MUST);
 
