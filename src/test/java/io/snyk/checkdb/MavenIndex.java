@@ -93,7 +93,7 @@ public class MavenIndex implements Closeable {
     // Preferred frequency is once a week.
     // TODO: incremental update can take like 20 minutes of CPU time, vs. downloading a 500MB file: poor trade-off
     void maybeUpdateIndex() throws IOException {
-        logger.info("Updating Index...");
+        logger.debug("Updating Index...");
 
         // Create ResourceFetcher implementation to be used with IndexUpdateRequest
         // Here, we use Wagon based one as shorthand, but all we need is a ResourceFetcher implementation
@@ -115,11 +115,11 @@ public class MavenIndex implements Closeable {
         final IndexUpdateRequest updateRequest = new IndexUpdateRequest(centralContext, resourceFetcher);
         final IndexUpdateResult updateResult = indexUpdater.fetchAndUpdateIndex(updateRequest);
         if (updateResult.isFullUpdate()) {
-            logger.info("Full update happened");
+            logger.debug("Full update happened");
         } else if (updateResult.getTimestamp().equals(centralContextCurrentTimestamp)) {
-            logger.info("No update needed, index is up to date");
+            logger.debug("No update needed, index is up to date");
         } else {
-            logger.info(
+            logger.debug(
                     "Incremental update happened, change covered " + centralContextCurrentTimestamp + " - "
                             + updateResult.getTimestamp() + " period.");
         }

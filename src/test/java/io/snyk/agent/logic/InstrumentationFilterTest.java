@@ -62,7 +62,7 @@ public class InstrumentationFilterTest {
                 }
 
                 if (branches(c, method)) {
-                    logger.info(c.name + " // " + method.name + method.desc);
+                    logger.debug(c.name + " // " + method.name + method.desc);
                 }
             }
         }

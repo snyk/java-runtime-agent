@@ -90,10 +90,10 @@ class ReportingWorkerTest {
     private void assertValidJson(String json) throws IOException {
         // this weird dance is important; half of the methods turn leniency back on for you,
         // and we really care
-        System.err.println("input: " + json);
+        logger.debug("input: " + json);
         final JsonReader parser = new JsonReader(new StringReader(json));
         parser.setLenient(false);
-        System.err.println("output: " + Streams.parse(parser));
+        logger.debug("output: " + Streams.parse(parser));
 
         // TODO: we're not actually confirming there's anything useful in here, only that it's valid JSON
 
