@@ -200,6 +200,8 @@ public class MavenIndex implements Closeable {
             return wanted;
         }
 
+        logger.warn("not in cache, downloading: " + wanted);
+
         assertEquals(0, new ProcessBuilder("mvn", "org.apache.maven.plugins:maven-dependency-plugin:3.1.1:get",
                 "-Dartifact=" + group + ":" + artifact + ":" + version, "-Dtransitive=false")
                 .start().waitFor());

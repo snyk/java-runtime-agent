@@ -40,7 +40,7 @@ class IntegratedFilterValidation {
 
             for (Filter filter : config.filters) {
                 MDC.put("filter", debugKey(filter));
-                logger.debug("Checking");
+                logger.warn("Checking");
                 final String stringArtifact = filter.artifact.get();
                 final String[] parts = stringArtifact.split(":", 3);
                 final List<String> versions = new ArrayList<>(20);
