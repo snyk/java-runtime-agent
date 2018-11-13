@@ -20,6 +20,8 @@ package io.snyk.agent.util.org.apache.maven.artifact.versioning;
  */
 
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Locale;
 
@@ -33,12 +35,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 @SuppressWarnings("unchecked")
 class ComparableVersionTest {
+    private static final Logger logger = LoggerFactory.getLogger(ComparableVersionTest.class);
+
     private Comparable newComparable(String version) {
         ComparableVersion ret = new ComparableVersion(version);
         String canonical = ret.getCanonical();
         String parsedCanonical = new ComparableVersion(canonical).getCanonical();
 
-        System.out.println("canonical( " + version + " ) = " + canonical);
+        logger.debug("canonical( " + version + " ) = " + canonical);
         assertEquals(canonical,
                 parsedCanonical, "canonical( " + version + " ) = " + canonical + " -> canonical: " + parsedCanonical);
 

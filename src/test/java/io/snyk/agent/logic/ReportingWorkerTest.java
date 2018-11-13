@@ -8,6 +8,8 @@ import com.google.gson.stream.JsonToken;
 import io.snyk.agent.testutil.TestLogger;
 import io.snyk.agent.util.UseCounter;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -25,6 +27,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class ReportingWorkerTest {
+
+    private static final Logger logger = LoggerFactory.getLogger(ReportingWorker.class);
 
     // yes, these helpers have got totally out of control.
     // no, I don't have a solution
@@ -86,10 +90,10 @@ class ReportingWorkerTest {
     private void assertValidJson(String json) throws IOException {
         // this weird dance is important; half of the methods turn leniency back on for you,
         // and we really care
-        System.err.println("input: " + json);
+        logger.debug("input: " + json);
         final JsonReader parser = new JsonReader(new StringReader(json));
         parser.setLenient(false);
-        System.err.println("output: " + Streams.parse(parser));
+        logger.debug("output: " + Streams.parse(parser));
 
         // TODO: we're not actually confirming there's anything useful in here, only that it's valid JSON
 
@@ -235,7 +239,7 @@ class ReportingWorkerTest {
 
                 final long duration = System.currentTimeMillis() - start;
 
-                System.out.println("request took " + duration + "ms");
+                logger.info("request took " + duration + "ms");
 
                 if (duration < min_time_ms) {
                     Thread.sleep(min_time_ms - duration);

@@ -9,6 +9,9 @@ import org.apache.maven.index.ArtifactInfo;
 import org.codehaus.plexus.PlexusContainerException;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -25,6 +28,8 @@ import java.util.stream.StreamSupport;
 import static org.junit.jupiter.api.Assertions.*;
 
 class IntegratedFilterValidation {
+    private static final Logger logger = LoggerFactory.getLogger(IntegratedFilterValidation.class);
+
     @Test
     void validateFilters()
             throws PlexusContainerException, ComponentLookupException, IOException, InterruptedException {
@@ -33,7 +38,8 @@ class IntegratedFilterValidation {
             index.maybeUpdateIndex();
 
             for (Filter filter : config.filters) {
-                System.out.println("Checking " + debugKey(filter));
+                MDC.put("filter", debugKey(filter));
+                logger.debug("Checking");
                 final String stringArtifact = filter.artifact.get();
                 final String[] parts = stringArtifact.split(":", 3);
                 final List<String> versions = new ArrayList<>(20);

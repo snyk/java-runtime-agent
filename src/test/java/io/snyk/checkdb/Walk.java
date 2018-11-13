@@ -1,6 +1,8 @@
 package io.snyk.checkdb;
 
 import org.apache.maven.artifact.versioning.ComparableVersion;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -12,6 +14,8 @@ import java.util.*;
 import static java.time.format.DateTimeFormatter.ISO_DATE;
 
 public class Walk {
+    private static final Logger logger = LoggerFactory.getLogger(Walk.class);
+
     public static void main(String[] args)
             throws Exception {
         try (final MavenIndex index = new MavenIndex()) {
@@ -47,7 +51,7 @@ public class Walk {
                         return new DatedVersion(modified, version);
                     } else {
                         // e.g. https://search.maven.org/search?q=g:org.glassfish.web%20AND%20a:webtier-all&core=gav
-                        System.err.println("update too old: " + key + ": "
+                        logger.warn("update too old: " + key + ": "
                                 + old.version + " -> " + version + " in "
                                 + toDate(old.date)
                                 + " -> "
@@ -59,7 +63,7 @@ public class Walk {
             });
         });
 
-        System.err.println(latest.size() + " records");
+        logger.info(latest.size() + " records");
 
         final List<String> strings = new ArrayList<>(latest.keySet());
         Collections.sort(strings);

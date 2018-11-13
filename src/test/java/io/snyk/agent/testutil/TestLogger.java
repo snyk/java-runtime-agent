@@ -1,29 +1,32 @@
 package io.snyk.agent.testutil;
 
 import io.snyk.agent.util.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TestLogger implements Log {
+    private static final Logger logger = LoggerFactory.getLogger(TestLogger.class);
+
     public boolean loggedAnyExceptions = false;
 
     @Override
     public void debug(String msg) {
-        System.err.println("test logging: debug: " + msg);
+        logger.debug(msg);
     }
 
     @Override
     public void info(String msg) {
-        System.err.println("test logging:  info: " + msg);
+        logger.info(msg);
     }
 
     @Override
     public void warn(String msg) {
-        System.err.println("test logging:  warn: " + msg);
+        logger.warn(msg);
     }
 
     @Override
     public void stackTrace(Throwable e) {
-        System.err.println("test logging: error:");
-        e.printStackTrace(System.err);
+        logger.error("exception", e);
         loggedAnyExceptions = true;
     }
 

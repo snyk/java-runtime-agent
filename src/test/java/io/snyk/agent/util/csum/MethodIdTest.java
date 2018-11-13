@@ -8,6 +8,8 @@ import io.snyk.asm.ClassReader;
 import io.snyk.asm.tree.ClassNode;
 import io.snyk.asm.tree.MethodNode;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -18,6 +20,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class MethodIdTest {
+    private static final Logger logger = LoggerFactory.getLogger(MethodIdTest.class);
 
     @Test
     void testVictim() throws IOException {
@@ -26,7 +29,7 @@ class MethodIdTest {
     }
 
     @Test
-    void testSmokeGuava() throws IOException {
+    void testSmokeGuava() {
         final IterableJar classNodes = new IterableJar(() -> MethodIdTest.class.getResourceAsStream(
                 "/guava-26.0-jre.jar"));
         final Map<Integer, Set<String>> seen = new HashMap<>();
@@ -52,11 +55,10 @@ class MethodIdTest {
 
             collisions += 1;
 
-            System.out.println(idNames.getKey());
+            logger.debug(String.valueOf(idNames.getKey()));
             for (String method : methods) {
-                System.out.println(" * " + method);
+                logger.debug(" * " + method);
             }
-            System.out.println();
         }
 
         assertEquals(15669, totalMethods);
