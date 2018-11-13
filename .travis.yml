@@ -38,4 +38,6 @@ jobs:
   include:
     - stage: validate filters
       jdk: oraclejdk8
-      script: 'VALIDATE_FILTERS=true ./gradlew clean processResources test'
+      script:
+      - ./warmup-maven.sh
+      - VALIDATE_FILTERS=true ./gradlew clean processResources test
