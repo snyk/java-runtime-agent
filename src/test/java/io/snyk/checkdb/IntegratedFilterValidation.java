@@ -4,6 +4,7 @@ import io.snyk.agent.filter.Filter;
 import io.snyk.agent.filter.VersionFilter;
 import io.snyk.agent.logic.Config;
 import io.snyk.agent.util.IterableJar;
+import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.maven.index.ArtifactInfo;
 import org.codehaus.plexus.PlexusContainerException;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -31,6 +33,7 @@ class IntegratedFilterValidation {
             index.maybeUpdateIndex();
 
             for (Filter filter : config.filters) {
+                System.out.println("Checking " + debugKey(filter));
                 final String stringArtifact = filter.artifact.get();
                 final String[] parts = stringArtifact.split(":", 3);
                 final List<String> versions = new ArrayList<>(20);
@@ -41,7 +44,6 @@ class IntegratedFilterValidation {
                 }
                 final String version = findCandidateVersion(filter, versions);
 
-                System.out.println("considering " + version);
                 final File path = index.fetch(groupId, artifactId, version);
                 matchingClassesInJar(path, filter);
             }
@@ -67,8 +69,10 @@ class IntegratedFilterValidation {
                 .collect(Collectors.toList());
 
         assertTrue(!matches.isEmpty(),
-                debugKey(filter) + "\nexpects a class matching " + filter.pathFilters
-                        + " but none do:\n * " + String.join("\n * ", jarContains));
+                debugKey(filter) + "\nexpects a class matching:\n   "
+                        + filter.pathFilters
+                        + "\n  in: " + path
+                        + "\n  but none do:\n   * " + String.join("\n   * ", jarContains));
 
         assertEquals(1, matches.size(), debugKey(filter) + "expected exactly one class, not: " + matches);
     }
@@ -81,14 +85,10 @@ class IntegratedFilterValidation {
                 .filter(versionFilter)
                 .collect(Collectors.toList());
 
-        System.out.println(debugKey(filter) + matchingVersions.size() + "/" + versions.size() + " match");
+        assertFalse(matchingVersions.isEmpty(),
+                debugKey(filter) + "none of the versions match:\n * " + String.join("\n * ", versions));
 
-        assertFalse(matchingVersions.isEmpty(), debugKey(filter) + "none of the versions match");
-
-        // Don't really care which version here. Would like to pick a random one? Or all of them?
-        // Lexicographically first is close enough to random for me.
-        Collections.sort(matchingVersions);
-        return matchingVersions.get(0);
+        return matchingVersions.stream().max(Comparator.comparing(ComparableVersion::new)).get();
     }
 
     private String debugKey(Filter filter) {
