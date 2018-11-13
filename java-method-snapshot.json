@@ -73,7 +73,7 @@
   {
     "methodId": {
       "className": "ECDHDecrypter",
-      "filePath": "File src/main/java/com/nimbusds/jose/crypto/ECDHDecrypter.java",
+      "filePath": "com/nimbusds/jose/crypto/ECDHDecrypter.java",
       "methodName": "decrypt"
     },
     "packageName": "commons-fileupload:commons-fileupload",
@@ -84,7 +84,7 @@
   {
     "methodId": {
       "className": "Archive",
-      "filePath": "src/main/java/com/github/junrar/Archive.java",
+      "filePath": "com/github/junrar/Archive.java",
       "methodName": "readHeaders"
     },
     "packageName": "com.github.junrar:junrar",
@@ -95,7 +95,7 @@
   {
     "methodId": {
       "className": "XmlFactory",
-      "filePath": "src/main/java/com/fasterxml/jackson/dataformat/xml/XmlFactory.java",
+      "filePath": "com/fasterxml/jackson/dataformat/xml/XmlFactory.java",
       "methodName": "_initFactories"
     },
     "packageName": "com.fasterxml.jackson.dataformat:jackson-dataformat-xml",
@@ -162,7 +162,7 @@
   {
     "methodId": {
       "className": "SimpleSocketServer",
-      "filePath": "src/main/java/ch/qos/logback/classic/net/SimpleSocketServer.java",
+      "filePath": "ch/qos/logback/classic/net/SimpleSocketServer.java",
       "methodName": "doMain"
     },
     "packageName": "ch.qos.logback:logback-core",
@@ -173,7 +173,7 @@
   {
     "methodId": {
       "className": "BeanDeserializerFactory",
-      "filePath": "src/main/java/com/fasterxml/jackson/databind/deser/BeanDeserializerFactory.java",
+      "filePath": "com/fasterxml/jackson/databind/deser/BeanDeserializerFactory.java",
       "methodName": "createBeanDeserializer"
     },
     "packageName": "com.fasterxml.jackson.core:jackson-databind",
@@ -186,7 +186,7 @@
   {
     "methodId": {
       "className": "BeanDeserializerFactory",
-      "filePath": "src/main/java/com/fasterxml/jackson/databind/deser/BeanDeserializerFactory.java",
+      "filePath": "com/fasterxml/jackson/databind/deser/BeanDeserializerFactory.java",
       "methodName": "createBeanDeserializer"
     },
     "packageName": "com.fasterxml.jackson.core:jackson-databind",
@@ -200,7 +200,7 @@
   {
     "methodId": {
       "className": "X0017_StrongEncryptionHeader",
-      "filePath": "commons-compress/src/main/java/org/apache/commons/compress/archivers/zip/X0017_StrongEncryptionHeader.java",
+      "filePath": "org/apache/commons/compress/archivers/zip/X0017_StrongEncryptionHeader.java",
       "methodName": "parseCentralDirectoryFormat"
     },
     "packageName": "org.apache.commons:commons-compress",
@@ -211,7 +211,7 @@
   {
     "methodId": {
       "className": "UTF8StreamJsonParser",
-      "filePath": "src/main/java/com/fasterxml/jackson/core/json/UTF8StreamJsonParser.java",
+      "filePath": "com/fasterxml/jackson/core/json/UTF8StreamJsonParser.java",
       "methodName": "_reportInvalidToken"
     },
     "packageName": "com.fasterxml.jackson.core:jackson-core",
@@ -222,7 +222,7 @@
   {
     "methodId": {
       "className": "ReaderBasedJsonParser",
-      "filePath": "src/main/java/com/fasterxml/jackson/core/json/ReaderBasedJsonParser.java",
+      "filePath": "com/fasterxml/jackson/core/json/ReaderBasedJsonParser.java",
       "methodName": "_reportInvalidToken"
     },
     "packageName": "com.fasterxml.jackson.core:jackson-core",
@@ -233,7 +233,7 @@
   {
     "methodId": {
       "className": "SubTypeValidator",
-      "filePath": "src/main/java/com/fasterxml/jackson/databind/jsontype/impl/SubTypeValidator.java",
+      "filePath": "com/fasterxml/jackson/databind/jsontype/impl/SubTypeValidator.java",
       "methodName": "validateSubType"
     },
     "packageName": "com.fasterxml.jackson.core:jackson-databind",
@@ -245,7 +245,7 @@
   {
     "methodId": {
       "className": "BeanDeserializerFactory",
-      "filePath": "src/main/java/com/fasterxml/jackson/databind/deser/BeanDeserializerFactory.java",
+      "filePath": "com/fasterxml/jackson/databind/deser/BeanDeserializerFactory.java",
       "methodName": "isIgnorableType"
     },
     "packageName": "com.fasterxml.jackson.core:jackson-databind",
@@ -257,7 +257,7 @@
   {
     "methodId": {
       "className": "BeanDeserializerFactory",
-      "filePath": "src/main/java/com/fasterxml/jackson/databind/deser/BeanDeserializerFactory.java",
+      "filePath": "com/fasterxml/jackson/databind/deser/BeanDeserializerFactory.java",
       "methodName": "createBeanDeserializer"
     },
     "packageName": "com.fasterxml.jackson.core:jackson-databind",
@@ -280,7 +280,7 @@
   {
     "methodId": {
       "className": "SubTypeValidator",
-      "filePath": "src/main/java/com/fasterxml/jackson/databind/jsontype/impl/SubTypeValidator.java",
+      "filePath": "com/fasterxml/jackson/databind/jsontype/impl/SubTypeValidator.java",
       "methodName": "validateSubType"
     },
     "packageName": "com.fasterxml.jackson.core:jackson-databind",
@@ -292,7 +292,7 @@
   {
     "methodId": {
       "className": "XMSSUtil",
-      "filePath": "core/src/main/java/org/bouncycastle/pqc/crypto/xmss/XMSSUtil.java",
+      "filePath": "org/bouncycastle/pqc/crypto/xmss/XMSSUtil.java",
       "methodName": "isNewAuthenticationPathNeeded"
     },
     "packageName": "org.bouncycastle:bcprov-jdk15on",
@@ -488,7 +488,7 @@
   {
     "methodId": {
       "className": "Expand",
-      "filePath": "java/org/codehaus/plexus/util/Expand.java",
+      "filePath": "org/codehaus/plexus/util/Expand.java",
       "methodName": "extractFile"
     },
     "packageName": "org.codehaus.plexus:plexus-utils",
@@ -510,7 +510,7 @@
   {
     "methodId": {
       "className": "SchemaReader",
-      "filePath": "src/main/java/org/apache/camel/processor/validation/SchemaReader.java",
+      "filePath": "org/apache/camel/processor/validation/SchemaReader.java",
       "methodName": "clearCachedSchema"
     },
     "packageName": "org.apache.camel:camel-core",
@@ -522,7 +522,7 @@
   {
     "methodId": {
       "className": "OpenSslEngine",
-      "filePath": "src/main/java/io/netty/handler/ssl/OpenSslEngine.java",
+      "filePath": "io/netty/handler/ssl/OpenSslEngine.java",
       "methodName": "readPendingBytesFromBIO"
     },
     "packageName": "io.netty:netty-handler",
@@ -534,7 +534,7 @@
   {
     "methodId": {
       "className": "ClientCookieEncoder",
-      "filePath": "src/main/java/io/netty/handler/codec/http/Cookie.java",
+      "filePath": "io/netty/handler/codec/http/Cookie.java",
       "methodName": "encode"
     },
     "packageName": "io.netty:netty",
@@ -548,7 +548,7 @@
   {
     "methodId": {
       "className": "ClientCookieEncoder",
-      "filePath": "src/main/java/io/netty/handler/codec/http/ClientCookieEncoder.java",
+      "filePath": "io/netty/handler/codec/http/ClientCookieEncoder.java",
       "methodName": "encode"
     },
     "packageName": "io.netty:netty",
