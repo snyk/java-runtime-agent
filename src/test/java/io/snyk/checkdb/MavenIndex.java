@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -98,11 +99,19 @@ public class MavenIndex implements Closeable {
         // Create ResourceFetcher implementation to be used with IndexUpdateRequest
         // Here, we use Wagon based one as shorthand, but all we need is a ResourceFetcher implementation
         final TransferListener listener = new AbstractTransferListener() {
+            long downloadedBytes = 0;
+
             public void transferStarted(TransferEvent transferEvent) {
                 logger.warn("  Downloading " + transferEvent.getResource().getName());
             }
 
             public void transferProgress(TransferEvent transferEvent, byte[] buffer, int length) {
+                downloadedBytes += length;
+
+                if (downloadedBytes > 5_000_000) {
+                    logger.warn("  Still downloading " + transferEvent.getResource().getName());
+                    downloadedBytes = 0;
+                }
             }
 
             public void transferCompleted(TransferEvent transferEvent) {
@@ -192,9 +201,21 @@ public class MavenIndex implements Closeable {
             return wanted;
         }
 
-        assertEquals(0, new ProcessBuilder("mvn", "org.apache.maven.plugins:maven-dependency-plugin:3.1.1:get",
+        logger.warn("not in cache, downloading: " + wanted);
+
+        final Process mvn = new ProcessBuilder("mvn", "org.apache.maven.plugins:maven-dependency-plugin:3.1.1:get",
                 "-Dartifact=" + group + ":" + artifact + ":" + version, "-Dtransitive=false")
-                .start().waitFor());
+                .redirectErrorStream(true)
+                .redirectOutput(ProcessBuilder.Redirect.INHERIT)
+                .start();
+
+        // close stdin
+        mvn.getOutputStream().close();
+        if (!mvn.waitFor(2, TimeUnit.MINUTES)) {
+            mvn.destroyForcibly();
+            throw new IllegalStateException("fetching timed out: " + wanted);
+        }
+        assertEquals(0, mvn.exitValue());
 
         if (!wanted.isFile()) {
             throw new IllegalStateException("download succeeded hasn't produced the file we wanted: " + wanted);
