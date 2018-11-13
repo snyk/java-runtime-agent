@@ -107,7 +107,7 @@ public class MavenIndex implements Closeable {
             public void transferProgress(TransferEvent transferEvent, byte[] buffer, int length) {
                 downloadedBytes += length;
 
-                if (downloadedBytes > 25_000_000) {
+                if (downloadedBytes > 5_000_000) {
                     logger.warn("  Still downloading " + transferEvent.getResource().getName());
                     downloadedBytes = 0;
                 }

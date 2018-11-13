@@ -136,7 +136,7 @@ test {
     useJUnitPlatform()
 
     testLogging {
-        events = ['standardOut', 'standardError', 'failed']
+        events = ['standardOut', 'standardError', 'failed', 'skipped']
         exceptionFormat = 'full'
     }
 }

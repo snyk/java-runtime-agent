@@ -8,6 +8,7 @@ import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.maven.index.ArtifactInfo;
 import org.codehaus.plexus.PlexusContainerException;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,8 +32,8 @@ class IntegratedFilterValidation {
     private static final Logger logger = LoggerFactory.getLogger(IntegratedFilterValidation.class);
 
     @Test
-    void validateFilters()
-            throws PlexusContainerException, ComponentLookupException, IOException, InterruptedException {
+    void validateFilters() throws Exception {
+        Assumptions.assumeTrue(Boolean.valueOf(System.getenv("VALIDATE_FILTERS")));
         final Config config = defaultConfig();
         try (final MavenIndex index = new MavenIndex()) {
             index.maybeUpdateIndex();

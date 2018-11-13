@@ -34,3 +34,8 @@ deploy:
   upload-dir: last-release
   acl: public_read
 
+jobs:
+  include:
+    - stage: validate filters
+      jdk: oraclejdk8
+      script: 'VALIDATE_FILTERS=true ./gradlew clean processResources test'
