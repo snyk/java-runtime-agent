@@ -8,6 +8,8 @@ import io.snyk.asm.tree.MethodNode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.NoSuchElementException;
 
@@ -15,6 +17,8 @@ import static io.snyk.agent.logic.InstrumentationFilter.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class InstrumentationFilterTest {
+    private static final Logger logger = LoggerFactory.getLogger(InstrumentationFilterTest.class);
+
     @ParameterizedTest(name = "[{0}] skip: {1} accessor: {2}, branches: {3}")
     @CsvSource({
             // method name,  skip,  isAcc, branches,
@@ -58,7 +62,7 @@ public class InstrumentationFilterTest {
                 }
 
                 if (branches(c, method)) {
-                    System.out.println(c.name + " // " + method.name + method.desc);
+                    logger.info(c.name + " // " + method.name + method.desc);
                 }
             }
         }

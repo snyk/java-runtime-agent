@@ -7,6 +7,8 @@ import io.snyk.asm.tree.AbstractInsnNode;
 import io.snyk.asm.tree.ClassNode;
 import io.snyk.asm.tree.MethodInsnNode;
 import io.snyk.asm.tree.MethodNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -19,6 +21,8 @@ import java.util.stream.Collectors;
 
 public class ClassClassifier {
     private static final List<String> STDLIB_CLASS_LOADERS = new ArrayList<>();
+
+    private static final Logger logger = LoggerFactory.getLogger(ClassClassifier.class);
 
     static {
         STDLIB_CLASS_LOADERS.add("java/lang/ClassLoader");
@@ -59,15 +63,14 @@ public class ClassClassifier {
                 libs.addAll(en.getValue());
             }
 
-            System.out.println(knownLoader);
-            System.out.println("===");
+            logger.info(knownLoader);
+            logger.info("===");
 
             final ArrayList<File> libsSorted = new ArrayList<>(libs);
             Collections.sort(libsSorted);
             for (File lib : libsSorted) {
-                System.out.println(" * " + lib.toString().replaceAll("^deb/[^/]*/", ""));
+                logger.info(" * " + lib.toString().replaceAll("^deb/[^/]*/", ""));
             }
-            System.out.println();
         }
 
         if (false) {
@@ -79,7 +82,7 @@ public class ClassClassifier {
             }
             Collections.sort(classLoaders);
             for (String classLoader : classLoaders) {
-                System.out.println(classLoader);
+                logger.info(classLoader);
             }
         }
     }
