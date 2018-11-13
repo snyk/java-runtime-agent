@@ -143,7 +143,10 @@ public class MavenIndex implements Closeable {
         query.add(groupIdQ, Occur.MUST);
         query.add(artifactIdQ, Occur.MUST);
 
-        query.add(indexer.constructQuery(MAVEN.PACKAGING, new SourcedSearchExpression("jar")), Occur.MUST);
+        query.add(new BooleanQuery.Builder()
+                .add(indexer.constructQuery(MAVEN.PACKAGING, new SourcedSearchExpression("jar")),Occur.SHOULD)
+                .add(indexer.constructQuery(MAVEN.PACKAGING, new SourcedSearchExpression("bundle")), Occur.SHOULD)
+                .build(), Occur.MUST);
 
         // we want main artifacts only (no classifier)
         query.add(indexer.constructQuery(MAVEN.CLASSIFIER, new SourcedSearchExpression(Field.NOT_PRESENT)),
