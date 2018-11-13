@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -202,9 +203,19 @@ public class MavenIndex implements Closeable {
 
         logger.warn("not in cache, downloading: " + wanted);
 
-        assertEquals(0, new ProcessBuilder("mvn", "org.apache.maven.plugins:maven-dependency-plugin:3.1.1:get",
+        final Process mvn = new ProcessBuilder("mvn", "org.apache.maven.plugins:maven-dependency-plugin:3.1.1:get",
                 "-Dartifact=" + group + ":" + artifact + ":" + version, "-Dtransitive=false")
-                .start().waitFor());
+                .redirectErrorStream(true)
+                .redirectOutput(ProcessBuilder.Redirect.INHERIT)
+                .start();
+
+        // close stdin
+        mvn.getOutputStream().close();
+        if (!mvn.waitFor(2, TimeUnit.MINUTES)) {
+            mvn.destroyForcibly();
+            throw new IllegalStateException("fetching timed out: " + wanted);
+        }
+        assertEquals(0, mvn.exitValue());
 
         if (!wanted.isFile()) {
             throw new IllegalStateException("download succeeded hasn't produced the file we wanted: " + wanted);
