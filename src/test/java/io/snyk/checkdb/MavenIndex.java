@@ -98,11 +98,19 @@ public class MavenIndex implements Closeable {
         // Create ResourceFetcher implementation to be used with IndexUpdateRequest
         // Here, we use Wagon based one as shorthand, but all we need is a ResourceFetcher implementation
         final TransferListener listener = new AbstractTransferListener() {
+            long downloadedBytes = 0;
+
             public void transferStarted(TransferEvent transferEvent) {
                 logger.warn("  Downloading " + transferEvent.getResource().getName());
             }
 
             public void transferProgress(TransferEvent transferEvent, byte[] buffer, int length) {
+                downloadedBytes += length;
+
+                if (downloadedBytes > 25_000_000) {
+                    logger.warn("  Still downloading " + transferEvent.getResource().getName());
+                    downloadedBytes = 0;
+                }
             }
 
             public void transferCompleted(TransferEvent transferEvent) {
