@@ -1,7 +1,8 @@
 language: java
 jdk:
-  - oraclejdk8
-  - oraclejdk9
+- oraclejdk8
+- oraclejdk11
+- openjdk11
 script:
 - ./gradlew build test distZip
 - git clone --depth 1 --branch java9 https://github.com/snyk/java-goof
