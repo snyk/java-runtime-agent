@@ -20,6 +20,8 @@ import org.apache.maven.wagon.events.TransferListener;
 import org.apache.maven.wagon.observers.AbstractTransferListener;
 import org.codehaus.plexus.*;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.File;
@@ -33,9 +35,7 @@ import java.util.function.Consumer;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class MavenIndex implements Closeable {
-
-
-    private final PlexusContainer plexusContainer;
+    private static final Logger logger = LoggerFactory.getLogger(MavenIndex.class);
 
     private final Indexer indexer;
 
@@ -43,7 +43,7 @@ public class MavenIndex implements Closeable {
 
     private final Wagon httpWagon;
 
-    final IndexingContext centralContext;
+    private final IndexingContext centralContext;
     private final String home = System.getProperty("user.home");
 
     public MavenIndex()
@@ -55,7 +55,7 @@ public class MavenIndex implements Closeable {
         // google is your friend!
         final DefaultContainerConfiguration config = new DefaultContainerConfiguration();
         config.setClassPathScanning(PlexusConstants.SCANNING_INDEX);
-        this.plexusContainer = new DefaultPlexusContainer(config);
+        final PlexusContainer plexusContainer = new DefaultPlexusContainer(config);
 
         // lookup the indexer components from plexus
         this.indexer = plexusContainer.lookup(Indexer.class);
@@ -93,21 +93,20 @@ public class MavenIndex implements Closeable {
     // Preferred frequency is once a week.
     // TODO: incremental update can take like 20 minutes of CPU time, vs. downloading a 500MB file: poor trade-off
     void maybeUpdateIndex() throws IOException {
-        System.out.println("Updating Index...");
+        logger.info("Updating Index...");
 
         // Create ResourceFetcher implementation to be used with IndexUpdateRequest
         // Here, we use Wagon based one as shorthand, but all we need is a ResourceFetcher implementation
         final TransferListener listener = new AbstractTransferListener() {
             public void transferStarted(TransferEvent transferEvent) {
-                System.out.print("  Downloading " + transferEvent.getResource().getName());
-                System.out.flush();
+                logger.warn("  Downloading " + transferEvent.getResource().getName());
             }
 
             public void transferProgress(TransferEvent transferEvent, byte[] buffer, int length) {
             }
 
             public void transferCompleted(TransferEvent transferEvent) {
-                System.out.println(" - Done");
+                logger.debug(" - Done");
             }
         };
         final ResourceFetcher resourceFetcher = new WagonHelper.WagonFetcher(httpWagon, listener, null, null);
@@ -116,11 +115,11 @@ public class MavenIndex implements Closeable {
         final IndexUpdateRequest updateRequest = new IndexUpdateRequest(centralContext, resourceFetcher);
         final IndexUpdateResult updateResult = indexUpdater.fetchAndUpdateIndex(updateRequest);
         if (updateResult.isFullUpdate()) {
-            System.out.println("Full update happened");
+            logger.info("Full update happened");
         } else if (updateResult.getTimestamp().equals(centralContextCurrentTimestamp)) {
-            System.out.println("No update needed, index is up to date");
+            logger.info("No update needed, index is up to date");
         } else {
-            System.out.println(
+            logger.info(
                     "Incremental update happened, change covered " + centralContextCurrentTimestamp + " - "
                             + updateResult.getTimestamp() + " period.");
         }
