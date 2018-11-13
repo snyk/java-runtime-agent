@@ -17,6 +17,15 @@ public class InitLog {
     // @GuardedBy("Log.class")
     private static Log instance = null;
 
+    public static synchronized void loadingDebug(String msg) {
+        if (null == instance) {
+            final String line = FileLog.makeLine("initialisation-debug: " + msg);
+            initMessages.add(line);
+        } else {
+            instance.debug("initialisation-debug: " + msg);
+        }
+    }
+
     public static synchronized void loading(String msg) {
         if (null == instance) {
             final String line = FileLog.makeLine("initialisation: " + msg);

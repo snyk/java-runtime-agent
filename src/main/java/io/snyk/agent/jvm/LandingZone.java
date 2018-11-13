@@ -12,9 +12,9 @@ import io.snyk.agent.util.UseCounter;
  */
 public class LandingZone {
     static {
-        InitLog.loading("LandingZone being loaded by:");
+        InitLog.loadingDebug("LandingZone being loaded by:");
         for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
-            InitLog.loading(" * " + ste);
+            InitLog.loadingDebug(" * " + ste);
         }
     }
 
