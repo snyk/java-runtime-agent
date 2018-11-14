@@ -17,13 +17,6 @@ dependencies {
     testCompile 'org.junit.jupiter:junit-jupiter-api:5.3.1'
     testCompile 'org.junit.jupiter:junit-jupiter-params:5.3.1'
     testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
-
-    // maven tool
-    testCompile 'org.apache.maven.indexer:indexer-core:6.0.0'
-    testCompile 'org.apache.maven:maven-artifact:3.6.0'
-    testCompile 'org.apache.maven.wagon:wagon-http:3.2.0'
-    testCompile 'org.eclipse.sisu:org.eclipse.sisu.plexus:0.3.3'
-
     jmh 'com.google.guava:guava:26.0-jre'
 }
 
