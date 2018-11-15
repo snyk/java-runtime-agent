@@ -19,6 +19,7 @@ class ConfigBuilder {
     boolean trackClassLoading;
     boolean trackAccessors;
     boolean trackBranchingMethods;
+    String logTo;
     boolean debugLoggingEnabled;
     boolean skipBuiltInRules;
     boolean skipMetaPosts;
@@ -27,6 +28,6 @@ class ConfigBuilder {
         return new Config(projectId, filters, homeBaseUrl, homeBasePostLimit,
                 startupDelayMs, heartBeatIntervalMs, reportIntervalMs,
                 trackClassLoading, trackAccessors, trackBranchingMethods,
-                debugLoggingEnabled, skipBuiltInRules, skipMetaPosts);
+                logTo, debugLoggingEnabled, skipBuiltInRules, skipMetaPosts);
     }
 }

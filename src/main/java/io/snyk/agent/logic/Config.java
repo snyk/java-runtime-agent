@@ -25,6 +25,7 @@ public class Config {
     public final long heartBeatIntervalMs;
     public final long reportIntervalMs;
     public final boolean trackClassLoading;
+    public final LogDestinationConfig logTo;
     public final boolean debugLoggingEnabled;
     public final boolean trackBranchingMethods;
     public final boolean trackAccessors;
@@ -43,6 +44,7 @@ public class Config {
            boolean trackClassLoading,
            boolean trackAccessors,
            boolean trackBranchingMethods,
+           String logTo,
            boolean debugLoggingEnabled,
            boolean skipBuiltInRules,
            boolean skipMetaPosts) {
@@ -66,6 +68,7 @@ public class Config {
         this.reportIntervalMs = reportIntervalMs;
         this.trackClassLoading = trackClassLoading;
         this.trackAccessors = trackAccessors;
+        this.logTo = LogDestinationConfig.fromNullableString(logTo);
         this.debugLoggingEnabled = debugLoggingEnabled;
         this.trackBranchingMethods = trackBranchingMethods;
         this.skipBuiltInRules = skipBuiltInRules;
@@ -145,6 +148,11 @@ public class Config {
 
             if ("trackBranchingMethods".equals(key)) {
                 builder.trackBranchingMethods = Boolean.parseBoolean(value);
+                continue;
+            }
+
+            if ("logTo".equals(key)) {
+                builder.logTo = value;
                 continue;
             }
 
