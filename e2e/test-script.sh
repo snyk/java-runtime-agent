@@ -44,7 +44,6 @@ done
 sleep 6
 
 # show the reports
-cat ${TEMP_DIR}/snyk-logs/agent-*.log
 jq --color-output . ${TEMP_DIR}/*.json
 
 # we must have hit the methodEntry
