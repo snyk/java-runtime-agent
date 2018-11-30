@@ -45,7 +45,7 @@ class EntryPoint {
         log.info("loading config complete, projectId:" + config.projectId);
 
         final CountDownLatch initialFetchComplete = new CountDownLatch(1);
-        final Thread update = new Thread(new FilterUpdate(log, config, initialFetchComplete::countDown));
+        final Thread update = new Thread(new FilterUpdate(log, config, instrumentation, initialFetchComplete::countDown));
         update.setDaemon(true);
         update.setName("snyk-update");
         update.start();

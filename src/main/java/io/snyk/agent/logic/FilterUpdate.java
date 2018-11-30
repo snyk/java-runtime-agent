@@ -5,6 +5,7 @@ import io.snyk.agent.util.Log;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.instrument.Instrumentation;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -17,12 +18,17 @@ import java.util.stream.Collectors;
 public class FilterUpdate implements Runnable {
     private final Log log;
     private final Config config;
+    private final Instrumentation instrumentation;
     private final Runnable onAttempted;
     private final URL homeBaseSnapshots;
 
-    public FilterUpdate(Log log, Config config, Runnable onAttempted) throws MalformedURLException {
+    public FilterUpdate(Log log,
+                        Config config,
+                        Instrumentation instrumentation,
+                        Runnable onAttempted) throws MalformedURLException {
         this.log = log;
         this.config = config;
+        this.instrumentation = instrumentation;
         this.onAttempted = onAttempted;
         this.homeBaseSnapshots = config.homeBaseUrl.resolve("snapshot/" + config.projectId + "/java").toURL();
     }
@@ -31,7 +37,9 @@ public class FilterUpdate implements Runnable {
     public void run() {
         while (true) {
             try {
-                tryFetch();
+                if (fetchUpdatedAnything()) {
+                    reTransform();
+                }
             } catch (Throwable t) {
                 log.warn("agent update issue");
                 log.stackTrace(t);
@@ -47,13 +55,18 @@ public class FilterUpdate implements Runnable {
         }
     }
 
-    private void tryFetch() throws IOException {
+    private boolean fetchUpdatedAnything() throws IOException {
         final URLConnection conn = homeBaseSnapshots.openConnection();
         conn.setRequestProperty("Accept", "text/vnd.snyk.filters");
         conn.connect();
 
         if (conn instanceof HttpURLConnection) {
             final int code = ((HttpURLConnection) conn).getResponseCode();
+            if (304 == code) {
+                log.debug("no newer filters available");
+                return false;
+            }
+
             if (200 != code) {
                 throw new IllegalStateException("unexpected response code: " + code);
             }
@@ -67,5 +80,32 @@ public class FilterUpdate implements Runnable {
 
         log.info("filters updated");
         config.filters.set(Collections.unmodifiableList(Config.builderFromLines(lines).filters));
+
+        return true;
+    }
+
+    private void reTransform() {
+        for (Class someClass : instrumentation.getAllLoadedClasses()) {
+            if (!instrumentation.isModifiableClass(someClass)) {
+                continue;
+            }
+
+            final String candidateName = someClass.getName().replace('.', '/');
+            if (config.filters.get().stream()
+                    .noneMatch(f -> f.testClassName(candidateName))) {
+                continue;
+            }
+
+            reTransformClass(someClass);
+        }
+    }
+
+    private void reTransformClass(Class someClass) {
+        try {
+            instrumentation.retransformClasses(someClass);
+        } catch (Exception e) {
+            log.warn("retransforming failed: " + someClass.getName());
+            log.stackTrace(e);
+        }
     }
 }
