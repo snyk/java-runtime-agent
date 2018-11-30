@@ -39,7 +39,7 @@ public class Rewriter {
     public byte[] rewrite(ClassReader reader) {
         final ClassNode cn = AsmUtil.parse(reader);
         for (MethodNode method : cn.methods) {
-            final Optional<Filter> matching = config.filters.stream()
+            final Optional<Filter> matching = config.filters.get().stream()
                     .filter(filter -> filter.testMethod(cn.name, method.name))
                     .findAny();
 
