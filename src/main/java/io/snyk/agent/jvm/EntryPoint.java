@@ -57,7 +57,8 @@ class EntryPoint {
         worker.setName("snyk-agent");
         worker.start();
 
-        instrumentation.addTransformer(new Transformer(log, config, dataTracker), false);
+        final boolean canReTransform = true;
+        instrumentation.addTransformer(new Transformer(log, config, dataTracker), canReTransform);
 
         if (!initialFetchComplete.await(config.filterUpdateInitialDelayMs, TimeUnit.MILLISECONDS)) {
             log.info("releasing agent as data refresh fetch timed out");

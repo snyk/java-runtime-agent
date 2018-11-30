@@ -116,6 +116,27 @@ public class InstrumentationFilter {
         return false;
     }
 
+    static boolean alreadyInstrumented(MethodNode method, String internalName) {
+        final ListIterator<AbstractInsnNode> insns = method.instructions.iterator();
+        while (insns.hasNext()) {
+            final AbstractInsnNode insn = insns.next();
+            if (insn.getOpcode() != Opcodes.INVOKESTATIC) {
+                continue;
+            }
+
+            if (!(insn instanceof MethodInsnNode)) {
+                continue;
+            }
+
+            final MethodInsnNode invocation = (MethodInsnNode) insn;
+            if (internalName.equals(invocation.owner)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     static boolean branches(ClassNode self, MethodNode method) {
         if (!method.tryCatchBlocks.isEmpty()) {
             return true;

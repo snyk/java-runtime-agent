@@ -52,6 +52,11 @@ public class Rewriter {
 
             final String logName = filter.name + ": " + cn.name + "#" + method.name;
 
+            if (InstrumentationFilter.alreadyInstrumented(method, ourInternalName)) {
+                log.debug("asked to rewrite, but already instrumented:" + logName);
+                continue;
+            }
+
             if (InstrumentationFilter.skipMethod(cn, method)) {
                 log.info("rewrite requested, but disallowed: " + logName);
                 continue;
