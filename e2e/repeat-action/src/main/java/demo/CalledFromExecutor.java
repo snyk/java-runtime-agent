@@ -11,6 +11,9 @@ public class CalledFromExecutor implements Runnable {
 
     @Override
     public void run() {
-        work.incrementAndGet();
+        // TODO: conditional branch here is always true, but a hack to ensure we watch the method
+        if (null != work) {
+            work.incrementAndGet();
+        }
     }
 }

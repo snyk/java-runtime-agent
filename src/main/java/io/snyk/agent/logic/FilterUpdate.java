@@ -78,8 +78,8 @@ public class FilterUpdate implements Runnable {
             lines = reader.lines().collect(Collectors.toList());
         }
 
-        log.info("filters updated");
         config.filters.set(Collections.unmodifiableList(Config.builderFromLines(lines).filters));
+        log.info("filters updated, new count: " + config.filters.get().size());
 
         return true;
     }

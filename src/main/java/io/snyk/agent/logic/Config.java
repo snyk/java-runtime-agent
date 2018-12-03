@@ -195,6 +195,16 @@ public class Config {
                 continue;
             }
 
+            if ("filterUpdateInitialDelayMs".equals(key)) {
+                builder.filterUpdateInitialDelayMs = Long.parseLong(value);
+                continue;
+            }
+
+            if ("filterUpdateIntervalMs".equals(key)) {
+                builder.filterUpdateIntervalMs = Long.parseLong(value);
+                continue;
+            }
+
             if (key.startsWith("filter.")) {
                 final String[] parts = key.split("\\.", 3);
                 if (3 != parts.length) {

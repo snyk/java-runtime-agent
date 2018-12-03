@@ -4,9 +4,12 @@ jdk:
 - oraclejdk11
 - openjdk11
 script:
+- pyenv versions
+- pyenv global 3.6
 - ./gradlew build test distZip
 - git clone --depth 1 --branch java9 https://github.com/snyk/java-goof
 - e2e/test-script.sh
+- e2e/test-reload.py
 branches:
   only:
   - master
