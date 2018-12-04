@@ -64,7 +64,7 @@ public class ReportingWorker implements Runnable {
             case "file":
                 return new DirectoryWritingPoster(config.homeBaseUrl);
             default:
-                return new StdLibHttpPoster(log, config.homeBaseUrl.toURL());
+                return new StdLibHttpPoster(log, config.homeBaseUrl.resolve("beacon").toURL());
         }
     }
 
@@ -235,7 +235,7 @@ public class ReportingWorker implements Runnable {
     private StringBuilder buildMeta() {
         final StringBuilder msg = new StringBuilder(1024);
         msg.append("\"filters\":[\n");
-        config.filters.forEach(filter -> {
+        config.filters.get().forEach(filter -> {
             msg.append("{\"name\":");
             Json.appendString(msg, filter.name);
             filter.artifact.ifPresent(artifact -> {

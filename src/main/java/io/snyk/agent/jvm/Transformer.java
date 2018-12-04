@@ -89,7 +89,7 @@ class Transformer implements ClassFileTransformer {
     }
 
     private boolean shouldProcessClass(String className, ClassInfo.ExtraInfo info) {
-        return config.filters.stream()
+        return config.filters.get().stream()
                 .anyMatch(f -> f.testArtifacts(log, info.extra) && f.testClassName(className));
     }
 }

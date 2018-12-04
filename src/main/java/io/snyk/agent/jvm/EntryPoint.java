@@ -2,12 +2,15 @@ package io.snyk.agent.jvm;
 
 import io.snyk.agent.logic.Config;
 import io.snyk.agent.logic.DataTracker;
+import io.snyk.agent.logic.FilterUpdate;
 import io.snyk.agent.logic.ReportingWorker;
 import io.snyk.agent.util.*;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
 import java.net.MalformedURLException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * The entry point for the agent. Load and install our plugins.
@@ -15,7 +18,7 @@ import java.net.MalformedURLException;
 class EntryPoint {
     public static void premain(
             String agentArguments,
-            Instrumentation instrumentation) throws MalformedURLException {
+            Instrumentation instrumentation) throws Exception {
         InitLog.loading("startup: " + Version.extendedVersionInfo());
         InitLog.loading("If you have any issues during this beta, please contact runtime@snyk.io");
 
@@ -41,6 +44,12 @@ class EntryPoint {
 
         log.info("loading config complete, projectId:" + config.projectId);
 
+        final CountDownLatch initialFetchComplete = new CountDownLatch(1);
+        final Thread update = new Thread(new FilterUpdate(log, config, instrumentation, initialFetchComplete::countDown));
+        update.setDaemon(true);
+        update.setName("snyk-update");
+        update.start();
+
         final DataTracker dataTracker = new DataTracker(log);
 
         final Thread worker = new Thread(new ReportingWorker(log, config, dataTracker));
@@ -48,6 +57,11 @@ class EntryPoint {
         worker.setName("snyk-agent");
         worker.start();
 
-        instrumentation.addTransformer(new Transformer(log, config, dataTracker), false);
+        final boolean canReTransform = true;
+        instrumentation.addTransformer(new Transformer(log, config, dataTracker), canReTransform);
+
+        if (!initialFetchComplete.await(config.filterUpdateInitialDelayMs, TimeUnit.MILLISECONDS)) {
+            log.info("releasing agent as data refresh fetch timed out");
+        }
     }
 }

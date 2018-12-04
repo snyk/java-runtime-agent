@@ -17,7 +17,7 @@ class ConfigTest {
     void loadFilterFreeFileAndGetDefaultFilters() throws IOException {
         loadConfig(Collections.singletonList(
                 "projectId=a9fe5eb7-88f1-43da-86ae-9b7b15d9049d"
-        ), config -> assertNotEquals(0, config.filters.size()));
+        ), config -> assertNotEquals(0, config.filters.get().size()));
     }
 
     @Test
@@ -26,7 +26,7 @@ class ConfigTest {
                 "projectId=a9fe5eb7-88f1-43da-86ae-9b7b15d9049d",
                 "filter.foo.paths = something/must/Be#provided",
                 "skipBuiltInRules = true"
-        ), config -> assertEquals(1, config.filters.size()));
+        ), config -> assertEquals(1, config.filters.get().size()));
     }
 
     private void loadConfig(List<String> lines, Consumer<Config> check) throws IOException {

@@ -1,0 +1,21 @@
+plugins {
+    id 'java'
+}
+
+dependencies {
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'demo.Main'
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+wrapper {
+    gradleVersion = "4.10.2"
+    distributionType = Wrapper.DistributionType.ALL
+}
