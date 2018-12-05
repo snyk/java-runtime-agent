@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.nio.file.Files;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -19,6 +21,7 @@ import java.util.stream.Collectors;
 public class Config {
     public final String projectId;
     public final AtomicReference<List<Filter>> filters;
+    public final Instant providedFiltersGenerated;
     public final URI homeBaseUrl;
     public final long homeBasePostLimit;
     public final long startupDelayMs;
@@ -38,6 +41,7 @@ public class Config {
 
     Config(String projectId,
            List<Filter> filters,
+           Instant providedFiltersGenerated,
            String homeBaseUrl,
            Long homeBasePostLimit,
            long startupDelayMs,
@@ -59,6 +63,7 @@ public class Config {
             throw new IllegalStateException("no filters provided");
         }
         this.filters = new AtomicReference<>(Collections.unmodifiableList(filters));
+        this.providedFiltersGenerated = providedFiltersGenerated;
         this.homeBaseUrl = URI.create(null != homeBaseUrl ? homeBaseUrl : "https://homebase.snyk.io/api/v1/");
         if (null == homeBasePostLimit) {
             this.homeBasePostLimit = DEFAULT_POST_LIMIT;
@@ -202,6 +207,11 @@ public class Config {
 
             if ("filterUpdateIntervalMs".equals(key)) {
                 builder.filterUpdateIntervalMs = Long.parseLong(value);
+                continue;
+            }
+
+            if ("filters.provided.generated".equals(key)) {
+                builder.providedFiltersGenerated = DateTimeFormatter.ISO_DATE_TIME.parse(value, Instant::from);
                 continue;
             }
 

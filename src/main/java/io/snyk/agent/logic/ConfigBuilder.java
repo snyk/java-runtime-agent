@@ -2,6 +2,7 @@ package io.snyk.agent.logic;
 
 import io.snyk.agent.filter.Filter;
 
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -12,6 +13,7 @@ class ConfigBuilder {
 
     String projectId;
     List<Filter> filters;
+    Instant providedFiltersGenerated = Instant.EPOCH;
     String homeBaseUrl;
     Long homeBasePostLimit;
     long startupDelayMs = 1_000;
@@ -29,7 +31,7 @@ class ConfigBuilder {
     boolean skipMetaPosts;
 
     Config build() {
-        return new Config(projectId, filters, homeBaseUrl, homeBasePostLimit,
+        return new Config(projectId, filters, providedFiltersGenerated, homeBaseUrl, homeBasePostLimit,
                 startupDelayMs, heartBeatIntervalMs, reportIntervalMs,
                 filterUpdateIntervalMs, filterUpdateInitialDelayMs,
                 trackClassLoading, trackAccessors, trackBranchingMethods,
