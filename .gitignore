@@ -14,4 +14,3 @@ artifacts.lst
 snyk-logs/
 snyk*.properties
 src/main/resources/version.txt
-src/main/resources/methods.properties
