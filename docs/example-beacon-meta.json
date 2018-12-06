@@ -1,19 +1,22 @@
 {
   "projectId": "0153525f-5a99-4efe-a84f-454f12494033",
-  "timestamp": "2018-10-05T08:23:12.693Z",
+  "timestamp": "2018-12-06T08:35:09.225Z",
   "systemInfo": {
+    "agentVersion": "git:f09f2ae",
     "hostName": "anoia.goeswhere.com",
     "jvm": {
-      "vmName": "26296@anoia.goeswhere.com",
+      "vmName": "5472@anoia.goeswhere.com",
       "vendor": "Oracle Corporation",
       "version": "25.181-b13"
     }
   },
-  "correlationId": "b1ed2a54-7d25-466b-abc9-d5f4231225ae",
+  "correlationId": "ad94db11-8071-4233-a1fe-0dd033d15c4d",
+  "agentId": "4ce8ca42-75c9-4dab-8142-5bf74d8479cf",
   "filters": [
     {
       "name": "req-happening",
       "artifact": "maven:org.apache.struts:struts2-core",
+      "matches": 2,
       "paths": [
         {
           "className": "org/apache/struts2/dispatcher/Dispatcher",
@@ -23,12 +26,853 @@
       ]
     },
     {
-      "name": "jakarta-multipart",
+      "name": "provided-32",
+      "artifact": "maven:org.apache.httpcomponents:httpclient",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/apache/http/client/utils/URIUtils",
+          "methodName": "normalizePath",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-31",
+      "artifact": "maven:org.apache.httpcomponents:httpclient",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/apache/http/client/utils/URIBuilder",
+          "methodName": "normalizePath",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-34",
+      "artifact": "maven:org.apache.opennlp:opennlp-tools",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "opennlp/tools/formats/letsmt/LetsmtDocument",
+          "methodName": "parse",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-33",
+      "artifact": "maven:org.apache.lucene:lucene-queryparser",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/apache/lucene/queryparser/xml/CoreParser",
+          "methodName": "parseXML",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-36",
+      "artifact": "maven:org.apache.poi:poi",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/apache/poi/poifs/filesystem/Ole10Native",
+          "methodName": "createFromEmbeddedOleObject",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-35",
+      "artifact": "maven:org.apache.pdfbox:pdfbox",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/apache/pdfbox/pdmodel/encryption/StandardSecurityHandler",
+          "methodName": "prepareForDecryption",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-38",
+      "artifact": "maven:org.apache.syncope.client:syncope-client-console",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/apache/syncope/client/console/widgets/reconciliation/ReconciliationReportParser",
+          "methodName": "parse",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-37",
       "artifact": "maven:org.apache.struts:struts2-core",
+      "matches": 1,
       "paths": [
         {
           "className": "org/apache/struts2/dispatcher/multipart/JakartaMultiPartRequest",
           "methodName": "buildErrorMessage",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-70",
+      "artifact": "maven:struts:struts",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/apache/struts/util/RequestUtils",
+          "methodName": "populate",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-71",
+      "artifact": "maven:xerces:xercesImpl",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/apache/xerces/impl/XMLEntityScanner",
+          "methodName": "scanName",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-30",
+      "artifact": "maven:org.apache.cxf:cxf-core",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/apache/cxf/attachment/AttachmentDeserializer",
+          "methodName": "readLine",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-39",
+      "artifact": "maven:org.apache.zookeeper:zookeeper",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/apache/zookeeper/server/NettyServerCnxn",
+          "methodName": "checkFourLetterWord",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-43",
+      "artifact": "maven:org.bouncycastle:bcprov-jdk15on",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/bouncycastle/jcajce/provider/asymmetric/dsa/KeyPairGeneratorSpi",
+          "methodName": "generateKeyPair",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-42",
+      "artifact": "maven:org.bouncycastle:bcprov-jdk15on",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/bouncycastle/jcajce/provider/asymmetric/dsa/DSASigner",
+          "methodName": "derDecode",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-45",
+      "artifact": "maven:org.bouncycastle:bcprov-jdk15on",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/bouncycastle/math/raw/Nat160",
+          "methodName": "square",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-44",
+      "artifact": "maven:org.bouncycastle:bcprov-jdk15on",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/bouncycastle/math/raw/Nat128",
+          "methodName": "square",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-47",
+      "artifact": "maven:org.bouncycastle:bcprov-jdk15on",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/bouncycastle/pqc/crypto/xmss/XMSSUtil",
+          "methodName": "isNewAuthenticationPathNeeded",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-46",
+      "artifact": "maven:org.bouncycastle:bcprov-jdk15on",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/bouncycastle/math/raw/Nat256",
+          "methodName": "square",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-49",
+      "artifact": "maven:org.codehaus.plexus:plexus-archiver",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/codehaus/plexus/archiver/AbstractUnArchiver",
+          "methodName": "extractFile",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-48",
+      "artifact": "maven:org.codehaus.groovy:groovy-all",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/codehaus/groovy/runtime/MethodClosure",
+          "methodName": "readResolve",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-41",
+      "artifact": "maven:org.bouncycastle:bcprov-jdk15on",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/bouncycastle/crypto/generators/RSAKeyPairGenerator",
+          "methodName": "chooseRandomPrime",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-40",
+      "artifact": "maven:org.bouncycastle:bcprov-jdk15on",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/bouncycastle/crypto/engines/IESEngine",
+          "methodName": "getMac",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-54",
+      "artifact": "maven:org.eclipse.jetty:jetty-util",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/eclipse/jetty/util/security/Credential",
+          "methodName": "check",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-10",
+      "artifact": "maven:com.fasterxml.jackson.core:jackson-databind",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "com/fasterxml/jackson/databind/deser/BeanDeserializerFactory",
+          "methodName": "isIgnorableType",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-53",
+      "artifact": "maven:org.eclipse.jetty:jetty-security",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/eclipse/jetty/security/authentication/DigestAuthenticator$Digest",
+          "methodName": "check",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-56",
+      "artifact": "maven:org.jboss.netty:netty",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/jboss/netty/handler/ssl/SslHandler",
+          "methodName": "unwrap",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-12",
+      "artifact": "maven:com.fasterxml.jackson.core:jackson-databind",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "com/fasterxml/jackson/databind/jsontype/impl/SubTypeValidator",
+          "methodName": "validateSubType",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-55",
+      "artifact": "maven:org.eclipse.jetty:jetty-util",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/eclipse/jetty/util/security/Password",
+          "methodName": "check",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-11",
+      "artifact": "maven:com.fasterxml.jackson.core:jackson-databind",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "com/fasterxml/jackson/databind/deser/BeanDeserializerFactory",
+          "methodName": "createBeanDeserializer",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-58",
+      "artifact": "maven:org.springframework.data:spring-data-commons",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/springframework/data/mapping/PropertyPath",
+          "methodName": "create",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-14",
+      "artifact": "maven:com.github.junrar:junrar",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "com/github/junrar/Archive",
+          "methodName": "readHeaders",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-57",
+      "artifact": "maven:org.nd4j:nd4j-common",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/nd4j/util/ArchiveUtils",
+          "methodName": "unzipFileTo",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-13",
+      "artifact": "maven:com.fasterxml.jackson.dataformat:jackson-dataformat-xml",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "com/fasterxml/jackson/dataformat/xml/XmlFactory",
+          "methodName": "_initFactories",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-16",
+      "artifact": "maven:com.squareup.okhttp:okhttp",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "com/squareup/okhttp/internal/io/RealConnection",
+          "methodName": "connectTls",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-59",
+      "artifact": "maven:org.springframework.data:spring-data-commons",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/springframework/data/web/MapDataBinder$MapPropertyAccessor",
+          "methodName": "setPropertyValue",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-15",
+      "artifact": "maven:com.google.guava:guava",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "com/google/common/util/concurrent/AtomicDoubleArray",
+          "methodName": "readObject",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-50",
+      "artifact": "maven:org.codehaus.plexus:plexus-utils",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/codehaus/plexus/util/Expand",
+          "methodName": "extractFile",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-52",
+      "artifact": "maven:org.eclipse.jetty:jetty-jaspi",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/eclipse/jetty/security/jaspi/modules/DigestAuthModule$Digest",
+          "methodName": "check",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-51",
+      "artifact": "maven:org.codehaus.plexus:plexus-utils",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/codehaus/plexus/util/Expand",
+          "methodName": "extractFile",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-18",
+      "artifact": "maven:commons-fileupload:commons-fileupload",
+      "matches": 1,
+      "paths": [
+        {
+          "className": "org/apache/commons/fileupload/FileUploadBase$FileItemIteratorImpl",
+          "methodName": "<init>",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-17",
+      "artifact": "maven:commons-collections:commons-collections",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/apache/commons/collections/functors/InvokerTransformer",
+          "methodName": "transform",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-19",
+      "artifact": "maven:commons-fileupload:commons-fileupload",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/apache/commons/fileupload/disk/DiskFileItem",
+          "methodName": "readObject",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-65",
+      "artifact": "maven:org.springframework:spring-web",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/springframework/web/multipart/support/DefaultMultipartHttpServletRequest",
+          "methodName": "getParameterNames",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-21",
+      "artifact": "maven:io.netty:netty-all",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "io/netty/handler/codec/http/ClientCookieEncoder",
+          "methodName": "encode",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-64",
+      "artifact": "maven:org.springframework:spring-web",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/springframework/http/converter/xml/SourceHttpMessageConverter",
+          "methodName": "readDOMSource",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-20",
+      "artifact": "maven:io.netty:netty",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/jboss/netty/handler/codec/http/cookie/ServerCookieEncoder",
+          "methodName": "encode",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-67",
+      "artifact": "maven:org.springframework:spring-webmvc",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/springframework/web/servlet/ResourceServlet",
+          "methodName": "doInclude",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-23",
+      "artifact": "maven:io.undertow:undertow-core",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "io/undertow/server/protocol/framed/AbstractFramedStreamSourceChannel$1",
+          "methodName": "run",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-66",
+      "artifact": "maven:org.springframework:spring-web",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/springframework/web/util/JavaScriptUtils",
+          "methodName": "javaScriptEscape",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-22",
+      "artifact": "maven:io.netty:netty-handler",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "io/netty/handler/ssl/OpenSslEngine",
+          "methodName": "readPendingBytesFromBIO",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-69",
+      "artifact": "maven:ro.pippo:pippo-session",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "ro/pippo/session/SerializationSessionDataTranscoder",
+          "methodName": "decode",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-25",
+      "artifact": "maven:mysql:mysql-connector-java",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "com/mysql/jdbc/ResultSetImpl",
+          "methodName": "getNativeConvertToString",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-68",
+      "artifact": "maven:org.zeroturnaround:zt-zip",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/zeroturnaround/zip/ZipUtil$Unpacker",
+          "methodName": "process",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-24",
+      "artifact": "maven:io.undertow:undertow-core",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "io/undertow/server/protocol/http/HttpResponseConduit",
+          "methodName": "writeString",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-27",
+      "artifact": "maven:net.lingala.zip4j:zip4j",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "net/lingala/zip4j/unzip/Unzip",
+          "methodName": "initExtractFile",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-26",
+      "artifact": "maven:net.bull.javamelody:javamelody-core",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "net/bull/javamelody/PayloadNameRequestWrapper",
+          "methodName": "parseSoapMethodName",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-61",
+      "artifact": "maven:org.springframework.security:spring-security-core",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/springframework/security/jackson2/SecurityJackson2Modules",
+          "methodName": "enableDefaultTyping",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-60",
+      "artifact": "maven:org.springframework.data:spring-data-rest-webmvc",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/springframework/data/rest/webmvc/json/patch/PatchOperation",
+          "methodName": "evaluateValueFromTarget",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-63",
+      "artifact": "maven:org.springframework:spring-web",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/springframework/http/converter/xml/SourceHttpMessageConverter",
+          "methodName": "readSAXSource",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-62",
+      "artifact": "maven:org.springframework.security:spring-security-ldap",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/springframework/security/ldap/userdetails/LdapUserDetailsManager",
+          "methodName": "changePassword",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-4",
+      "artifact": "maven:com.fasterxml.jackson.core:jackson-databind",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "com/fasterxml/jackson/databind/deser/BeanDeserializerFactory",
+          "methodName": "createBeanDeserializer",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-5",
+      "artifact": "maven:com.fasterxml.jackson.core:jackson-databind",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "com/fasterxml/jackson/databind/deser/BeanDeserializerFactory",
+          "methodName": "createBeanDeserializer",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-2",
+      "artifact": "maven:com.fasterxml.jackson.core:jackson-core",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "com/fasterxml/jackson/core/json/ReaderBasedJsonParser",
+          "methodName": "_reportInvalidToken",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-3",
+      "artifact": "maven:com.fasterxml.jackson.core:jackson-core",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "com/fasterxml/jackson/core/json/UTF8StreamJsonParser",
+          "methodName": "_reportInvalidToken",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-8",
+      "artifact": "maven:com.fasterxml.jackson.core:jackson-databind",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "com/fasterxml/jackson/databind/deser/BeanDeserializerFactory",
+          "methodName": "createBeanDeserializer",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-9",
+      "artifact": "maven:com.fasterxml.jackson.core:jackson-databind",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "com/fasterxml/jackson/databind/deser/BeanDeserializerFactory",
+          "methodName": "createBeanDeserializer",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-6",
+      "artifact": "maven:com.fasterxml.jackson.core:jackson-databind",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "com/fasterxml/jackson/databind/deser/BeanDeserializerFactory",
+          "methodName": "createBeanDeserializer",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-7",
+      "artifact": "maven:com.fasterxml.jackson.core:jackson-databind",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "com/fasterxml/jackson/databind/deser/BeanDeserializerFactory",
+          "methodName": "createBeanDeserializer",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-29",
+      "artifact": "maven:org.apache.commons:commons-compress",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/apache/commons/compress/archivers/zip/X0017_StrongEncryptionHeader",
+          "methodName": "parseCentralDirectoryFormat",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-28",
+      "artifact": "maven:org.apache.camel:camel-core",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "org/apache/camel/processor/validation/SchemaReader",
+          "methodName": "createSchemaFactory",
+          "classNameIsPrefix": false
+        }
+      ]
+    },
+    {
+      "name": "provided-1",
+      "artifact": "maven:ch.qos.logback:logback-classic",
+      "matches": 0,
+      "paths": [
+        {
+          "className": "ch/qos/logback/classic/net/SimpleSocketServer",
+          "methodName": "doMain",
           "classNameIsPrefix": false
         }
       ]
@@ -247,15 +1091,15 @@
       "maven:commons-cli:commons-cli:1.4"
     ],
     "file:/usr/share/maven/lib/commons-lang3.jar": [
-      "impl:apache-commons-lang:3.5",
-      "maven:org.apache.commons:commons-lang3:3.5"
+      "impl:apache-commons-lang:3.8",
+      "maven:org.apache.commons:commons-lang3:3.8"
     ],
     "file:/usr/share/maven/lib/guava.jar": [
       "maven:com.google.guava:guava:19.0"
     ],
     "file:/usr/share/maven/lib/guice.jar": [
-      "maven:cglib:cglib:3.2.5",
-      "maven:com.google.inject:guice:4.0"
+      "maven:cglib:cglib:3.2.8",
+      "maven:com.google.inject:guice:4.2.1"
     ],
     "file:/usr/share/maven/lib/jansi.jar": [
       "maven:org.fusesource.jansi:jansi:1.16"
@@ -264,77 +1108,77 @@
       "maven:org.apache.geronimo.specs:geronimo-annotation_1.3_spec:1.0"
     ],
     "file:/usr/share/maven/lib/maven-artifact-3.x.jar": [
-      "impl:maven-artifact:3.5.2",
-      "maven:org.apache.maven:maven-artifact:3.5.2"
+      "impl:maven-artifact:3.5.4",
+      "maven:org.apache.maven:maven-artifact:3.5.4"
     ],
     "file:/usr/share/maven/lib/maven-builder-support-3.x.jar": [
-      "impl:maven-builder-support:3.5.2",
-      "maven:org.apache.maven:maven-builder-support:3.5.2"
+      "impl:maven-builder-support:3.5.4",
+      "maven:org.apache.maven:maven-builder-support:3.5.4"
     ],
     "file:/usr/share/maven/lib/maven-compat-3.x.jar": [
-      "impl:maven-compat:3.5.2",
-      "maven:org.apache.maven:maven-compat:3.5.2"
+      "impl:maven-compat:3.5.4",
+      "maven:org.apache.maven:maven-compat:3.5.4"
     ],
     "file:/usr/share/maven/lib/maven-core-3.x.jar": [
-      "impl:maven-core:3.5.2",
-      "maven:org.apache.maven:maven-core:3.5.2"
+      "impl:maven-core:3.5.4",
+      "maven:org.apache.maven:maven-core:3.5.4"
     ],
     "file:/usr/share/maven/lib/maven-embedder-3.x.jar": [
-      "impl:maven-embedder:3.5.2",
-      "maven:org.apache.maven:maven-embedder:3.5.2"
+      "impl:maven-embedder:3.5.4",
+      "maven:org.apache.maven:maven-embedder:3.5.4"
     ],
     "file:/usr/share/maven/lib/maven-model-3.x.jar": [
-      "impl:maven-model:3.5.2",
-      "maven:org.apache.maven:maven-model:3.5.2"
+      "impl:maven-model:3.5.4",
+      "maven:org.apache.maven:maven-model:3.5.4"
     ],
     "file:/usr/share/maven/lib/maven-model-builder-3.x.jar": [
-      "impl:maven-model-builder:3.5.2",
-      "maven:org.apache.maven:maven-model-builder:3.5.2"
+      "impl:maven-model-builder:3.5.4",
+      "maven:org.apache.maven:maven-model-builder:3.5.4"
     ],
     "file:/usr/share/maven/lib/maven-plugin-api-3.x.jar": [
-      "impl:maven-plugin-api:3.5.2",
-      "maven:org.apache.maven:maven-plugin-api:3.5.2"
+      "impl:maven-plugin-api:3.5.4",
+      "maven:org.apache.maven:maven-plugin-api:3.5.4"
     ],
     "file:/usr/share/maven/lib/maven-repository-metadata-3.x.jar": [
-      "impl:maven-repository-metadata-model:3.5.2",
-      "maven:org.apache.maven:maven-repository-metadata:3.5.2"
+      "impl:maven-repository-metadata-model:3.5.4",
+      "maven:org.apache.maven:maven-repository-metadata:3.5.4"
     ],
     "file:/usr/share/maven/lib/maven-resolver-api.jar": [
-      "maven:org.apache.maven.resolver:maven-resolver-api:1.1.0"
+      "maven:org.apache.maven.resolver:maven-resolver-api:1.1.1"
     ],
     "file:/usr/share/maven/lib/maven-resolver-connector-basic.jar": [
-      "maven:org.apache.maven.resolver:maven-resolver-connector-basic:1.1.0"
+      "maven:org.apache.maven.resolver:maven-resolver-connector-basic:1.1.1"
     ],
     "file:/usr/share/maven/lib/maven-resolver-impl.jar": [
-      "maven:org.apache.maven.resolver:maven-resolver-impl:1.1.0"
+      "maven:org.apache.maven.resolver:maven-resolver-impl:1.1.1"
     ],
     "file:/usr/share/maven/lib/maven-resolver-provider-3.x.jar": [
-      "impl:maven-artifact-resolver-provider:3.5.2",
-      "maven:org.apache.maven:maven-resolver-provider:3.5.2"
+      "impl:maven-artifact-resolver-provider:3.5.4",
+      "maven:org.apache.maven:maven-resolver-provider:3.5.4"
     ],
     "file:/usr/share/maven/lib/maven-resolver-spi.jar": [
-      "maven:org.apache.maven.resolver:maven-resolver-spi:1.1.0"
+      "maven:org.apache.maven.resolver:maven-resolver-spi:1.1.1"
     ],
     "file:/usr/share/maven/lib/maven-resolver-transport-wagon.jar": [
-      "maven:org.apache.maven.resolver:maven-resolver-transport-wagon:1.1.0"
+      "maven:org.apache.maven.resolver:maven-resolver-transport-wagon:1.1.1"
     ],
     "file:/usr/share/maven/lib/maven-resolver-util.jar": [
-      "maven:org.apache.maven.resolver:maven-resolver-util:1.1.0"
+      "maven:org.apache.maven.resolver:maven-resolver-util:1.1.1"
     ],
     "file:/usr/share/maven/lib/maven-settings-3.x.jar": [
-      "impl:maven-settings:3.5.2",
-      "maven:org.apache.maven:maven-settings:3.5.2"
+      "impl:maven-settings:3.5.4",
+      "maven:org.apache.maven:maven-settings:3.5.4"
     ],
     "file:/usr/share/maven/lib/maven-settings-builder-3.x.jar": [
-      "impl:maven-settings-builder:3.5.2",
-      "maven:org.apache.maven:maven-settings-builder:3.5.2"
+      "impl:maven-settings-builder:3.5.4",
+      "maven:org.apache.maven:maven-settings-builder:3.5.4"
     ],
     "file:/usr/share/maven/lib/maven-shared-utils.jar": [
-      "maven:org.apache.maven.shared:maven-shared-utils:3.1.0"
+      "maven:org.apache.maven.shared:maven-shared-utils:3.3.0"
     ],
     "file:/usr/share/maven/lib/maven-slf4j-provider-3.x.jar": [
-      "impl:maven-slf4j-simple-provider:3.5.2",
-      "maven:org.apache.maven:maven-slf4j-provider:3.5.2",
+      "impl:maven-slf4j-simple-provider:3.5.4",
+      "maven:org.apache.maven:maven-slf4j-provider:3.5.4",
       "maven:org.slf4j:slf4j-simple:1.7.25"
     ],
     "file:/usr/share/maven/lib/plexus-cipher.jar": [
@@ -344,7 +1188,7 @@
       "maven:org.codehaus.plexus:plexus-component-annotations:1.7.1"
     ],
     "file:/usr/share/maven/lib/plexus-interpolation.jar": [
-      "maven:org.codehaus.plexus:plexus-interpolation:1.24"
+      "maven:org.codehaus.plexus:plexus-interpolation:1.25"
     ],
     "file:/usr/share/maven/lib/plexus-sec-dispatcher.jar": [
       "maven:org.sonatype.plexus:plexus-sec-dispatcher:1.4"
@@ -363,18 +1207,19 @@
       "maven:org.slf4j:slf4j-api:1.7.25"
     ],
     "file:/usr/share/maven/lib/wagon-file.jar": [
-      "maven:org.apache.maven.wagon:wagon-file:3.0.0"
+      "maven:org.apache.maven.wagon:wagon-file:3.1.0"
     ],
     "file:/usr/share/maven/lib/wagon-http-shaded.jar": [
-      "maven:commons-io:commons-io:2.5",
-      "maven:org.apache.httpcomponents:httpclient:4.5.3",
-      "maven:org.apache.httpcomponents:httpcore:4.4.8",
-      "maven:org.apache.maven.wagon:wagon-http-shared:3.0.0",
-      "maven:org.apache.maven.wagon:wagon-http:3.0.0",
+      "maven:commons-codec:commons-codec:1.11",
+      "maven:commons-io:commons-io:2.6",
+      "maven:org.apache.httpcomponents:httpclient:4.5.5",
+      "maven:org.apache.httpcomponents:httpcore:4.4.9",
+      "maven:org.apache.maven.wagon:wagon-http-shared:3.1.0",
+      "maven:org.apache.maven.wagon:wagon-http:3.1.0",
       "maven:org.jsoup:jsoup:1.10.2"
     ],
     "file:/usr/share/maven/lib/wagon-provider-api.jar": [
-      "maven:org.apache.maven.wagon:wagon-provider-api:3.0.0"
+      "maven:org.apache.maven.wagon:wagon-provider-api:3.1.0"
     ]
   }
 }
