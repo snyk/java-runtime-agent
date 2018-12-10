@@ -35,11 +35,14 @@ fun extendedVersion(): String {
 
 val resDir = File("$projectDir/src/main/resources")
 assert(resDir.isDirectory() || resDir.mkdirs())
+val distributionDir = File("$projectDir/build/distributions")
+assert(distributionDir.isDirectory() || distributionDir.mkdirs())
 
 tasks {
     register("versionTxt") {
         doLast {
             File(resDir, "version.txt").writeText(extendedVersion())
+            File(distributionDir, "version.txt").writeText(extendedVersion())
         }
         outputs.upToDateWhen({ false })
     }
@@ -51,6 +54,7 @@ tasks.withType<ProcessResources> {
 
 tasks.getByName("build").dependsOn("shadowJar")
 tasks.getByName("distZip").dependsOn("shadowJar")
+tasks.getByName("distZip").dependsOn("versionTxt")
 
 tasks.withType<Jar> {
     baseName = "without-deps"
