@@ -33,8 +33,12 @@ def extended_version() {
 final resDir = new File("$projectDir/src/main/resources")
 assert resDir.isDirectory() || resDir.mkdirs()
 
+final distributionDir = new File("$projectDir/build/distributions")
+assert distributionDir.isDirectory() || distributionDir.mkdirs()
+
 task versionTxt() << {
     new File(resDir, "version.txt").text = extended_version()
+    new File(distributionDir, "version.txt").text = extended_version()
 }
 
 versionTxt.outputs.upToDateWhen { false }
@@ -77,6 +81,7 @@ processResources.dependsOn versionTxt
 processResources.dependsOn methodsToProperties
 build.dependsOn shadowJar
 distZip.dependsOn shadowJar
+distZip.dependsOn versionTxt
 
 jar {
     baseName = 'without-deps'
