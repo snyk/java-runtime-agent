@@ -93,14 +93,33 @@ public class Config {
             throw new IllegalStateException(e);
         }
     }
+    private static List<Filter> loadBuiltInFiltersFromResource(String resourceName, boolean shouldThrow) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(Config.class.getResourceAsStream(
+            resourceName)))) {
+            return builderFromLines(reader.lines().collect(Collectors.toList())).filters;
+        } catch (Exception error) {
+            if (shouldThrow) {
+                throw new IllegalStateException(String.format("built-in filter loading shouldn't fail from resource %s", resourceName), error);
+            }
+
+            InitLog.loading(String.format("Failed loading snaphost from resource %s", resourceName));
+            return null;
+        }
+    }
 
     private static List<Filter> loadBuiltInFilters() {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(Config.class.getResourceAsStream(
-                "/methods.properties")))) {
-            return builderFromLines(reader.lines().collect(Collectors.toList())).filters;
-        } catch (IOException builtin) {
-            throw new IllegalStateException("built-in filter loading shouldn't fail", builtin);
+        try {
+            InitLog.loading("loading built-in filters from bundled snapshot");
+            List<Filter> builtInFilters = loadBuiltInFiltersFromResource("/methods.bundled.properties", false);
+            if (builtInFilters == null || builtInFilters.size() == 0) {
+                throw new Exception("Invalid bundled snaphost format");
+            }
+            return builtInFilters;
+        } catch (Exception error) {
+            InitLog.loading("Failed loading bundled snaphost, falling back to the snapshot provided in the repo");
         }
+
+        return loadBuiltInFiltersFromResource("/methods.properties", true);
     }
 
     // @VisibleForTesting
