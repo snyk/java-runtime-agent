@@ -30,7 +30,7 @@ public class FilterUpdate implements Runnable {
         this.config = config;
         this.instrumentation = instrumentation;
         this.onAttempted = onAttempted;
-        this.homeBaseSnapshots = config.homeBaseUrl.resolve("snapshot/" + config.projectId + "/java").toURL();
+        this.homeBaseSnapshots = config.homeBaseUrl.resolve("v2/snapshot/" + config.projectId + "/java").toURL();
     }
 
     @Override

@@ -59,7 +59,7 @@ public class Config {
             throw new IllegalStateException("no filters provided");
         }
         this.filters = new AtomicReference<>(Collections.unmodifiableList(filters));
-        this.homeBaseUrl = URI.create(null != homeBaseUrl ? homeBaseUrl : "https://homebase.snyk.io/api/v1/");
+        this.homeBaseUrl = URI.create(null != homeBaseUrl ? homeBaseUrl : "https://homebase.snyk.io/api/");
         if (null == homeBasePostLimit) {
             this.homeBasePostLimit = DEFAULT_POST_LIMIT;
         } else {

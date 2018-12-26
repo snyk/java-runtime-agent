@@ -64,7 +64,7 @@ public class ReportingWorker implements Runnable {
             case "file":
                 return new DirectoryWritingPoster(config.homeBaseUrl);
             default:
-                return new StdLibHttpPoster(log, config.homeBaseUrl.resolve("beacon").toURL());
+                return new StdLibHttpPoster(log, config.homeBaseUrl.resolve("v1/beacon").toURL());
         }
     }
 

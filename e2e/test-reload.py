@@ -46,7 +46,7 @@ reportIntervalMs=1000
     # shouldn't've seen any events yet
     assert [] == list(all_seen_events(d.name))
 
-    update_dir = path.join(d.name, 'snapshot/{}'.format(project_id))
+    update_dir = path.join(d.name, 'v2', 'snapshot/{}'.format(project_id))
     os.makedirs(update_dir)
     update_file = path.join(update_dir, 'java')
 
