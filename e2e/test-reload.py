@@ -25,7 +25,6 @@ heartBeatIntervalMs=500
 reportIntervalMs=1000
 """.format(project_id, d.name)
     config_path = path.join(d.name, 'snyk.properties')
-
     with open(config_path, 'w') as f:
         f.write(CONFIG)
 
@@ -60,8 +59,9 @@ reportIntervalMs=1000
         'demo/LoopWithSleep#run',
     ]
 
+    all_paths = expected_paths + also_try
     new_filters = ''
-    for i, wanted in enumerate(expected_paths + also_try):
+    for i, wanted in enumerate(all_paths):
         new_filters += 'filter.up-{}.paths = {}\n'.format(i, wanted)
 
     with open(update_file, 'w') as f:
@@ -69,15 +69,15 @@ reportIntervalMs=1000
     print('>>> update written to {}'.format(update_file))
 
     # test app should run for >2 more seconds, so >4 more reloads and reports
-    victim.wait(4)
+    victim.wait(10)
 
     seen_methods = set()
     for entry in all_seen_events(d.name):
         seen_methods.add(re.sub(r'\(.*', '', entry['methodEntry']['methodName']))
 
     print('    seen: {}'.format(sorted(seen_methods)))
-    print('expected: {}'.format(sorted(expected_paths)))
-    assert seen_methods == set(expected_paths)
+    print('expected: {}'.format(sorted(all_paths)))
+    assert set(expected_paths).issubset(seen_methods)
 
     print('Success!')
 
