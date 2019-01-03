@@ -11,10 +11,10 @@ public class LoopWithSleep implements Runnable {
 
     @Override
     public void run() {
-        for (int i = 0; i < 8; ++i) {
+        for (int i = 0; i < Main.EVENTS; ++i) {
             foo();
             try {
-                Thread.sleep(500);
+                Thread.sleep(Main.DELAY_MS);
             } catch (InterruptedException e) {
                 return;
             }

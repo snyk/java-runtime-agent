@@ -47,7 +47,7 @@ public class ReportingWorker implements Runnable {
         vmVersion = runtime.getVmVersion();
     }
 
-    public ReportingWorker(Log log, Config config, DataTracker dataTracker) throws MalformedURLException {
+    public ReportingWorker(Log log, Config config, DataTracker dataTracker) {
         this(log, config, dataTracker, computePoster(log, config));
     }
 
@@ -59,17 +59,23 @@ public class ReportingWorker implements Runnable {
         this.poster = poster;
     }
 
-    private static Poster computePoster(Log log, Config config) throws MalformedURLException {
+    private static Poster computePoster(Log log, Config config) {
         switch (config.homeBaseUrl.getScheme()) {
             case "file":
                 return new DirectoryWritingPoster(config.homeBaseUrl);
             default:
-                return new StdLibHttpPoster(log, config.homeBaseUrl.resolve("v1/beacon").toURL());
+                try {
+                    return new StdLibHttpPoster(log, config.homeBaseUrl.resolve("v1/beacon").toURL());
+                } catch (MalformedURLException e) {
+                    throw new IllegalStateException("invalid beacon url", e);
+                }
         }
     }
 
     @Override
     public void run() {
+        log.info("reporting ready, but resting");
+
         try {
             // arbitrary: no point running during early vm startup;
             // no harm, but no useful information?
@@ -77,6 +83,9 @@ public class ReportingWorker implements Runnable {
         } catch (InterruptedException e) {
             return;
         }
+
+        log.info("reporting started");
+
         while (true) {
             try {
                 sendIfNecessary(LandingZone.SEEN_SET::drain);
