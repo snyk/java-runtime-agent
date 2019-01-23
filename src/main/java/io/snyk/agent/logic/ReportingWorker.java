@@ -76,6 +76,8 @@ public class ReportingWorker implements Runnable {
     public void run() {
         log.info("reporting ready, but resting");
 
+        setShutdownHook();
+
         try {
             // arbitrary: no point running during early vm startup;
             // no harm, but no useful information?
@@ -119,6 +121,17 @@ public class ReportingWorker implements Runnable {
             return;
         }
 
+        send(drainMaker, prefix);
+
+        // intentionally at the end; this method might terminate by exception
+        this.lastSuccessfulBeacon = now;
+    }
+
+     /**
+     * @param drainMaker Where to drain events from. Will not be called if it's only time for heartbeats.
+     * @param prefix each array of events posted will be prefixed with this byte[] encoded string
+     */
+    synchronized void send(Supplier<UseCounter.Drain> drainMaker, byte[] prefix) throws IOException {
         if (!config.skipMetaPosts) {
             poster.sendFragment(prefix, buildMeta());
         }
@@ -127,9 +140,35 @@ public class ReportingWorker implements Runnable {
         postArray(poster, prefix, "eventsToSend", from.methodEntries.iterator(), this::appendMethodEntry);
         postArray(poster, prefix, "eventsToSend", from.loadClasses.entrySet().iterator(), this::appendLoadClass);
         postArray(poster, prefix, "errors", dataTracker.errors.iterator(), this::appendError);
+    }
 
-        // intentionally at the end; this method might terminate by exception
-        this.lastSuccessfulBeacon = now;
+    private void setShutdownHook() {
+        try {
+            log.info("attempting to set up a shutdown hook that drains events one last time");
+            final Thread shutdownHook = new Thread(() -> safeSend(LandingZone.SEEN_SET::drain));
+            Runtime.getRuntime().addShutdownHook(shutdownHook);
+            log.info("shutdown hook set up successfully");
+        } catch (IllegalArgumentException e) {
+            // If the specified hook has already been registered,
+            // or if it can be determined that the hook is already running or has already been run.
+            // so either way we're set?
+        } catch (IllegalStateException e) {
+            // If the virtual machine is already in the process of shutting down
+            // this means we're okay with not setting up that hook
+        } catch (SecurityException e) {
+            // If a security manager is present and it denies RuntimePermission("shutdownHooks")
+            // not much to do about this one except log?
+            log.warn("failed to set a shutdownHook due to denied permission");
+        }
+    }
+
+    private void safeSend(Supplier<UseCounter.Drain> drainMaker) {
+        try {
+            final byte[] prefix = jsonHeader().toString().getBytes(StandardCharsets.UTF_8);
+            send(drainMaker, prefix);
+        } catch (Exception ignored) {
+            // intentionally disregard errors to allow fast shut down
+        }
     }
 
     private <T> void postArray(Poster poster,
