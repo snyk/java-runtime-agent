@@ -14,6 +14,7 @@ class ConfigBuilder {
     long reportIntervalMs = MINUTE_MS;
     long filterUpdateIntervalMs = 60 * MINUTE_MS;
     long filterUpdateInitialDelayMs = 1_000;
+    boolean addShutdownHook = true;
 
     boolean trackClassLoading;
     boolean trackAccessors;
@@ -28,6 +29,7 @@ class ConfigBuilder {
                 startupDelayMs, heartBeatIntervalMs, reportIntervalMs,
                 filterUpdateIntervalMs, filterUpdateInitialDelayMs,
                 trackClassLoading, trackAccessors, trackBranchingMethods,
-                logTo, debugLoggingEnabled, skipBuiltInRules, skipMetaPosts);
+                logTo, debugLoggingEnabled, skipBuiltInRules, skipMetaPosts,
+                addShutdownHook);
     }
 }
