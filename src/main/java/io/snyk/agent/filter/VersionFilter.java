@@ -38,7 +38,7 @@ public class VersionFilter implements Predicate<String> {
     public static VersionFilter parse(String expression) {
         final List<Predicate<ComparableVersion>> options = new ArrayList<>();
 
-        for (String part :  expression.split("\\s+")) {
+        for (String part : expression.split("\\s+")) {
             final Matcher ma = VERSION_EXPRESSION.matcher(part);
             if (!ma.matches()) {
                 throw new IllegalStateException("invalid version expression: " + part);

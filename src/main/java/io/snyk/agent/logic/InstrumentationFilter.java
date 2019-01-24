@@ -274,13 +274,20 @@ public class InstrumentationFilter {
 
     private static boolean isReturn(AbstractInsnNode node) {
         switch (node.getOpcode()) {
-            case Opcodes.RETURN: return true;
-            case Opcodes.IRETURN: return true;
-            case Opcodes.LRETURN: return true;
-            case Opcodes.FRETURN: return true;
-            case Opcodes.DRETURN: return true;
-            case Opcodes.ARETURN: return true;
-            default: return false;
+            case Opcodes.RETURN:
+                return true;
+            case Opcodes.IRETURN:
+                return true;
+            case Opcodes.LRETURN:
+                return true;
+            case Opcodes.FRETURN:
+                return true;
+            case Opcodes.DRETURN:
+                return true;
+            case Opcodes.ARETURN:
+                return true;
+            default:
+                return false;
         }
     }
 
@@ -294,9 +301,12 @@ public class InstrumentationFilter {
 
         // https://quad.pe/e/EM0TwLHCzH.png
         switch (returnType.getInternalName()) {
-            case "java/lang/Class": return true;
-            case "java/lang/ClassLoader": return true;
-            default: return false;
+            case "java/lang/Class":
+                return true;
+            case "java/lang/ClassLoader":
+                return true;
+            default:
+                return false;
         }
     }
 

@@ -7,7 +7,7 @@ import java.util.List;
  * Buffer initialisation logging in memory. When a real logger is available,
  * flush our stored data out to the real logger. If any more messages come
  * along, send them directly to the real logger.
- *
+ * <p>
  * Needs to be thread safe, but not fast: everything is synchronized and static.
  */
 public class InitLog {

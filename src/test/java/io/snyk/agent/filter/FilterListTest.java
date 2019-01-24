@@ -3,7 +3,7 @@ package io.snyk.agent.filter;
 import io.snyk.agent.testutil.TestLogger;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 class FilterListTest {
     @Test

@@ -1,9 +1,5 @@
 package io.snyk.agent.logic;
 
-import io.snyk.agent.filter.Filter;
-
-import java.util.List;
-
 /**
  * Helper builder for {@link Config}, only used internally.
  */

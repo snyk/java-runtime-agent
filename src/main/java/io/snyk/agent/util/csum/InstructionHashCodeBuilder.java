@@ -11,10 +11,10 @@ class InstructionHashCodeBuilder extends MethodVisitor {
     /**
      * `Label` instances are unique, but don't have any interior unique identifier,
      * i.e. the `offset` isn't available while iterating an InsnList, which isn't ideal.
-     *
+     * <p>
      * The `toString` method appears to compute a unique id; like "L123123123", but it's
      * just the identityHashCode and not stable across runs.
-     *
+     * <p>
      * This map is used to generate a monotonic ID for each label (first seen: 0,
      * second seen: 1, etc.), which we use as as the label number, for the `hashCode`.
      */

@@ -1,8 +1,6 @@
 package io.snyk.agent.jvm;
 
-import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
-import io.snyk.agent.logic.Config;
 import io.snyk.agent.logic.ConfigTest;
 import io.snyk.agent.logic.DataTracker;
 import io.snyk.agent.testutil.TestLogger;
@@ -14,7 +12,6 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
