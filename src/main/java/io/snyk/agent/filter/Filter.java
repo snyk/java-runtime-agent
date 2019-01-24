@@ -1,11 +1,11 @@
 package io.snyk.agent.filter;
 
-import io.snyk.agent.util.Log;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Represents a filter block from the config file, which can filter on:
@@ -64,27 +64,6 @@ public class Filter {
                     Optional.ofNullable(version).map(VersionFilter::parse),
                     paths.stream().map(PathFilter::parse).collect(Collectors.toList()));
         }
-    }
-
-    public boolean testArtifacts(Log log, Collection<String> artifacts) {
-        if (!artifact.isPresent() || artifacts.isEmpty()) {
-            return true;
-        }
-
-        // if we have any artifacts mentioned in the jar,
-        // then one of them must be our filter
-        final String artifact = this.artifact.get() + ":";
-        Stream<String> matching = artifacts.stream().filter(a -> a.startsWith(artifact));
-
-        if (version.isPresent()) {
-            final VersionFilter vf = version.get();
-            matching = matching.filter(art -> {
-                final String[] parts = art.split(":", 4);
-                return vf.test(parts[3]);
-            });
-        }
-
-        return matching.findAny().isPresent();
     }
 
     public boolean testClassName(String className) {

@@ -244,7 +244,7 @@ public class ReportingWorker implements Runnable {
     private StringBuilder buildMeta() {
         final StringBuilder msg = new StringBuilder(1024);
         msg.append("\"filters\":[\n");
-        config.filters.get().forEach(filter -> {
+        config.filters.get().filters.forEach(filter -> {
             msg.append("{\"name\":");
             Json.appendString(msg, filter.name);
             filter.artifact.ifPresent(artifact -> {

@@ -7,6 +7,7 @@ import io.snyk.asm.ClassReader;
 import io.snyk.asm.Opcodes;
 import io.snyk.asm.tree.*;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.ToIntFunction;
 
@@ -38,8 +39,9 @@ public class Rewriter {
 
     public byte[] rewrite(ClassReader reader) {
         final ClassNode cn = AsmUtil.parse(reader);
+        final List<Filter> filters = config.filters.get().filters;
         for (MethodNode method : cn.methods) {
-            final Optional<Filter> matching = config.filters.get().stream()
+            final Optional<Filter> matching = filters.stream()
                     .filter(filter -> filter.testMethod(cn.name, method.name))
                     .findAny();
 
