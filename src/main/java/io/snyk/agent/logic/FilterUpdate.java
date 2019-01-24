@@ -1,5 +1,7 @@
 package io.snyk.agent.logic;
 
+import io.snyk.agent.filter.Filter;
+import io.snyk.agent.filter.FilterList;
 import io.snyk.agent.util.Log;
 
 import java.io.BufferedReader;
@@ -11,7 +13,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -78,20 +79,22 @@ public class FilterUpdate implements Runnable {
             lines = reader.lines().collect(Collectors.toList());
         }
 
-        config.filters.set(Collections.unmodifiableList(Config.builderFromLines(lines).filters));
-        log.info("filters updated, new count: " + config.filters.get().size());
+        config.filters.set(new FilterList(Config.builderFromLines(lines).filters));
+        log.info("filters updated, new count: " + config.filters.get().filters.size());
 
         return true;
     }
 
     private void reTransform() {
+        final List<Filter> filters = config.filters.get().filters;
+
         for (Class someClass : instrumentation.getAllLoadedClasses()) {
             if (!instrumentation.isModifiableClass(someClass)) {
                 continue;
             }
 
             final String candidateName = someClass.getName().replace('.', '/');
-            if (config.filters.get().stream()
+            if (filters.stream()
                     .noneMatch(f -> f.testClassName(candidateName))) {
                 continue;
             }

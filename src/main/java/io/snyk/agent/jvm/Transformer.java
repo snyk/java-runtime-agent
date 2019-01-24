@@ -8,6 +8,8 @@ import java.lang.instrument.ClassFileTransformer;
 import java.net.URLClassLoader;
 import java.security.ProtectionDomain;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Tie {@link Rewriter} and {@link LandingZone} to the JVM interface.
@@ -89,7 +91,11 @@ class Transformer implements ClassFileTransformer {
     }
 
     private boolean shouldProcessClass(String className, ClassInfo.ExtraInfo info) {
-        return config.filters.get().stream()
-                .anyMatch(f -> f.testArtifacts(log, info.extra) && f.testClassName(className));
+        final List<String> haveGAV = info.extra.stream()
+                .filter(artifact -> artifact.startsWith("maven:"))
+                .sorted()
+                .collect(Collectors.toList());
+
+        return config.filters.get().shouldProcessClass(log, haveGAV, className);
     }
 }

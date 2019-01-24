@@ -1,7 +1,6 @@
 package io.snyk.agent.filter;
 
 import java.util.Optional;
-import java.util.function.Predicate;
 
 /**
  * Match a class name, with optional method, in Javadoc notation, e.g. `com.example.Foo#bar()`.

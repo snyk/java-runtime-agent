@@ -8,7 +8,6 @@ import io.snyk.agent.util.*;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
-import java.net.MalformedURLException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 

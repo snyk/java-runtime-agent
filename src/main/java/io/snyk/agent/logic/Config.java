@@ -1,6 +1,7 @@
 package io.snyk.agent.logic;
 
 import io.snyk.agent.filter.Filter;
+import io.snyk.agent.filter.FilterList;
 import io.snyk.agent.util.InitLog;
 
 import java.io.BufferedReader;
@@ -9,7 +10,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -18,7 +22,7 @@ import java.util.stream.Collectors;
  */
 public class Config {
     public final String projectId;
-    public final AtomicReference<List<Filter>> filters;
+    public final AtomicReference<FilterList> filters;
     public final URI homeBaseUrl;
     public final long homeBasePostLimit;
     public final long startupDelayMs;
@@ -58,7 +62,7 @@ public class Config {
             // unlikely: they should be using the non-empty built-in filters
             throw new IllegalStateException("no filters provided");
         }
-        this.filters = new AtomicReference<>(Collections.unmodifiableList(filters));
+        this.filters = new AtomicReference<>(new FilterList(filters));
         this.homeBaseUrl = URI.create(null != homeBaseUrl ? homeBaseUrl : "https://homebase.snyk.io/api/");
         if (null == homeBasePostLimit) {
             this.homeBasePostLimit = DEFAULT_POST_LIMIT;
