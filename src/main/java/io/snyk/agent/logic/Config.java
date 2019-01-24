@@ -97,13 +97,15 @@ public class Config {
             throw new IllegalStateException(e);
         }
     }
+
     private static List<Filter> loadBuiltInFiltersFromResource(String resourceName, boolean shouldThrow) {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(Config.class.getResourceAsStream(
-            resourceName)))) {
+                resourceName)))) {
             return builderFromLines(reader.lines().collect(Collectors.toList())).filters;
         } catch (Exception error) {
             if (shouldThrow) {
-                throw new IllegalStateException(String.format("built-in filter loading shouldn't fail from resource %s", resourceName), error);
+                throw new IllegalStateException(String.format("built-in filter loading shouldn't fail from resource %s",
+                        resourceName), error);
             }
 
             InitLog.loading(String.format("Failed loading snaphost from resource %s", resourceName));
@@ -131,13 +133,11 @@ public class Config {
         return builderFromLines(Arrays.asList(lines)).build();
     }
 
-    public static ConfigBuilder builderFromLines(Iterable<String> lines) {
-        final ConfigBuilder builder = new ConfigBuilder();
-        final Map<String, Filter.Builder> filters = new HashMap<>();
-
+    private static Map<String, String> loadConfig(Iterable<String> lines) {
         // this looks awfully like a .properties file. Maybe it could use a real properties loader?
         // .properties is awful at unicode and multi-value, but we probably don't care
 
+        final Map<String, String> ret = new HashMap<>();
         for (String line : lines) {
             if (line.startsWith("#")) {
                 continue;
@@ -155,110 +155,107 @@ public class Config {
                 continue;
             }
 
-            final String key = splitUp[0];
-            final String value = splitUp[1];
-
-            if ("projectId".equals(key)) {
-                builder.projectId = value;
-                continue;
-            }
-
-            if ("trackAccessors".equals(key)) {
-                builder.trackAccessors = Boolean.parseBoolean(value);
-                continue;
-            }
-
-            if ("trackClassLoading".equals(key)) {
-                builder.trackClassLoading = Boolean.parseBoolean(value);
-                continue;
-            }
-
-            if ("trackBranchingMethods".equals(key)) {
-                builder.trackBranchingMethods = Boolean.parseBoolean(value);
-                continue;
-            }
-
-            if ("logTo".equals(key)) {
-                builder.logTo = value;
-                continue;
-            }
-
-            if ("debugLoggingEnabled".equals(key)) {
-                builder.debugLoggingEnabled = Boolean.parseBoolean(value);
-                continue;
-            }
-
-            if ("skipMetaPosts".equals(key)) {
-                builder.skipMetaPosts = Boolean.parseBoolean(value);
-                continue;
-            }
-
-            if ("homeBaseUrl".equals(key)) {
-                builder.homeBaseUrl = value;
-                continue;
-            }
-
-            if ("skipBuiltInRules".equals(key)) {
-                builder.skipBuiltInRules = Boolean.parseBoolean(value);
-                continue;
-            }
-
-            if ("startupDelayMs".equals(key)) {
-                builder.startupDelayMs = Long.parseLong(value);
-                continue;
-            }
-
-            if ("heartBeatIntervalMs".equals(key)) {
-                builder.heartBeatIntervalMs = Long.parseLong(value);
-                continue;
-            }
-
-            if ("reportIntervalMs".equals(key)) {
-                builder.reportIntervalMs = Long.parseLong(value);
-                continue;
-            }
-
-            if ("filterUpdateInitialDelayMs".equals(key)) {
-                builder.filterUpdateInitialDelayMs = Long.parseLong(value);
-                continue;
-            }
-
-            if ("filterUpdateIntervalMs".equals(key)) {
-                builder.filterUpdateIntervalMs = Long.parseLong(value);
-                continue;
-            }
-
-            if (key.startsWith("filter.")) {
-                final String[] parts = key.split("\\.", 3);
-                if (3 != parts.length) {
-                    InitLog.loading("invalid filter. key: " + key);
-                    continue;
-                }
-
-                final String filterName = parts[1];
-                final String filterCommand = parts[2];
-
-                final Filter.Builder filter = filters.computeIfAbsent(filterName, Filter.Builder::new);
-
-                switch (filterCommand) {
-                    case "artifact":
-                        filter.artifact = value;
-                        break;
-                    case "version":
-                        filter.version = value;
-                        break;
-                    case "paths":
-                        filter.addPathsFrom(value);
-                        break;
-                    default:
-                        InitLog.loading("unrecognised filter command: " + key);
-                }
-
-                continue;
-            }
-
-            InitLog.loading("unrecognised key: " + key);
+            ret.put(splitUp[0], splitUp[1]);
         }
+
+        return ret;
+    }
+
+    static ConfigBuilder builderFromLines(Iterable<String> lines) {
+        final ConfigBuilder builder = new ConfigBuilder();
+        final Map<String, Filter.Builder> filters = new HashMap<>();
+
+        loadConfig(lines).forEach((key, value) -> {
+            switch (key) {
+                case "projectId":
+                    builder.projectId = value;
+                    return;
+
+                case "trackAccessors":
+                    builder.trackAccessors = Boolean.parseBoolean(value);
+                    return;
+
+                case "trackClassLoading":
+                    builder.trackClassLoading = Boolean.parseBoolean(value);
+                    return;
+
+                case "trackBranchingMethods":
+                    builder.trackBranchingMethods = Boolean.parseBoolean(value);
+                    return;
+
+                case "logTo":
+                    builder.logTo = value;
+                    return;
+
+                case "debugLoggingEnabled":
+                    builder.debugLoggingEnabled = Boolean.parseBoolean(value);
+                    return;
+
+                case "skipMetaPosts":
+                    builder.skipMetaPosts = Boolean.parseBoolean(value);
+                    return;
+
+                case "homeBaseUrl":
+                    builder.homeBaseUrl = value;
+                    return;
+
+                case "skipBuiltInRules":
+                    builder.skipBuiltInRules = Boolean.parseBoolean(value);
+                    return;
+
+                case "startupDelayMs":
+                    builder.startupDelayMs = Long.parseLong(value);
+                    return;
+
+                case "heartBeatIntervalMs":
+                    builder.heartBeatIntervalMs = Long.parseLong(value);
+                    return;
+
+                case "reportIntervalMs":
+                    builder.reportIntervalMs = Long.parseLong(value);
+                    return;
+
+                case "filterUpdateInitialDelayMs":
+                    builder.filterUpdateInitialDelayMs = Long.parseLong(value);
+                    return;
+
+                case "filterUpdateIntervalMs":
+                    builder.filterUpdateIntervalMs = Long.parseLong(value);
+                    return;
+
+                default:
+                    if (key.startsWith("filter.")) {
+                        final String[] parts = key.split("\\.", 3);
+                        if (3 != parts.length) {
+                            InitLog.loading("invalid filter. key: " + key);
+                            return;
+                        }
+
+                        final String filterName = parts[1];
+                        final String filterCommand = parts[2];
+
+                        final Filter.Builder filter = filters.computeIfAbsent(filterName, Filter.Builder::new);
+
+                        switch (filterCommand) {
+                            case "artifact":
+                                filter.artifact = value;
+                                break;
+                            case "version":
+                                filter.version = value;
+                                break;
+                            case "paths":
+                                filter.addPathsFrom(value);
+                                break;
+                            default:
+                                InitLog.loading("unrecognised filter command: " + key);
+                        }
+
+                        return;
+                    }
+
+                    InitLog.loading("unrecognised key: " + key);
+            }
+        });
 
         builder.filters = filters.values().stream().map(Filter.Builder::build).collect(Collectors.toList());
 
