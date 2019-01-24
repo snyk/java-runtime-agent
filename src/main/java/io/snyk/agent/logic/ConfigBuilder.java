@@ -11,7 +11,6 @@ class ConfigBuilder {
     private static final int MINUTE_MS = 60_000;
 
     String projectId;
-    List<Filter> filters;
     String homeBaseUrl;
     Long homeBasePostLimit;
     long startupDelayMs = 1_000;
@@ -29,7 +28,7 @@ class ConfigBuilder {
     boolean skipMetaPosts;
 
     Config build() {
-        return new Config(projectId, filters, homeBaseUrl, homeBasePostLimit,
+        return new Config(projectId, homeBaseUrl, homeBasePostLimit,
                 startupDelayMs, heartBeatIntervalMs, reportIntervalMs,
                 filterUpdateIntervalMs, filterUpdateInitialDelayMs,
                 trackClassLoading, trackAccessors, trackBranchingMethods,

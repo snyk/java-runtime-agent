@@ -1,11 +1,13 @@
 package io.snyk.agent.filter;
 
+import io.snyk.agent.logic.Config;
 import io.snyk.agent.util.Log;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class FilterList {
@@ -14,8 +16,69 @@ public class FilterList {
     // @GuardedBy("this")
     private final Set<List<String>> bannedGavs = new HashSet<>();
 
-    public FilterList(List<Filter> filters) {
+    // @VisibleForTesting
+    FilterList(List<Filter> filters) {
         this.filters = Collections.unmodifiableList(filters);
+    }
+
+    public static FilterList loadBuiltInFilters(Log log) {
+        try {
+            log.debug("loading built-in filters from bundled snapshot");
+            return loadFiltersFrom(log, loadResourceAsLines("/methods.bundled.properties"));
+        } catch (RuntimeException error) {
+            log.warn("failed loading bundled snapshot, falling back to build-time snapshot");
+            log.stackTrace(error);
+        }
+
+        return loadFiltersFrom(log, loadResourceAsLines("/methods.properties"));
+    }
+
+    public static FilterList loadFiltersFrom(Log log, Iterable<String> lines) {
+        final Map<String, Filter.Builder> filters = new HashMap<>();
+
+        Config.parsePropertiesFile(lines).forEach((key, value) -> {
+            if (!key.startsWith("filter.")) {
+                log.warn("invalid filter key: " + key);
+                return;
+            }
+
+            final String[] parts = key.split("\\.", 3);
+            if (3 != parts.length) {
+                log.warn("invalid filter. key: " + key);
+                return;
+            }
+
+            final String filterName = parts[1];
+            final String filterCommand = parts[2];
+
+            final Filter.Builder filter = filters.computeIfAbsent(filterName, Filter.Builder::new);
+
+            switch (filterCommand) {
+                case "artifact":
+                    filter.artifact = value;
+                    break;
+                case "version":
+                    filter.version = value;
+                    break;
+                case "paths":
+                    filter.addPathsFrom(value);
+                    break;
+                default:
+                    log.warn("unrecognised filter command: " + key);
+            }
+        });
+
+        if (filters.isEmpty()) {
+            throw new IllegalStateException("filter files must not be empty");
+        }
+
+        return new FilterList(filters.values().stream()
+                .map(Filter.Builder::build)
+                .collect(Collectors.toList()));
+    }
+
+    public static FilterList empty() {
+        return new FilterList(Collections.emptyList());
     }
 
     private synchronized boolean isBanned(List<String> gav) {
@@ -82,4 +145,15 @@ public class FilterList {
 
         return classMatched;
     }
+
+    static List<String> loadResourceAsLines(String resourceName) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(FilterList.class.getResourceAsStream(
+                resourceName)))) {
+            return reader.lines().collect(Collectors.toList());
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+
 }
