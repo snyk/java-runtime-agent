@@ -1,5 +1,6 @@
 package io.snyk.agent.jvm;
 
+import io.snyk.agent.filter.FilterList;
 import io.snyk.agent.logic.Config;
 import io.snyk.agent.logic.DataTracker;
 import io.snyk.agent.logic.FilterUpdate;
@@ -23,7 +24,7 @@ class EntryPoint {
 
         final File configFile = ConfigSearch.find(agentArguments);
 
-        final Config config = Config.fromFileWithDefault(configFile.getAbsolutePath());
+        final Config config = Config.loadConfigFromFile(configFile.getAbsolutePath());
 
         final Log log;
         switch (config.logTo) {
@@ -41,10 +42,17 @@ class EntryPoint {
         }
         InitLog.flushToInstance(log);
 
+        if (!config.skipBuiltInRules) {
+            config.filters.set(FilterList.loadBuiltInFilters(log));
+        }
+
         log.info("loading config complete, projectId:" + config.projectId);
 
         final CountDownLatch initialFetchComplete = new CountDownLatch(1);
-        final Thread update = new Thread(new FilterUpdate(log, config, instrumentation, initialFetchComplete::countDown));
+        final Thread update = new Thread(new FilterUpdate(log,
+                config,
+                instrumentation,
+                initialFetchComplete::countDown));
         update.setDaemon(true);
         update.setName("snyk-update");
         update.start();

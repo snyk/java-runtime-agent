@@ -67,7 +67,7 @@ class ConfigSearch {
 
     /**
      * Try and resolve the path of the agent jar, using a simpler (less reliable) method than the main agent code uses.
-     *
+     * <p>
      * We could use the same code? We're just trying to help here.
      */
     private static File ourSourceLocation() {

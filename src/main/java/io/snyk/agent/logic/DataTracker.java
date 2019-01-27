@@ -8,7 +8,7 @@ import java.util.List;
 
 /**
  * The shared state between the instrumentation, and the reporting.
- *
+ * <p>
  * You'd think that the events themselves would be in here, but they're not:
  * they are generated statically (without a reference to a class), so they are
  * directly in the {@link io.snyk.agent.jvm.LandingZone}.

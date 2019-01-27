@@ -74,7 +74,8 @@ public class Rewriter {
                 continue;
             }
 
-            final boolean includeWrtBranching = config.trackBranchingMethods || InstrumentationFilter.branches(cn, method);
+            final boolean includeWrtBranching = config.trackBranchingMethods ||
+                    InstrumentationFilter.branches(cn, method);
             if (!includeWrtBranching) {
                 log.info("rewrite requested, but branching: " + logName);
                 continue;

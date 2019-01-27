@@ -1,21 +1,15 @@
 package io.snyk.agent.logic;
 
-import io.snyk.agent.filter.Filter;
 import io.snyk.agent.filter.FilterList;
 import io.snyk.agent.util.InitLog;
 
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URI;
 import java.nio.file.Files;
-import java.util.Arrays;
+import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 /**
  * A parsed config (properties) file.
@@ -35,13 +29,12 @@ public class Config {
     public final boolean debugLoggingEnabled;
     public final boolean trackBranchingMethods;
     public final boolean trackAccessors;
-    final boolean skipBuiltInRules;
+    public final boolean skipBuiltInRules;
     public final boolean skipMetaPosts;
 
     private static final long DEFAULT_POST_LIMIT = 1024 * 1024;
 
     Config(String projectId,
-           List<Filter> filters,
            String homeBaseUrl,
            Long homeBasePostLimit,
            long startupDelayMs,
@@ -58,11 +51,7 @@ public class Config {
             throw new IllegalStateException("projectId is required");
         }
         this.projectId = projectId;
-        if (filters.isEmpty()) {
-            // unlikely: they should be using the non-empty built-in filters
-            throw new IllegalStateException("no filters provided");
-        }
-        this.filters = new AtomicReference<>(new FilterList(filters));
+        this.filters = new AtomicReference<>(FilterList.empty());
         this.homeBaseUrl = URI.create(null != homeBaseUrl ? homeBaseUrl : "https://homebase.snyk.io/api/");
         if (null == homeBasePostLimit) {
             this.homeBasePostLimit = DEFAULT_POST_LIMIT;
@@ -83,61 +72,21 @@ public class Config {
         this.skipMetaPosts = skipMetaPosts;
     }
 
-    public static Config fromFileWithDefault(String path) {
+    public static Config loadConfigFromFile(String path) {
         try {
             InitLog.loading("loading config from: " + path);
-            final ConfigBuilder intermediate = builderFromLines(Files.readAllLines(new File(path).toPath()));
-            if (!intermediate.skipBuiltInRules) {
-                InitLog.loading("adding built-in filters");
-                intermediate.filters.addAll(loadBuiltInFilters());
-            }
-            return intermediate.build();
+            return loadConfig(Files.readAllLines(Paths.get(path)));
         } catch (IOException e) {
             InitLog.loading("error reading config file");
             throw new IllegalStateException(e);
         }
     }
-    private static List<Filter> loadBuiltInFiltersFromResource(String resourceName, boolean shouldThrow) {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(Config.class.getResourceAsStream(
-            resourceName)))) {
-            return builderFromLines(reader.lines().collect(Collectors.toList())).filters;
-        } catch (Exception error) {
-            if (shouldThrow) {
-                throw new IllegalStateException(String.format("built-in filter loading shouldn't fail from resource %s", resourceName), error);
-            }
 
-            InitLog.loading(String.format("Failed loading snaphost from resource %s", resourceName));
-            return null;
-        }
-    }
-
-    private static List<Filter> loadBuiltInFilters() {
-        try {
-            InitLog.loading("loading built-in filters from bundled snapshot");
-            List<Filter> builtInFilters = loadBuiltInFiltersFromResource("/methods.bundled.properties", false);
-            if (builtInFilters == null || builtInFilters.size() == 0) {
-                throw new Exception("Invalid bundled snaphost format");
-            }
-            return builtInFilters;
-        } catch (Exception error) {
-            InitLog.loading("Failed loading bundled snaphost, falling back to the snapshot provided in the repo");
-        }
-
-        return loadBuiltInFiltersFromResource("/methods.properties", true);
-    }
-
-    // @VisibleForTesting
-    public static Config fromLinesWithoutDefault(String... lines) {
-        return builderFromLines(Arrays.asList(lines)).build();
-    }
-
-    public static ConfigBuilder builderFromLines(Iterable<String> lines) {
-        final ConfigBuilder builder = new ConfigBuilder();
-        final Map<String, Filter.Builder> filters = new HashMap<>();
-
+    public static Map<String, String> parsePropertiesFile(Iterable<String> lines) {
         // this looks awfully like a .properties file. Maybe it could use a real properties loader?
         // .properties is awful at unicode and multi-value, but we probably don't care
 
+        final Map<String, String> ret = new HashMap<>();
         for (String line : lines) {
             if (line.startsWith("#")) {
                 continue;
@@ -155,113 +104,78 @@ public class Config {
                 continue;
             }
 
-            final String key = splitUp[0];
-            final String value = splitUp[1];
-
-            if ("projectId".equals(key)) {
-                builder.projectId = value;
-                continue;
-            }
-
-            if ("trackAccessors".equals(key)) {
-                builder.trackAccessors = Boolean.parseBoolean(value);
-                continue;
-            }
-
-            if ("trackClassLoading".equals(key)) {
-                builder.trackClassLoading = Boolean.parseBoolean(value);
-                continue;
-            }
-
-            if ("trackBranchingMethods".equals(key)) {
-                builder.trackBranchingMethods = Boolean.parseBoolean(value);
-                continue;
-            }
-
-            if ("logTo".equals(key)) {
-                builder.logTo = value;
-                continue;
-            }
-
-            if ("debugLoggingEnabled".equals(key)) {
-                builder.debugLoggingEnabled = Boolean.parseBoolean(value);
-                continue;
-            }
-
-            if ("skipMetaPosts".equals(key)) {
-                builder.skipMetaPosts = Boolean.parseBoolean(value);
-                continue;
-            }
-
-            if ("homeBaseUrl".equals(key)) {
-                builder.homeBaseUrl = value;
-                continue;
-            }
-
-            if ("skipBuiltInRules".equals(key)) {
-                builder.skipBuiltInRules = Boolean.parseBoolean(value);
-                continue;
-            }
-
-            if ("startupDelayMs".equals(key)) {
-                builder.startupDelayMs = Long.parseLong(value);
-                continue;
-            }
-
-            if ("heartBeatIntervalMs".equals(key)) {
-                builder.heartBeatIntervalMs = Long.parseLong(value);
-                continue;
-            }
-
-            if ("reportIntervalMs".equals(key)) {
-                builder.reportIntervalMs = Long.parseLong(value);
-                continue;
-            }
-
-            if ("filterUpdateInitialDelayMs".equals(key)) {
-                builder.filterUpdateInitialDelayMs = Long.parseLong(value);
-                continue;
-            }
-
-            if ("filterUpdateIntervalMs".equals(key)) {
-                builder.filterUpdateIntervalMs = Long.parseLong(value);
-                continue;
-            }
-
-            if (key.startsWith("filter.")) {
-                final String[] parts = key.split("\\.", 3);
-                if (3 != parts.length) {
-                    InitLog.loading("invalid filter. key: " + key);
-                    continue;
-                }
-
-                final String filterName = parts[1];
-                final String filterCommand = parts[2];
-
-                final Filter.Builder filter = filters.computeIfAbsent(filterName, Filter.Builder::new);
-
-                switch (filterCommand) {
-                    case "artifact":
-                        filter.artifact = value;
-                        break;
-                    case "version":
-                        filter.version = value;
-                        break;
-                    case "paths":
-                        filter.addPathsFrom(value);
-                        break;
-                    default:
-                        InitLog.loading("unrecognised filter command: " + key);
-                }
-
-                continue;
-            }
-
-            InitLog.loading("unrecognised key: " + key);
+            ret.put(splitUp[0], splitUp[1]);
         }
 
-        builder.filters = filters.values().stream().map(Filter.Builder::build).collect(Collectors.toList());
+        return ret;
+    }
 
-        return builder;
+    static Config loadConfig(Iterable<String> lines) {
+        final ConfigBuilder builder = new ConfigBuilder();
+
+        parsePropertiesFile(lines).forEach((key, value) -> {
+            switch (key) {
+                case "projectId":
+                    builder.projectId = value;
+                    return;
+
+                case "trackAccessors":
+                    builder.trackAccessors = Boolean.parseBoolean(value);
+                    return;
+
+                case "trackClassLoading":
+                    builder.trackClassLoading = Boolean.parseBoolean(value);
+                    return;
+
+                case "trackBranchingMethods":
+                    builder.trackBranchingMethods = Boolean.parseBoolean(value);
+                    return;
+
+                case "logTo":
+                    builder.logTo = value;
+                    return;
+
+                case "debugLoggingEnabled":
+                    builder.debugLoggingEnabled = Boolean.parseBoolean(value);
+                    return;
+
+                case "skipMetaPosts":
+                    builder.skipMetaPosts = Boolean.parseBoolean(value);
+                    return;
+
+                case "homeBaseUrl":
+                    builder.homeBaseUrl = value;
+                    return;
+
+                case "skipBuiltInRules":
+                    builder.skipBuiltInRules = Boolean.parseBoolean(value);
+                    return;
+
+                case "startupDelayMs":
+                    builder.startupDelayMs = Long.parseLong(value);
+                    return;
+
+                case "heartBeatIntervalMs":
+                    builder.heartBeatIntervalMs = Long.parseLong(value);
+                    return;
+
+                case "reportIntervalMs":
+                    builder.reportIntervalMs = Long.parseLong(value);
+                    return;
+
+                case "filterUpdateInitialDelayMs":
+                    builder.filterUpdateInitialDelayMs = Long.parseLong(value);
+                    return;
+
+                case "filterUpdateIntervalMs":
+                    builder.filterUpdateIntervalMs = Long.parseLong(value);
+                    return;
+
+                default:
+                    InitLog.loading("unrecognised key: " + key);
+            }
+        });
+
+        return builder.build();
     }
 }

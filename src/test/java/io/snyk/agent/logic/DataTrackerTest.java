@@ -40,7 +40,7 @@ class DataTrackerTest {
     }
 
     private ClassInfo.ExtraInfo extractExtraInfo(String resourceName,
-                                                   String className, TestLogger log) {
+                                                 String className, TestLogger log) {
         final URL srcJar = DataTrackerTest.class.getResource(resourceName);
         final URLClassLoader classLoader = new URLClassLoader(new URL[]{srcJar});
         final byte[] classfileBuffer = new byte[0];

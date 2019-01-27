@@ -79,7 +79,7 @@ public class FilterUpdate implements Runnable {
             lines = reader.lines().collect(Collectors.toList());
         }
 
-        config.filters.set(new FilterList(Config.builderFromLines(lines).filters));
+        config.filters.set(FilterList.loadFiltersFrom(log, lines));
         log.info("filters updated, new count: " + config.filters.get().filters.size());
 
         return true;

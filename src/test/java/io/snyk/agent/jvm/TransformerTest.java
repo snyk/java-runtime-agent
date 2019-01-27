@@ -1,8 +1,7 @@
 package io.snyk.agent.jvm;
 
-import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
-import io.snyk.agent.logic.Config;
+import io.snyk.agent.logic.ConfigTest;
 import io.snyk.agent.logic.DataTracker;
 import io.snyk.agent.testutil.TestLogger;
 import io.snyk.agent.util.Log;
@@ -12,7 +11,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -64,14 +63,14 @@ class TransformerTest {
                 "We know where the io.snyk classes are from, they're older than stated");
     }
 
-    private boolean exampleChanges(String clazz, String... config) throws IOException {
+    private boolean exampleChanges(String clazz, String... filters) throws IOException {
         final URL srcJar = TransformerTest.class.getResource("/example-1.0-SNAPSHOT.jar");
         final URLClassLoader classLoader = new URLClassLoader(new URL[]{srcJar});
         final Log log = new TestLogger();
-        final List<String> configItems = Lists.newArrayList(config);
-        configItems.add("projectId=b2c2d38f-f147-4010-b92d-3dea94893d5b");
         final Transformer transformer = new Transformer(log,
-                Config.fromLinesWithoutDefault(configItems.toArray(new String[0])),
+                ConfigTest.makeConfig(
+                        Collections.singleton("projectId=b2c2d38f-f147-4010-b92d-3dea94893d5b"),
+                        Arrays.asList(filters)),
                 new DataTracker(log));
         final byte[] originalBytes = ByteStreams.toByteArray(classLoader.getResourceAsStream(
                 "io/snyk/example/" + clazz + ".class"));

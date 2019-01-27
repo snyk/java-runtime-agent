@@ -68,9 +68,8 @@ class ReportingWorkerTest {
 
         final List<String> configs = Lists.newArrayList(configLines);
         configs.add("projectId=1f9378b7-46fa-41ea-a156-98f7a8930ee1");
-        configs.add("filter.foo.paths=**");
         final ReportingWorker reportingWorker = new ReportingWorker(new TestLogger(),
-                Config.fromLinesWithoutDefault(configs.toArray(new String[0])),
+                ConfigTest.makeConfig(configs, Collections.singleton("filter.foo.paths=**")),
                 dataTracker,
                 poster);
         reportingWorker.sendIfNecessary(() -> drain);
@@ -185,13 +184,14 @@ class ReportingWorkerTest {
             return new UseCounter.Drain();
         };
 
-        final ReportingWorker.Poster poster = (_prefix, _message) -> {};
+        final ReportingWorker.Poster poster = (_prefix, _message) -> {
+        };
 
         final TestLogger log = new TestLogger();
-        final ReportingWorker worker = new ReportingWorker(log, Config.fromLinesWithoutDefault(
-                "projectId=0153525f-5a99-4efe-a84f-454f12494033",
-                "filter.foo.paths = **",
-                "homeBaseUrl = invalid://url"
+        final ReportingWorker worker = new ReportingWorker(log, ConfigTest.makeConfig(
+                Arrays.asList("projectId=0153525f-5a99-4efe-a84f-454f12494033",
+                        "homeBaseUrl = invalid://url"),
+                Collections.singleton("filter.foo.paths = **")
         ), new DataTracker(log), poster);
 
         worker.sendIfNecessary(supplier);
@@ -207,11 +207,11 @@ class ReportingWorkerTest {
     public static void main(String[] args) throws Exception {
         final TestLogger log = new TestLogger();
         final DataTracker tracker = new DataTracker(log);
-        final ReportingWorker worker = new ReportingWorker(log, Config.fromLinesWithoutDefault(
-                "projectId=0153525f-5a99-4efe-a84f-454f12494033",
-                "homeBaseUrl=http://localhost:8001/api/v1/beacon",
-                "skipMetaPosts=true",
-                "reportIntervalMs=0"
+        final ReportingWorker worker = new ReportingWorker(log, ConfigTest.makeConfig(
+                Arrays.asList("projectId=0153525f-5a99-4efe-a84f-454f12494033",
+                        "homeBaseUrl=http://localhost:8001/api/v1/beacon",
+                        "skipMetaPosts=true",
+                        "reportIntervalMs=0"), Collections.emptyList()
         ), tracker);
 
         final int values = 4_096;

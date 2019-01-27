@@ -4,7 +4,7 @@ import java.util.Optional;
 
 /**
  * Match a class name, with optional method, in Javadoc notation, e.g. `com.example.Foo#bar()`.
- *
+ * <p>
  * The tests have examples.
  */
 public class PathFilter {

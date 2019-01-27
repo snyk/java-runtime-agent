@@ -9,8 +9,8 @@ import java.util.stream.Collectors;
 
 /**
  * Represents a filter block from the config file, which can filter on:
- *  * the full class and name of a method
- *  * the artifact and version of a jar, if known
+ * * the full class and name of a method
+ * * the artifact and version of a jar, if known
  */
 public class Filter {
     /**
