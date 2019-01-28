@@ -6,34 +6,41 @@ import io.snyk.agent.util.Log;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class FilterList {
     public final List<Filter> filters;
+    public final Instant generated;
 
     // @GuardedBy("this")
     private final Set<List<String>> bannedGavs = new HashSet<>();
 
     // @VisibleForTesting
-    FilterList(List<Filter> filters) {
+    FilterList(List<Filter> filters, Instant generated) {
         this.filters = Collections.unmodifiableList(filters);
+        this.generated = generated;
     }
 
     public static FilterList loadBuiltInFilters(Log log) {
         try {
             log.debug("loading built-in filters from bundled snapshot");
-            return loadFiltersFrom(log, loadResourceAsLines("/methods.bundled.properties"));
+            return loadFiltersFrom(log,
+                    loadResourceAsLines("/methods.bundled.properties"),
+                    Instant.EPOCH);
         } catch (RuntimeException error) {
             log.warn("failed loading bundled snapshot, falling back to build-time snapshot");
             log.stackTrace(error);
         }
 
-        return loadFiltersFrom(log, loadResourceAsLines("/methods.properties"));
+        return loadFiltersFrom(log,
+                loadResourceAsLines("/methods.properties"),
+                Instant.EPOCH);
     }
 
-    public static FilterList loadFiltersFrom(Log log, Iterable<String> lines) {
+    public static FilterList loadFiltersFrom(Log log, Iterable<String> lines, Instant created) {
         final Map<String, Filter.Builder> filters = new HashMap<>();
 
         Config.parsePropertiesFile(lines).forEach((key, value) -> {
@@ -74,11 +81,12 @@ public class FilterList {
 
         return new FilterList(filters.values().stream()
                 .map(Filter.Builder::build)
-                .collect(Collectors.toList()));
+                .collect(Collectors.toList()),
+                created);
     }
 
     public static FilterList empty() {
-        return new FilterList(Collections.emptyList());
+        return new FilterList(Collections.emptyList(), Instant.EPOCH);
     }
 
     private synchronized boolean isBanned(List<String> gav) {

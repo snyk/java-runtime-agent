@@ -13,25 +13,47 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 public class FilterUpdate implements Runnable {
     private final Log log;
-    private final Config config;
     private final Instrumentation instrumentation;
     private final Runnable onAttempted;
     private final URL homeBaseSnapshots;
+    private final AtomicReference<FilterList> filters;
+    private final long filterUpdateIntervalMs;
 
-    public FilterUpdate(Log log,
-                        Config config,
-                        Instrumentation instrumentation,
-                        Runnable onAttempted) throws MalformedURLException {
+    public FilterUpdate(
+            Log log,
+            Config config,
+            Instrumentation instrumentation,
+            Runnable onAttempted) throws MalformedURLException {
+        this(log,
+                instrumentation,
+                onAttempted,
+                config.homeBaseUrl.resolve("v2/snapshot/" + config.projectId + "/java").toURL(), config.filters,
+                config.filterUpdateIntervalMs);
+    }
+
+    public FilterUpdate(
+            Log log,
+            Instrumentation instrumentation,
+            Runnable onAttempted,
+            URL homeBaseSnapshots,
+            AtomicReference<FilterList> filters,
+            long filterUpdateIntervalMs) {
         this.log = log;
-        this.config = config;
         this.instrumentation = instrumentation;
         this.onAttempted = onAttempted;
-        this.homeBaseSnapshots = config.homeBaseUrl.resolve("v2/snapshot/" + config.projectId + "/java").toURL();
+        this.homeBaseSnapshots = homeBaseSnapshots;
+        this.filters = filters;
+        this.filterUpdateIntervalMs = filterUpdateIntervalMs;
     }
 
     @Override
@@ -49,16 +71,25 @@ public class FilterUpdate implements Runnable {
             onAttempted.run();
 
             try {
-                Thread.sleep(config.filterUpdateIntervalMs);
+                Thread.sleep(filterUpdateIntervalMs);
             } catch (InterruptedException e) {
                 return;
             }
         }
     }
 
-    private boolean fetchUpdatedAnything() throws IOException {
+    private static String httpDateFormat(Instant date) {
+        return DateTimeFormatter.RFC_1123_DATE_TIME.format(inUtc(date));
+    }
+
+    private static ZonedDateTime inUtc(Instant date) {
+        return ZonedDateTime.ofInstant(date, ZoneOffset.UTC);
+    }
+
+    boolean fetchUpdatedAnything() throws IOException {
         final URLConnection conn = homeBaseSnapshots.openConnection();
         conn.setRequestProperty("Accept", "text/vnd.snyk.filters");
+        conn.setRequestProperty("If-Modified-Since", httpDateFormat(filters.get().generated));
         conn.connect();
 
         if (conn instanceof HttpURLConnection) {
@@ -79,14 +110,18 @@ public class FilterUpdate implements Runnable {
             lines = reader.lines().collect(Collectors.toList());
         }
 
-        config.filters.set(FilterList.loadFiltersFrom(log, lines));
-        log.info("filters updated, new count: " + config.filters.get().filters.size());
+        final Instant created = Instant.ofEpochMilli(conn.getHeaderFieldDate("Last-Modified", 0));
+        final FilterList newList = FilterList.loadFiltersFrom(log, lines, created);
+        filters.set(newList);
+        log.info("filters updated," +
+                " new count: " + newList.filters.size() +
+                ", new date: " + DateTimeFormatter.ISO_DATE_TIME.format(inUtc(newList.generated)));
 
         return true;
     }
 
     private void reTransform() {
-        final List<Filter> filters = config.filters.get().filters;
+        final List<Filter> filters = this.filters.get().filters;
 
         for (Class someClass : instrumentation.getAllLoadedClasses()) {
             if (!instrumentation.isModifiableClass(someClass)) {

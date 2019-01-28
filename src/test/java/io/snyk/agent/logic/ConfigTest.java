@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
@@ -34,7 +35,7 @@ public class ConfigTest {
 
     public static Config makeConfig(Iterable<String> configLines, Iterable<String> filterLines) {
         final Config config = Config.loadConfig(configLines);
-        config.filters.set(FilterList.loadFiltersFrom(new TestLogger(), filterLines));
+        config.filters.set(FilterList.loadFiltersFrom(new TestLogger(), filterLines, Instant.EPOCH));
         return config;
     }
 }
