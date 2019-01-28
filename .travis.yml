@@ -12,6 +12,7 @@ script:
 - git clone --depth 1 --branch java9-modified https://github.com/snyk/java-goof
 - e2e/test-script.sh
 - e2e/test-reload.py
+- e2e/test-shutdown.py
 branches:
   only:
   - master
