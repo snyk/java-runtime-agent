@@ -3,6 +3,7 @@ package io.snyk.agent.filter;
 import io.snyk.agent.testutil.TestLogger;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
@@ -18,7 +19,7 @@ class FilterTest {
         final FilterList filter = new FilterList(Collections.singletonList(new Filter("foo",
                 Optional.of("maven:io.snyk:snyk-agent"),
                 Optional.empty(),
-                Collections.singletonList(PathFilter.parse("**")))));
+                Collections.singletonList(PathFilter.parse("**")))), Instant.EPOCH);
 
         assertTrue(filter.shouldProcessClass(LOG, Collections.emptyList(), "A"),
                 "a class that we know nothing about the heritage of");
@@ -38,7 +39,7 @@ class FilterTest {
                 new Filter("foo",
                         Optional.of("maven:io.snyk:snyk-agent"),
                         Optional.of(VersionFilter.parse("[,3)")),
-                        Collections.singletonList(PathFilter.parse("**")))));
+                        Collections.singletonList(PathFilter.parse("**")))), Instant.EPOCH);
 
         assertTrue(filters.shouldProcessClass(LOG, Collections.emptyList(), "NotUsed"),
                 "a class that we know nothing about the heritage of");
