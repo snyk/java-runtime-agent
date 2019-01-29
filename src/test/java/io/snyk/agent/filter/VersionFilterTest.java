@@ -29,13 +29,15 @@ class VersionFilterTest {
 
     @Test
     void testMultiple() {
-        final VersionFilter underThree = VersionFilter.parse("[1,2) [4,5)");
-        assertTrue(underThree.test("1"));
-        assertTrue(underThree.test("1.5"));
-        assertFalse(underThree.test("2"));
-        assertFalse(underThree.test("3"));
-        assertTrue(underThree.test("4"));
-        assertTrue(underThree.test("4.5"));
-        assertFalse(underThree.test("5"));
+        for (String expression : new String[] { "[1,2) [4,5)", "[1,2),   [4,5)", "[1,2),,, [4,5)"}) {
+            final VersionFilter underThree = VersionFilter.parse(expression);
+            assertTrue(underThree.test("1"));
+            assertTrue(underThree.test("1.5"));
+            assertFalse(underThree.test("2"));
+            assertFalse(underThree.test("3"));
+            assertTrue(underThree.test("4"));
+            assertTrue(underThree.test("4.5"));
+            assertFalse(underThree.test("5"));
+        }
     }
 }
