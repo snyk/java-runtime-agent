@@ -31,6 +31,7 @@ public class Config {
     public final boolean trackAccessors;
     public final boolean skipBuiltInRules;
     public final boolean skipMetaPosts;
+    public final boolean addShutdownHook;
 
     private static final long DEFAULT_POST_LIMIT = 1024 * 1024;
 
@@ -46,7 +47,8 @@ public class Config {
            String logTo,
            boolean debugLoggingEnabled,
            boolean skipBuiltInRules,
-           boolean skipMetaPosts) {
+           boolean skipMetaPosts,
+           boolean addShutdownHook) {
         if (null == projectId) {
             throw new IllegalStateException("projectId is required");
         }
@@ -70,6 +72,7 @@ public class Config {
         this.trackBranchingMethods = trackBranchingMethods;
         this.skipBuiltInRules = skipBuiltInRules;
         this.skipMetaPosts = skipMetaPosts;
+        this.addShutdownHook = addShutdownHook;
     }
 
     public static Config loadConfigFromFile(String path) {
@@ -141,6 +144,10 @@ public class Config {
 
                 case "skipMetaPosts":
                     builder.skipMetaPosts = Boolean.parseBoolean(value);
+                    return;
+
+                case "addShutdownHook":
+                    builder.addShutdownHook = Boolean.parseBoolean(value);
                     return;
 
                 case "homeBaseUrl":
