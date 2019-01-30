@@ -45,13 +45,14 @@ class RewriterTest {
     }
 
     private byte[] rewrite(String name) throws IOException {
+        final Config config = ConfigTest.makeConfig(Arrays.asList(
+                "projectId=ab95b1fb-4fe0-497d-aba0-5a1d85db0827",
+                "trackClassLoading=true"),
+                Collections.singletonList("filter.foo.paths=**")
+        );
         return new Rewriter(TestTracker.class,
                 TestTracker.SEEN_SET::add,
                 TEST_LOCATION,
-                ConfigTest.makeConfig(Arrays.asList(
-                        "projectId=ab95b1fb-4fe0-497d-aba0-5a1d85db0827",
-                        "trackClassLoading=true"),
-                        Collections.singletonList("filter.foo.paths=**")
-                ), new TestLogger()).rewrite(new ClassReader(name));
+                config, new TestLogger()).rewrite(new ClassReader(name), config.filters.get().filters);
     }
 }

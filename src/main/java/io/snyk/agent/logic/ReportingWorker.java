@@ -296,8 +296,6 @@ public class ReportingWorker implements Runnable {
                 msg.append(",\"artifact\":");
                 Json.appendString(msg, artifact);
             });
-            msg.append(",\"matches\":");
-            msg.append(filter.matches.longValue());
             msg.append(",\"paths\":[");
             filter.pathFilters.forEach(pathFilter -> {
                 msg.append("{\"className\":");

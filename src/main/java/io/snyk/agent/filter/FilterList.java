@@ -97,61 +97,48 @@ public class FilterList {
         bannedGavs.add(gav);
     }
 
-    public boolean shouldProcessClass(Log log, List<String> gavs, String className) {
-        // if we don't know anything about this jar, then just filter on the class name
+    public List<Filter> applicableFilters(Log log, List<String> gavs, String className) {
         if (gavs.isEmpty()) {
-            return filters.stream().anyMatch(filter -> filter.testClassName(className));
+            // we don't know about the jar, so have to process it
+            return filters.stream()
+                    .filter(filter -> filter.testClassName(className))
+                    .collect(Collectors.toList());
         }
 
+        // if we've already seen that the gav can't match, so it still won't match
         if (isBanned(gavs)) {
-            return false;
+            return Collections.emptyList();
         }
 
-        boolean classMatched = false;
-        boolean gavMatch = false;
-
-        for (final Filter filter : filters) {
-            // if the filter doesn't have any artifact data,
-            // match only on the class name
+        final List<Filter> matchingFilters = this.filters.stream().filter(filter -> {
             if (!filter.artifact.isPresent()) {
-                if (filter.testClassName(className)) {
-                    classMatched = true;
-                    break;
-                } else {
-                    // some filter is naughty, so we must always do all the work
-                    gavMatch = true;
-                    continue;
-                }
+                return true;
             }
 
             final String wanted = filter.artifact.get() + ":";
-            Stream<String> matching = gavs.stream()
+            final Stream<String> matchingGavs = gavs.stream()
                     .filter(gav -> gav.startsWith(wanted));
 
-            if (filter.version.isPresent()) {
-                final VersionFilter vf = filter.version.get();
-                matching = matching.filter(gav -> {
-                    // maven:$group:$artifact:$version
-                    final String[] parts = gav.split(":", 4);
-                    return vf.test(parts[3]);
-                });
+            if (!filter.version.isPresent()) {
+                return matchingGavs.findAny().isPresent();
             }
 
-            if (matching.findAny().isPresent()) {
-                gavMatch = true;
-                if (filter.testClassName(className)) {
-                    classMatched = true;
-                    break;
-                }
-            }
-        }
+            final VersionFilter vf = filter.version.get();
+            return matchingGavs.anyMatch(gav -> {
+                // maven:$group:$artifact:$version
+                final String[] parts = gav.split(":", 4);
+                return vf.test(parts[3]);
+            });
+        }).collect(Collectors.toList());
 
-        if (!gavMatch) {
+        if (matchingFilters.isEmpty()) {
             log.debug("archive has no matching filters: " + gavs);
             ban(gavs);
         }
 
-        return classMatched;
+        return matchingFilters.stream()
+                .filter(filter -> filter.testClassName(className))
+                .collect(Collectors.toList());
     }
 
     static List<String> loadResourceAsLines(String resourceName) {

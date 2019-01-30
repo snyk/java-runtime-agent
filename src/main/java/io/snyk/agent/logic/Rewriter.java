@@ -7,9 +7,12 @@ import io.snyk.asm.ClassReader;
 import io.snyk.asm.Opcodes;
 import io.snyk.asm.tree.*;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.ToIntFunction;
+import java.util.stream.Collectors;
 
 /**
  * perform rewrites of classes
@@ -37,28 +40,30 @@ public class Rewriter {
         this.log = log;
     }
 
-    public byte[] rewrite(ClassReader reader) {
+    public byte[] rewrite(ClassReader reader, List<Filter> filters) {
         final ClassNode cn = AsmUtil.parse(reader);
-        final List<Filter> filters = config.filters.get().filters;
-        boolean aMethodHadTheRightName = false;
+
+        final Set<String> filtersWhichMatched = new HashSet<>(filters.size());
+        final Set<String> filtersWhichInstrumented = new HashSet<>(filters.size());
 
         for (MethodNode method : cn.methods) {
-            final Optional<Filter> matching = filters.stream()
+            // record which filters matched this method name
+            final Set<String> filtersMatchingThisMethod = filters.stream()
                     .filter(filter -> filter.testMethod(cn.name, method.name))
-                    .findAny();
+                    .map(filter -> filter.name)
+                    .collect(Collectors.toSet());
 
-            if (!matching.isPresent()) {
+            // if none did, skip to the next method
+            if (filtersMatchingThisMethod.isEmpty()) {
                 continue;
             }
 
-            aMethodHadTheRightName = true;
+            filtersWhichMatched.addAll(filtersMatchingThisMethod);
 
-            final Filter filter = matching.get();
-            filter.matches.incrementAndGet();
-
-            final String logName = filter.name + ": " + cn.name + "#" + method.name;
+            final String logName = cn.name + "#" + method.name;
 
             if (InstrumentationFilter.alreadyInstrumented(method, ourInternalName)) {
+                filtersWhichInstrumented.addAll(filtersMatchingThisMethod);
                 log.debug("asked to rewrite, but already instrumented:" + logName);
                 continue;
             }
@@ -81,12 +86,20 @@ public class Rewriter {
                 continue;
             }
 
+            filtersWhichInstrumented.addAll(filtersMatchingThisMethod);
             log.info("rewrite: " + logName);
+
             rewriteMethod(cn.name, method);
         }
 
-        if (!aMethodHadTheRightName) {
-            log.debug("rewrite requested, but no matching method found: " + cn.name);
+        final Set<String> wanted = filters.stream().map(filter -> filter.name).collect(Collectors.toSet());
+
+        if (wanted.equals(filtersWhichMatched)) {
+            if (!wanted.equals(filtersWhichInstrumented)) {
+                log.warn("rewrite requested, but some filters failed to instrument: " + cn.name);
+            }
+        } else {
+            log.warn("rewrite requested, but some filters failed to match: " + cn.name);
         }
 
         return AsmUtil.byteArray(cn);

@@ -25,8 +25,6 @@ public class Filter {
     public final Optional<VersionFilter> version;
     public final List<PathFilter> pathFilters;
 
-    public final AtomicLong matches = new AtomicLong();
-
     public Filter(String name,
                   Optional<String> artifact,
                   Optional<VersionFilter> version,

@@ -1,5 +1,6 @@
 package io.snyk.agent.jvm;
 
+import io.snyk.agent.filter.Filter;
 import io.snyk.agent.logic.*;
 import io.snyk.agent.util.Log;
 import io.snyk.asm.ClassReader;
@@ -82,20 +83,20 @@ class Transformer implements ClassFileTransformer {
 
         final ClassInfo.ExtraInfo info = dataTracker.classInfo.findSourceInfo(loader, className, classfileBuffer);
 
-        if (!shouldProcessClass(className, info)) {
-            return null;
-        }
-
-        return new Rewriter(LandingZone.class, LandingZone.SEEN_SET::add, info.toLocation(), config, log)
-                .rewrite(reader);
-    }
-
-    private boolean shouldProcessClass(String className, ClassInfo.ExtraInfo info) {
-        final List<String> haveGAV = info.extra.stream()
+        final List<String> gavKey = info.extra.stream()
                 .filter(artifact -> artifact.startsWith("maven:"))
                 .sorted()
                 .collect(Collectors.toList());
 
-        return config.filters.get().shouldProcessClass(log, haveGAV, className);
+        final List<Filter> matchingFilters = config.filters.get().applicableFilters(log, gavKey, className);
+
+        if (matchingFilters.isEmpty()) {
+            // this was not the right class name, or was the right class name in the wrong jar
+            // not a warning: this is the common case
+            return null;
+        }
+
+        return new Rewriter(LandingZone.class, LandingZone.SEEN_SET::add, info.toLocation(), config, log)
+                .rewrite(reader, matchingFilters);
     }
 }
