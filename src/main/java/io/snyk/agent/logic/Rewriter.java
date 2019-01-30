@@ -64,20 +64,20 @@ public class Rewriter {
             }
 
             if (InstrumentationFilter.skipMethod(cn, method)) {
-                log.info("rewrite requested, but disallowed: " + logName);
+                log.warn("rewrite requested, but disallowed: " + logName);
                 continue;
             }
 
             final boolean includeWrtAccessors = config.trackAccessors || !InstrumentationFilter.isAccessor(method);
             if (!includeWrtAccessors) {
-                log.info("rewrite requested, but accessor: " + logName);
+                log.warn("rewrite requested, but accessor: " + logName);
                 continue;
             }
 
             final boolean includeWrtBranching = config.trackBranchingMethods ||
                     InstrumentationFilter.branches(cn, method);
             if (!includeWrtBranching) {
-                log.info("rewrite requested, but branching: " + logName);
+                log.warn("rewrite requested, but branching: " + logName);
                 continue;
             }
 
@@ -86,7 +86,7 @@ public class Rewriter {
         }
 
         if (!aMethodHadTheRightName) {
-            log.info("rewrite requested, but no matching method found: " + cn.name);
+            log.debug("rewrite requested, but no matching method found: " + cn.name);
         }
 
         return AsmUtil.byteArray(cn);

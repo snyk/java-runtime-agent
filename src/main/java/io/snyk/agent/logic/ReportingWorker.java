@@ -26,6 +26,8 @@ import java.util.stream.Collectors;
  * Sit around in the background, and occasionally send off beacons.
  */
 public class ReportingWorker implements Runnable {
+    private static final int NEVER_SENT_A_BEACON = 0;
+
     private final String vmName;
     private final String vmVendor;
     private final String vmVersion;
@@ -38,7 +40,7 @@ public class ReportingWorker implements Runnable {
     private final DataTracker dataTracker;
     private final Poster poster;
 
-    private long lastSuccessfulBeacon = 0;
+    private long lastSuccessfulBeacon = NEVER_SENT_A_BEACON;
 
     {
         final RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
@@ -76,8 +78,6 @@ public class ReportingWorker implements Runnable {
     public void run() {
         log.info("reporting ready, but resting");
 
-        setShutdownHook();
-
         try {
             // arbitrary: no point running during early vm startup;
             // no harm, but no useful information?
@@ -85,6 +85,8 @@ public class ReportingWorker implements Runnable {
         } catch (InterruptedException e) {
             return;
         }
+
+        setShutdownHook();
 
         log.info("reporting started");
 
@@ -122,6 +124,10 @@ public class ReportingWorker implements Runnable {
         }
 
         send(drainMaker, prefix);
+
+        if (NEVER_SENT_A_BEACON == this.lastSuccessfulBeacon) {
+            log.info("successfully transmitted our first beacon");
+        }
 
         // intentionally at the end; this method might terminate by exception
         this.lastSuccessfulBeacon = now;
@@ -196,7 +202,7 @@ public class ReportingWorker implements Runnable {
 
             fragmentNumber++;
 
-            log.info(fieldName + ": sent part " + fragmentNumber + ", chars: " + msg.length());
+            log.debug(fieldName + ": sent part " + fragmentNumber + ", chars: " + msg.length());
         }
     }
 
@@ -444,7 +450,7 @@ public class ReportingWorker implements Runnable {
                 final byte[] buffer = new byte[16 * 1024];
                 final int count = readMany(response, buffer);
                 final String reply = new String(buffer, 0, count, StandardCharsets.UTF_8);
-                log.info("reply: " + reply);
+                log.debug("reply: " + reply);
             }
         }
 
