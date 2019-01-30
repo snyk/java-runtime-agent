@@ -26,7 +26,7 @@ public class VersionFilter implements Predicate<String> {
                     VERSION_PART_REGEX + // the first version bit
                     "\\s*,\\s*" + // comma
                     VERSION_PART_REGEX + // the second version bit
-                    "([\\])])" // ] or )
+                    "([\\])]),*" // ] or ), and zero or more trailing commas
     );
 
     private final List<Predicate<ComparableVersion>> options;
