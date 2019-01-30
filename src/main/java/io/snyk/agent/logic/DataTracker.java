@@ -16,10 +16,16 @@ import java.util.List;
 public class DataTracker {
     public final ClassInfo classInfo;
 
+    final List<ObservedWarning> warnings = Collections.synchronizedList(new ArrayList<>());
+
     final List<ObservedError> errors = Collections.synchronizedList(new ArrayList<>());
 
     public DataTracker(Log log) {
         this.classInfo = new ClassInfo(log, this::addError);
+    }
+
+    public void addWarning(String msg) {
+        warnings.add(new ObservedWarning(msg));
     }
 
     public void addError(String msg, Throwable e) {
