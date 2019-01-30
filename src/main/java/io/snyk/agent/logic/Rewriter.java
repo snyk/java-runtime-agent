@@ -9,7 +9,6 @@ import io.snyk.asm.tree.*;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
@@ -18,29 +17,29 @@ import java.util.stream.Collectors;
  * perform rewrites of classes
  */
 public class Rewriter {
+    public static class CallbackTo {
+        private final String ourInternalName;
+        private final ToIntFunction<String> allocateNewId;
+        private final String sourceLocation;
 
-    private final String ourInternalName;
-    private final ToIntFunction<String> allocateNewId;
-    private final String sourceLocation;
-    private final Config config;
-    private final Log log;
+        // This Class<?> must implement the same "static interface" as LandingZone.class.
+        // There's no way to express this in Java. The marked public static methods must
+        // exist.
+        public CallbackTo(Class<?> tracker,
+                          ToIntFunction<String> allocateNewId,
+                          String sourceLocation) {
 
-    // This Class<?> must implement the same "static interface" as LandingZone.class.
-    // There's no way to express this in Java. The marked public static methods must
-    // exist.
-    public Rewriter(Class<?> tracker,
-                    ToIntFunction<String> allocateNewId,
-                    String sourceLocation,
-                    Config config,
-                    Log log) {
-        this.ourInternalName = tracker.getName().replace('.', '/');
-        this.allocateNewId = allocateNewId;
-        this.sourceLocation = sourceLocation;
-        this.config = config;
-        this.log = log;
+            this.ourInternalName = tracker.getName().replace('.', '/');
+            this.allocateNewId = allocateNewId;
+            this.sourceLocation = sourceLocation;
+        }
     }
 
-    public byte[] rewrite(ClassReader reader, List<Filter> filters) {
+    public static byte[] rewrite(Config config,
+                                 Log log,
+                                 CallbackTo callback,
+                                 ClassReader reader,
+                                 List<Filter> filters) {
         final ClassNode cn = AsmUtil.parse(reader);
 
         final Set<String> filtersWhichMatched = new HashSet<>(filters.size());
@@ -62,7 +61,7 @@ public class Rewriter {
 
             final String logName = cn.name + "#" + method.name;
 
-            if (InstrumentationFilter.alreadyInstrumented(method, ourInternalName)) {
+            if (InstrumentationFilter.alreadyInstrumented(method, callback.ourInternalName)) {
                 filtersWhichInstrumented.addAll(filtersMatchingThisMethod);
                 log.debug("asked to rewrite, but already instrumented:" + logName);
                 continue;
@@ -89,7 +88,7 @@ public class Rewriter {
             filtersWhichInstrumented.addAll(filtersMatchingThisMethod);
             log.info("rewrite: " + logName);
 
-            rewriteMethod(cn.name, method);
+            rewriteMethod(config, callback, cn.name, method);
         }
 
         final Set<String> wanted = filters.stream().map(filter -> filter.name).collect(Collectors.toSet());
@@ -105,20 +104,26 @@ public class Rewriter {
         return AsmUtil.byteArray(cn);
     }
 
-    private void rewriteMethod(String clazzInternalName, MethodNode method) {
+    private static void rewriteMethod(Config config,
+                                      CallbackTo callback,
+                                      String clazzInternalName,
+                                      MethodNode method) {
         final String tag = clazzInternalName + ":" + method.name +
                 method.desc + // using desc, not signature, as it's always available
-                ":" + sourceLocation;
+                ":" + callback.sourceLocation;
         if (config.trackClassLoading) {
-            addInspectionOfLoadClassCalls(method, tag);
+            addInspectionOfLoadClassCalls(config, callback, method, tag);
         }
-        addInspectionOfMethodEntry(method, tag);
+        addInspectionOfMethodEntry(config, callback, method, tag);
     }
 
-    private void addInspectionOfMethodEntry(MethodNode method, String methodLocation) {
+    private static void addInspectionOfMethodEntry(Config config,
+                                                   CallbackTo callback,
+                                                   MethodNode method,
+                                                   String methodLocation) {
         final InsnList launchpad = new InsnList();
-        launchpad.add(new LdcInsnNode(allocateNewId.applyAsInt(methodLocation)));
-        launchpad.add(new MethodInsnNode(Opcodes.INVOKESTATIC, ourInternalName,
+        launchpad.add(new LdcInsnNode(callback.allocateNewId.applyAsInt(methodLocation)));
+        launchpad.add(new MethodInsnNode(Opcodes.INVOKESTATIC, callback.ourInternalName,
                 "registerMethodEntry", "(I)V", false));
 
         final AbstractInsnNode first = method.instructions.getFirst();
@@ -129,7 +134,10 @@ public class Rewriter {
         }
     }
 
-    private void addInspectionOfLoadClassCalls(MethodNode method, String methodLocation) {
+    private static void addInspectionOfLoadClassCalls(Config config,
+                                                      CallbackTo callback,
+                                                      MethodNode method,
+                                                      String methodLocation) {
         final InsnList insns = method.instructions;
         for (int i = 0; i < insns.size(); ++i) {
             final AbstractInsnNode ins = insns.get(i);
@@ -181,11 +189,11 @@ public class Rewriter {
             }
 
             // stack: "name" [original stack]
-            launchpad.add(new LdcInsnNode(allocateNewId.applyAsInt(callTag)));
+            launchpad.add(new LdcInsnNode(callback.allocateNewId.applyAsInt(callTag)));
             // stack: tag "name" [original stack]
             launchpad.add(new MethodInsnNode(
                     Opcodes.INVOKESTATIC,
-                    ourInternalName,
+                    callback.ourInternalName,
                     "registerLoadClass",
                     "(Ljava/lang/String;I)V",
                     false));

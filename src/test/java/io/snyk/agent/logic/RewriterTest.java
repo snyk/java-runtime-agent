@@ -50,9 +50,11 @@ class RewriterTest {
                 "trackClassLoading=true"),
                 Collections.singletonList("filter.foo.paths=**")
         );
-        return new Rewriter(TestTracker.class,
+
+        final Rewriter.CallbackTo callback = new Rewriter.CallbackTo(TestTracker.class,
                 TestTracker.SEEN_SET::add,
-                TEST_LOCATION,
-                config, new TestLogger()).rewrite(new ClassReader(name), config.filters.get().filters);
+                TEST_LOCATION);
+
+        return Rewriter.rewrite(config, new TestLogger(), callback, new ClassReader(name), config.filters.get().filters);
     }
 }

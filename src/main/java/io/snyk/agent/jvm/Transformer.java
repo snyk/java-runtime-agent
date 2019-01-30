@@ -2,6 +2,7 @@ package io.snyk.agent.jvm;
 
 import io.snyk.agent.filter.Filter;
 import io.snyk.agent.logic.*;
+import io.snyk.agent.logic.Rewriter.CallbackTo;
 import io.snyk.agent.util.Log;
 import io.snyk.asm.ClassReader;
 
@@ -96,7 +97,8 @@ class Transformer implements ClassFileTransformer {
             return null;
         }
 
-        return new Rewriter(LandingZone.class, LandingZone.SEEN_SET::add, info.toLocation(), config, log)
-                .rewrite(reader, matchingFilters);
+        final CallbackTo callback = new CallbackTo(LandingZone.class, LandingZone.SEEN_SET::add, info.toLocation());
+
+        return Rewriter.rewrite(config, log, callback, reader, matchingFilters);
     }
 }
