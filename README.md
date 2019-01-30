@@ -1,6 +1,13 @@
 ## java-runtime-agent
 
-### Usage
+### Getting started
+
+The best way to get started with the agent is to run
+[the example project, java-woof](https://github.com/snyk/java-woof#java-woof).
+Head over there for a getting started guide.
+
+
+### Developing
 
 Build is using `gradle`. You can use the wrapper, if you don't have `gradle`:
 
