@@ -71,7 +71,7 @@ class EntryPoint {
         instrumentation.addTransformer(new Transformer(log, config, dataTracker), canReTransform);
 
         if (!initialFetchComplete.await(config.filterUpdateInitialDelayMs, TimeUnit.MILLISECONDS)) {
-            log.info("releasing agent as data refresh fetch timed out");
+            log.warn("releasing agent as data refresh fetch timed out");
         } else {
             log.info("startup complete, releasing application");
         }
