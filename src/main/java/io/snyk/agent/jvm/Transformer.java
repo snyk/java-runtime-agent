@@ -97,7 +97,11 @@ class Transformer implements ClassFileTransformer {
             return null;
         }
 
-        final CallbackTo callback = new CallbackTo(LandingZone.class, LandingZone.SEEN_SET::add, info.toLocation());
+        final CallbackTo callback = new CallbackTo(
+                LandingZone.class,
+                LandingZone.SEEN_SET::add,
+                info.toLocation(),
+                dataTracker::addWarning);
 
         return Rewriter.rewrite(config, log, callback, reader, matchingFilters);
     }

@@ -1,5 +1,7 @@
 package io.snyk.agent.logic;
 
+import io.snyk.agent.output.ObservedError;
+import io.snyk.agent.output.ObservedWarning;
 import io.snyk.agent.util.Log;
 
 import java.util.ArrayList;

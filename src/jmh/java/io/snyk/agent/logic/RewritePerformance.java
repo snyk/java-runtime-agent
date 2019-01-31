@@ -48,7 +48,7 @@ public class RewritePerformance {
                 new NullLogger(),
                 new Rewriter.CallbackTo(LandingZone.class,
                         LandingZone.SEEN_SET::add,
-                        "13371337:tests"),
+                        "13371337:tests", warning -> {}),
                 classReaderBlackHole,
                 Collections.emptyList()
         );
@@ -63,7 +63,7 @@ public class RewritePerformance {
                 new NullLogger(),
                 new Rewriter.CallbackTo(LandingZone.class,
                         LandingZone.SEEN_SET::add,
-                        "13371337:tests"),
+                        "13371337:tests", warning -> {}),
                 new ClassReader(classBlackHole),
                 Collections.emptyList()
         );

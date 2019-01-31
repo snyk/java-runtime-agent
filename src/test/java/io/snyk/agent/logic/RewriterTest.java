@@ -53,7 +53,8 @@ class RewriterTest {
 
         final Rewriter.CallbackTo callback = new Rewriter.CallbackTo(TestTracker.class,
                 TestTracker.SEEN_SET::add,
-                TEST_LOCATION);
+                TEST_LOCATION,
+                warning -> {});
 
         return Rewriter.rewrite(config, new TestLogger(), callback, new ClassReader(name), config.filters.get().filters);
     }

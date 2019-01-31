@@ -1,12 +1,12 @@
-package io.snyk.agent.logic;
+package io.snyk.agent.output;
 
 import io.snyk.agent.util.Throwables;
 
-class ObservedError {
+public class ObservedError {
     public final String msg;
     public final String problem;
 
-    ObservedError(String msg, Throwable problem) {
+    public ObservedError(String msg, Throwable problem) {
         this.msg = msg;
         this.problem = Throwables.getStackTrace(problem);
     }

@@ -10,6 +10,7 @@ import io.snyk.asm.tree.*;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 
@@ -21,17 +22,20 @@ public class Rewriter {
         private final String ourInternalName;
         private final ToIntFunction<String> allocateNewId;
         private final String sourceLocation;
+        private final Consumer<String> addWarning;
 
         // This Class<?> must implement the same "static interface" as LandingZone.class.
         // There's no way to express this in Java. The marked public static methods must
         // exist.
         public CallbackTo(Class<?> tracker,
                           ToIntFunction<String> allocateNewId,
-                          String sourceLocation) {
+                          String sourceLocation,
+                          Consumer<String> addWarning) {
 
             this.ourInternalName = tracker.getName().replace('.', '/');
             this.allocateNewId = allocateNewId;
             this.sourceLocation = sourceLocation;
+            this.addWarning = addWarning;
         }
     }
 
@@ -81,7 +85,7 @@ public class Rewriter {
             final boolean includeWrtBranching = config.trackBranchingMethods ||
                     InstrumentationFilter.branches(cn, method);
             if (!includeWrtBranching) {
-                log.warn("rewrite requested, but branching: " + logName);
+                callback.addWarning.accept("rewrite requested, but branching: " + logName);
                 continue;
             }
 
@@ -95,10 +99,10 @@ public class Rewriter {
 
         if (wanted.equals(filtersWhichMatched)) {
             if (!wanted.equals(filtersWhichInstrumented)) {
-                log.warn("rewrite requested, but some filters failed to instrument: " + cn.name);
+                callback.addWarning.accept("rewrite requested, but some filters failed to instrument: " + cn.name);
             }
         } else {
-            log.warn("rewrite requested, but some filters failed to match: " + cn.name);
+            callback.addWarning.accept("rewrite requested, but some filters failed to match: " + cn.name);
         }
 
         return AsmUtil.byteArray(cn);

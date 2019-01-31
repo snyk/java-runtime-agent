@@ -2,6 +2,7 @@ package io.snyk.agent.logic;
 
 import io.snyk.agent.jvm.LandingZone;
 import io.snyk.agent.jvm.Version;
+import io.snyk.agent.output.ObservedError;
 import io.snyk.agent.util.Json;
 import io.snyk.agent.util.Log;
 import io.snyk.agent.util.UseCounter;
