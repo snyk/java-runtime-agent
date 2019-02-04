@@ -5,7 +5,7 @@ What kind of overhead are we expecting here?
 
 ### Expectations
 
-NewRelic claim 2-3%, can be up to 30% in production according to rumour.
+NewRelic claim 2-3%.
 
 We're expecting the "only observe methods with vulnerabilities" approach
 to have an unmeasurable overhead.
