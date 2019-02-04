@@ -8,10 +8,14 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.time.Instant;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class FilterList {
+    // Must *not* contain colons, which we use as a delimiter internally
+    private static final Pattern VALID_FILTER_NAME = Pattern.compile("[a-zA-Z0-9_-]+");
+
     public final List<Filter> filters;
     public final Instant generated;
 
@@ -56,6 +60,11 @@ public class FilterList {
             }
 
             final String filterName = parts[1];
+
+            if (!VALID_FILTER_NAME.matcher(filterName).matches()) {
+                throw new IllegalStateException("invalid filter name: " + filterName);
+            }
+
             final String filterCommand = parts[2];
 
             final Filter.Builder filter = filters.computeIfAbsent(filterName, Filter.Builder::new);

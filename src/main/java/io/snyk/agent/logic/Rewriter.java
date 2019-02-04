@@ -82,7 +82,7 @@ public class Rewriter {
             }
 
             log.info("rewrite: " + logName);
-            rewriteMethod(cn.name, method);
+            rewriteMethod(filter.name, cn.name, method);
         }
 
         if (!aMethodHadTheRightName) {
@@ -92,14 +92,25 @@ public class Rewriter {
         return AsmUtil.byteArray(cn);
     }
 
-    private void rewriteMethod(String clazzInternalName, MethodNode method) {
-        final String tag = clazzInternalName + ":" + method.name +
-                method.desc + // using desc, not signature, as it's always available
-                ":" + sourceLocation;
+    private void rewriteMethod(String filterName, String clazzInternalName, MethodNode method) {
+        final String tag = noColons(filterName) + ":"
+                + noColons(clazzInternalName) + ":"
+                + noColons(method.name)
+                + noColons(method.desc) // using desc, not signature, as it's always available
+                + ":" + sourceLocation;
+
         if (config.trackClassLoading) {
             addInspectionOfLoadClassCalls(method, tag);
         }
         addInspectionOfMethodEntry(method, tag);
+    }
+
+    private static String noColons(String value) {
+        if (value.contains(":")) {
+            throw new IllegalStateException("must not contain a colon: " + value);
+        }
+
+        return value;
     }
 
     private void addInspectionOfMethodEntry(MethodNode method, String methodLocation) {

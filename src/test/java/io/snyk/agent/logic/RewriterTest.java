@@ -26,7 +26,7 @@ class RewriterTest {
         final Object instance = clazz.newInstance();
         assertNotNull(clazz.getDeclaredMethod("returnLambda").invoke(instance));
         assertEquals(Sets.newHashSet(
-                "io/snyk/agent/logic/TestVictim:returnLambda()Ljava/util/concurrent/Callable;:" + TEST_LOCATION),
+                "foo:io/snyk/agent/logic/TestVictim:returnLambda()Ljava/util/concurrent/Callable;:" + TEST_LOCATION),
                 TestTracker.SEEN_SET.drain().methodEntries);
     }
 

@@ -98,10 +98,10 @@ class ReportingWorkerTest {
 
     @Test
     void serialiseWeirdListSizesCorrectly() throws IOException {
-        onlyDrain(drain -> drain.methodEntries.add("foo:bar:baz:quux"));
+        onlyDrain(drain -> drain.methodEntries.add("filt:foo:bar:baz:quux"));
         onlyDrain(drain -> {
-            drain.methodEntries.add("foo:bar:baz:quux");
-            drain.methodEntries.add("bar:bar:baz:quux");
+            drain.methodEntries.add("filt:foo:bar:baz:quux");
+            drain.methodEntries.add("filt:bar:bar:baz:quux");
         });
 
         onlyDrain(drain -> drain.loadClasses.put("foo", Sets.newHashSet()));

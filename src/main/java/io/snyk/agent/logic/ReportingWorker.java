@@ -234,11 +234,12 @@ public class ReportingWorker implements Runnable {
     }
 
     private void appendMethodEntry(StringBuilder msg, String rawLocator) {
-        final String[] parts = rawLocator.split(":", 4);
-        final String className = parts[0];
-        final String methodName = parts[1];
-        final String classCrc32c = parts[2];
-        final String sourceUrl = parts[3];
+        final String[] parts = rawLocator.split(":", 5);
+        final String filterName = parts[0];
+        final String className = parts[1];
+        final String methodName = parts[2];
+        final String classCrc32c = parts[3];
+        final String sourceUrl = parts[4];
         final URI sourceUri = URI.create(sourceUrl);
         msg.append("{\"methodEntry\":{");
         msg.append("\"source\":\"java-agent\",");
@@ -254,6 +255,8 @@ public class ReportingWorker implements Runnable {
         Json.appendString(msg, className + "#" + methodName);
         msg.append(",\"sourceUri\":");
         Json.appendString(msg, sourceUrl);
+        msg.append(",\"filterName\":");
+        Json.appendString(msg, filterName);
         msg.append(",\"sourceCrc32c\":");
         Json.appendString(msg, classCrc32c);
         msg.append("},\"timestamp\":");

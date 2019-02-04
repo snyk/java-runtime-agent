@@ -76,6 +76,7 @@ reportIntervalMs=1000
 
     seen_methods = set()
     for entry in all_seen_events(d.name):
+        assert entry['methodEntry']['filterName'].startswith('up-')
         seen_methods.add(re.sub(r'\(.*', '', entry['methodEntry']['methodName']))
 
     print('    seen: {}'.format(sorted(seen_methods)))
