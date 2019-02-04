@@ -1,40 +1,21 @@
 #!/usr/bin/env python3
-import json
 import os
 import re
 import subprocess
-import tempfile
 from os import path
 from time import sleep
-from typing import Iterable
+
+from runner import all_seen_events, config
 
 
 def main():
-    d = tempfile.TemporaryDirectory()
     project_id = '0153525f-5a99-4efe-a84f-454f12494033'
-    CONFIG = """
-projectId={}
-homeBaseUrl=file://{}/
-logTo=stderr
 
-debugLoggingEnabled=true
-
-startupDelayMs=10
-filterUpdateIntervalMs=800
-heartBeatIntervalMs=500
-reportIntervalMs=1000
-""".format(project_id, d.name)
-    config_path = path.join(d.name, 'snyk.properties')
-
-    with open(config_path, 'w') as f:
-        f.write(CONFIG)
+    d, agent_arg = config(project_id)
 
     victim = subprocess.Popen([
         'java',
-        '-javaagent:{}=file://{}'.format(
-            path.join(os.getcwd(), 'build/libs/snyk-java-runtime-agent.jar'),
-            config_path
-        ),
+        agent_arg,
         '-jar',
         'e2e/repeat-action/build/libs/repeat-action.jar'
     ])
@@ -83,17 +64,6 @@ reportIntervalMs=1000
     assert seen_methods == set(expected_paths)
 
     print('Success!')
-
-
-def all_seen_events(out_dir: str) -> Iterable:
-    for name in os.listdir(out_dir):
-        if not name.startswith('post-'):
-            continue
-        name = path.join(out_dir, name)
-        with open(name) as f:
-            doc = json.load(f)
-        if 'eventsToSend' in doc:
-            yield from doc['eventsToSend']
 
 
 if '__main__' == __name__:
