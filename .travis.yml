@@ -4,10 +4,8 @@ jdk:
 - oraclejdk11
 - openjdk11
 script:
-- pyenv versions
 - pyenv global 3.6
 - curl $SNAPSHOT_URL > src/main/resources/methods.bundled.properties
-# - node -e "console.log('filters.provided.generated =', new Date().toISOString())" >> src/main/resources/methods.bundled.properties
 - ./gradlew build test distZip
 - git clone --depth 1 --branch java9-modified https://github.com/snyk/java-goof
 - e2e/test-script.sh
