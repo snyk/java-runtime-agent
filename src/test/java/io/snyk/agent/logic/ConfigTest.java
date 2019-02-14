@@ -35,7 +35,7 @@ public class ConfigTest {
 
     public static Config makeConfig(Iterable<String> configLines, Iterable<String> filterLines) {
         final Config config = Config.loadConfig(configLines);
-        config.filters.set(FilterList.loadFiltersFrom(new TestLogger(), filterLines, Instant.EPOCH));
+        config.filters.set(FilterList.loadBolosFrom(new TestLogger(), filterLines, Instant.EPOCH));
         return config;
     }
 }

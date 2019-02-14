@@ -8,8 +8,9 @@ import java.lang.instrument.ClassFileTransformer;
 import java.net.URLClassLoader;
 import java.security.ProtectionDomain;
 import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Tie {@link Rewriter} and {@link LandingZone} to the JVM interface.
@@ -82,20 +83,12 @@ class Transformer implements ClassFileTransformer {
 
         final ClassInfo.ExtraInfo info = dataTracker.classInfo.findSourceInfo(loader, className, classfileBuffer);
 
-        if (!shouldProcessClass(className, info)) {
+        final Collection<String> instrumentMethods = config.filters.get().methodsToInstrumentInClass(className);
+        if (instrumentMethods.isEmpty()) {
             return null;
         }
 
         return new Rewriter(LandingZone.class, LandingZone.SEEN_SET::add, info.toLocation(), config, log)
-                .rewrite(reader);
-    }
-
-    private boolean shouldProcessClass(String className, ClassInfo.ExtraInfo info) {
-        final List<String> haveGAV = info.extra.stream()
-                .filter(artifact -> artifact.startsWith("maven:"))
-                .sorted()
-                .collect(Collectors.toList());
-
-        return config.filters.get().shouldProcessClass(log, haveGAV, className);
+                .rewrite(reader, instrumentMethods);
     }
 }

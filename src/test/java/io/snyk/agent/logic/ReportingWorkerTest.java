@@ -69,7 +69,7 @@ class ReportingWorkerTest {
         final List<String> configs = Lists.newArrayList(configLines);
         configs.add("projectId=1f9378b7-46fa-41ea-a156-98f7a8930ee1");
         final ReportingWorker reportingWorker = new ReportingWorker(new TestLogger(),
-                ConfigTest.makeConfig(configs, Collections.singleton("filter.foo.paths=**")),
+                ConfigTest.makeConfig(configs, Collections.emptyList()),
                 dataTracker,
                 poster);
         reportingWorker.sendIfNecessary(() -> drain);
@@ -191,7 +191,9 @@ class ReportingWorkerTest {
         final ReportingWorker worker = new ReportingWorker(log, ConfigTest.makeConfig(
                 Arrays.asList("projectId=0153525f-5a99-4efe-a84f-454f12494033",
                         "homeBaseUrl = invalid://url"),
-                Collections.singleton("filter.foo.paths = **")
+                Arrays.asList("filter.test-1.paths = foo/bar#quux",
+                        "filter.test-1.version = [5,6)",
+                        "filter.test-1.artifact = maven:a:b")
         ), new DataTracker(log), poster);
 
         worker.sendIfNecessary(supplier);

@@ -1,14 +1,12 @@
 package io.snyk.agent.logic;
 
-import io.snyk.agent.filter.Filter;
 import io.snyk.agent.util.AsmUtil;
 import io.snyk.agent.util.Log;
 import io.snyk.asm.ClassReader;
 import io.snyk.asm.Opcodes;
 import io.snyk.asm.tree.*;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.Collection;
 import java.util.function.ToIntFunction;
 
 /**
@@ -37,26 +35,14 @@ public class Rewriter {
         this.log = log;
     }
 
-    public byte[] rewrite(ClassReader reader) {
+    public byte[] rewrite(ClassReader reader, Collection<String> methods) {
         final ClassNode cn = AsmUtil.parse(reader);
-        final List<Filter> filters = config.filters.get().filters;
-        boolean aMethodHadTheRightName = false;
-
         for (MethodNode method : cn.methods) {
-            final Optional<Filter> matching = filters.stream()
-                    .filter(filter -> filter.testMethod(cn.name, method.name))
-                    .findAny();
-
-            if (!matching.isPresent()) {
+            if (!methods.contains(method.name)) {
                 continue;
             }
 
-            aMethodHadTheRightName = true;
-
-            final Filter filter = matching.get();
-            filter.matches.incrementAndGet();
-
-            final String logName = filter.name + ": " + cn.name + "#" + method.name;
+            final String logName = cn.name + "#" + method.name;
 
             if (InstrumentationFilter.alreadyInstrumented(method, ourInternalName)) {
                 log.debug("asked to rewrite, but already instrumented:" + logName);
@@ -83,10 +69,6 @@ public class Rewriter {
 
             log.info("rewrite: " + logName);
             rewriteMethod(cn.name, method);
-        }
-
-        if (!aMethodHadTheRightName) {
-            log.debug("rewrite requested, but no matching method found: " + cn.name);
         }
 
         return AsmUtil.byteArray(cn);

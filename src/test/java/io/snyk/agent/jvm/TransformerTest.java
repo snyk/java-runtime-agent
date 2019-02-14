@@ -18,49 +18,26 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TransformerTest {
     @Test
-    void testNoConfig() throws IOException {
-        assertTrue(exampleChanges("Foo",
-                "filter.all.paths = **"));
-    }
-
-    @Test
     void testFilterPaths() throws IOException {
         assertFalse(exampleChanges("Foo",
-                "filter.foo.paths = com/fake/**"));
+                "filter.foo.paths = com/fake/Nope#nah",
+                "filter.foo.artifact = maven:nah:nah",
+                "filter.foo.version = [4,5)"));
 
         assertTrue(exampleChanges("Foo",
-                "filter.bar.paths = io/snyk/**"
+                "filter.bar.paths = io/snyk/example/Foo#bar",
+                "filter.bar.artifact = maven:nah:nah",
+                "filter.bar.version = [4,5)"
         ));
 
         assertTrue(exampleChanges("Foo",
-                "filter.foo.paths = com/fake/**",
-                "filter.bar.paths = io/snyk/**"
+                "filter.foo.paths = com/fake/Nope#nah",
+                "filter.bar.paths = io/snyk/example/Foo#bar",
+                "filter.foo.artifact = maven:nah:nah",
+                "filter.foo.version = [4,5)",
+                "filter.bar.artifact = maven:nah:nah",
+                "filter.bar.version = [4,5)"
         ));
-    }
-
-    @Test
-    void testFilterArtifact() throws IOException {
-        assertTrue(exampleChanges("Foo",
-                "filter.foo.artifact = maven:io.snyk.example:example",
-                "filter.foo.paths = io/snyk/**"),
-                "We know where the io.snyk classes are from, and it's correct, so rewrite");
-
-        assertFalse(exampleChanges("Foo",
-                "filter.foo.artifact = maven:com.fake:fake",
-                "filter.foo.paths = io/snyk/**"),
-                "We know where the io.snyk classes are from, and it's not com.fake:fake, so they are not rewritten");
-
-        assertFalse(exampleChanges("Foo",
-                "filter.foo.artifact = maven:io.snyk.example:example",
-                "filter.foo.version = [,1.2.0)",
-                "filter.foo.paths = io/snyk/**"),
-                "We know where the io.snyk classes are from, they're newer than stated");
-
-        assertTrue(exampleChanges("Foo",
-                "filter.foo.artifact = maven:io.snyk.example:example",
-                "filter.foo.version = [,1.3.0)",
-                "filter.foo.paths = io/snyk/**"),
-                "We know where the io.snyk classes are from, they're older than stated");
     }
 
     private boolean exampleChanges(String clazz, String... filters) throws IOException {

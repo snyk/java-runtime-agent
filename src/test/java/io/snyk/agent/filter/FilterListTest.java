@@ -8,6 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 class FilterListTest {
     @Test
     void loadBuiltInFilters() {
-        assertNotEquals(0, FilterList.loadBuiltInFilters(new TestLogger()).filters.size());
+        assertNotEquals(0, FilterList.loadBuiltInBolos(new TestLogger()).numberOfClasses());
     }
 }
