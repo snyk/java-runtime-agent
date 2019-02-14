@@ -7,7 +7,7 @@ script:
 - pyenv global 3.6
 - curl $SNAPSHOT_URL > src/main/resources/methods.bundled.properties
 - ./gradlew build test distZip
-- git clone --depth 1 --branch java9-modified https://github.com/snyk/java-goof
+- git clone --depth 1 --branch java9 https://github.com/snyk/java-goof
 - e2e/test-script.sh
 - e2e/test-reload.py
 - e2e/test-shutdown.py
