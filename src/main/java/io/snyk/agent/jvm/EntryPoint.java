@@ -59,10 +59,7 @@ class EntryPoint {
 
         final DataTracker dataTracker = new DataTracker(log);
 
-        // ReportingWorker's constructor gathers loads of system info, which
-        // seems to take >5s on some systems (e.g. OSX), perhaps a failing DNS
-        // query gathering the hostname?
-        final Thread worker = new Thread(() -> new ReportingWorker(log, config, dataTracker).run());
+        final Thread worker = new Thread(new ReportingWorker(log, config, dataTracker));
         worker.setDaemon(true);
         worker.setName("snyk-agent");
         worker.start();

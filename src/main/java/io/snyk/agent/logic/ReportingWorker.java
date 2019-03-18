@@ -1,6 +1,7 @@
 package io.snyk.agent.logic;
 
 import io.snyk.agent.jvm.LandingZone;
+import io.snyk.agent.jvm.MachineInfo;
 import io.snyk.agent.jvm.Version;
 import io.snyk.agent.util.Json;
 import io.snyk.agent.util.Log;
@@ -28,10 +29,7 @@ import java.util.stream.Collectors;
 public class ReportingWorker implements Runnable {
     private static final int NEVER_SENT_A_BEACON = 0;
 
-    private final String vmName;
-    private final String vmVendor;
-    private final String vmVersion;
-    private final String hostName = computeHostName();
+    private MachineInfo info = null;
     private final UUID agentId = UUID.randomUUID();
     private final String agentVersion = Version.extendedVersionInfo();
 
@@ -41,13 +39,6 @@ public class ReportingWorker implements Runnable {
     private final Poster poster;
 
     private long lastSuccessfulBeacon = NEVER_SENT_A_BEACON;
-
-    {
-        final RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
-        vmName = runtime.getName();
-        vmVendor = runtime.getVmVendor();
-        vmVersion = runtime.getVmVersion();
-    }
 
     public ReportingWorker(Log log, Config config, DataTracker dataTracker) {
         this(log, config, dataTracker, computePoster(log, config));
@@ -59,6 +50,12 @@ public class ReportingWorker implements Runnable {
         this.config = config;
         this.dataTracker = dataTracker;
         this.poster = poster;
+
+        // gathering the machine info can do DNS queries, which is inconvenient
+        final Thread infoLoader = new Thread(() -> info = new MachineInfo());
+        infoLoader.setDaemon(true);
+        infoLoader.setName("snyk-agent");
+        infoLoader.start();
     }
 
     private static Poster computePoster(Log log, Config config) {
@@ -217,14 +214,14 @@ public class ReportingWorker implements Runnable {
         msg.append("   \"agentVersion\":");
         Json.appendString(msg, agentVersion);
         msg.append(",  \"hostName\":");
-        Json.appendString(msg, hostName);
+        Json.appendString(msg, null != info ? info.hostName : "n/a");
         msg.append(",  \"jvm\":{");
         msg.append("\"vmName\":");
-        Json.appendString(msg, vmName);
+        Json.appendString(msg, null != info ? info.vmName : "n/a");
         msg.append(",\"vendor\":");
-        Json.appendString(msg, vmVendor);
+        Json.appendString(msg, null != info ? info.vmVendor : "n/a");
         msg.append(",\"version\":");
-        Json.appendString(msg, vmVersion);
+        Json.appendString(msg, null != info ? info.vmVersion : "n/a");
         msg.append("}},\"correlationId\":");
         Json.appendString(msg, UUID.randomUUID().toString());
         msg.append(",\"agentId\":");
@@ -345,56 +342,6 @@ public class ReportingWorker implements Runnable {
             } else {
                 break;
             }
-        }
-    }
-
-    private static String computeHostName() {
-        for (String env : new String[]{"SNYK_MACHINE_NAME", "HOSTNAME", "COMPUTERNAME"}) {
-            final String val = System.getenv(env);
-            if (null != val) {
-                final String trim = val.trim();
-                if (!trim.isEmpty()) {
-                    return trim;
-                }
-            }
-        }
-
-        try {
-            final Optional<String> line = Files.lines(new File("/etc/hostname").toPath()).findFirst();
-            if (line.isPresent()) {
-                final String trim = line.get().trim();
-                if (!trim.isEmpty()) {
-                    return trim;
-                }
-            }
-        } catch (IOException ignored) {
-            // no such file, couldn't read it, etc.
-            // e.g. docker, wrong OS (Windows)
-        }
-
-        try {
-            final String line = runHostname();
-            if (null != line) {
-                final String trim = line.trim();
-                if (!trim.isEmpty()) {
-                    return trim;
-                }
-            }
-        } catch (IOException ignored) {
-            // no such command, no permission to execute it, etc.
-        }
-
-        return "unknown";
-    }
-
-    private static String runHostname() throws IOException {
-        final Process proc = new ProcessBuilder("hostname").start();
-        proc.getOutputStream().close();
-        proc.getErrorStream().close();
-        try (final InputStream input = proc.getInputStream();
-             final InputStreamReader reader = new InputStreamReader(input);
-             final BufferedReader buffered = new BufferedReader(reader)) {
-            return buffered.readLine();
         }
     }
 
