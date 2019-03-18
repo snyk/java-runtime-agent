@@ -2,6 +2,7 @@
   "projectId": "0153525f-5a99-4efe-a84f-454f12494033",
   "timestamp": "2018-10-05T08:23:12.693Z",
   "systemInfo": {
+    "agentVersion": "git:8b66d4b.dirty",
     "hostName": "anoia.goeswhere.com",
     "jvm": {
       "vmName": "26296@anoia.goeswhere.com",
@@ -9,7 +10,8 @@
       "version": "25.181-b13"
     }
   },
-  "correlationId": "b1ed2a54-7d25-466b-abc9-d5f4231225ae",
+  "correlationId": "cb0cf218-9b8b-4e46-8f38-75572103d145",
+  "agentId": "a722a5a8-6982-4262-8e69-2a0b3c2e9c19",
   "eventsToSend": [
     {
       "methodEntry": {
@@ -18,22 +20,24 @@
           "impl:struts-2-core:2.3.20",
           "maven:org.apache.struts:struts2-core:2.3.20"
         ],
-        "methodName": "org/apache/struts2/dispatcher/multipart/JakartaMultiPartRequest#parse(Ljavax/servlet/http/HttpServletRequest;Ljava/lang/String;)V",
+        "methodName": "org/apache/struts2/dispatcher/multipart/JakartaMultiPartRequest#buildErrorMessage(Ljava/lang/Throwable;[Ljava/lang/Object;)Ljava/lang/String;",
         "sourceUri": "file:/home/faux/.m2/repository/org/apache/struts/struts2-core/2.3.20/struts2-core-2.3.20.jar",
         "sourceCrc32c": "f80cc345"
-      }
+      },
+      "timestamp": "2019-03-18T11:35:27.452522Z"
     },
     {
       "methodEntry": {
         "source": "java-agent",
         "coordinates": [
-          "impl:struts-2-core:2.3.20",
-          "maven:org.apache.struts:struts2-core:2.3.20"
+          "impl:apache-commons-fileupload:1.3.1",
+          "maven:commons-fileupload:commons-fileupload:1.3.1"
         ],
-        "methodName": "org/apache/struts2/dispatcher/Dispatcher#logConfigurationException(Ljavax/servlet/http/HttpServletRequest;Lcom/opensymphony/xwork2/config/ConfigurationException;)V",
-        "sourceUri": "file:/home/faux/.m2/repository/org/apache/struts/struts2-core/2.3.20/struts2-core-2.3.20.jar",
-        "sourceCrc32c": "3105f10a"
-      }
+        "methodName": "org/apache/commons/fileupload/FileUploadBase$FileItemIteratorImpl#<init>(Lorg/apache/commons/fileupload/FileUploadBase;Lorg/apache/commons/fileupload/RequestContext;)V",
+        "sourceUri": "file:/home/faux/.m2/repository/commons-fileupload/commons-fileupload/1.3.1/commons-fileupload-1.3.1.jar",
+        "sourceCrc32c": "cef73a2f"
+      },
+      "timestamp": "2019-03-18T11:35:27.452806Z"
     }
   ]
 }

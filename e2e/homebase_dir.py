@@ -2,7 +2,7 @@ import json
 import os
 import tempfile
 from os import path
-from typing import Iterable
+from typing import Iterable, Dict, Any
 
 
 class HomebaseMock:
@@ -24,12 +24,16 @@ class HomebaseMock:
             f.write(update_content)
         print('>>> update written')
 
-    def all_seen_events(self) -> Iterable:
+    def all_seen_docs(self) -> Iterable[Dict[str, Any]]:
         for name in os.listdir(self.d.name):
             if not name.startswith('post-'):
                 continue
             name = path.join(self.d.name, name)
             with open(name) as f:
                 doc = json.load(f)
+            yield doc
+
+    def all_seen_events(self) -> Iterable[Dict[str, Any]]:
+        for doc in self.all_seen_docs():
             if 'eventsToSend' in doc:
                 yield from doc['eventsToSend']
