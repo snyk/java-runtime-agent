@@ -7,8 +7,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 class Main {
     // all JOBS workers generate EVENTS events, with DELAY_MS delay between them.
-    // e.g. 20 events at 500ms delay is 10s.
-    static final long EVENTS = 20;
+    // e.g. 8 events at 500ms delay is 4s.
+    static final long EVENTS = 8;
     static final long DELAY_MS = 500;
     private static final long JOBS = 3;
 

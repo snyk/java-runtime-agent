@@ -32,12 +32,8 @@ reportIntervalMs=1000
         'e2e/repeat-action/build/libs/repeat-action.jar'
     ])
 
-    # We're expecting the startup to take between 40ms and 6s. We've seen
-    # 6s in the wild, e.g. on OSX resolving host-names. The app will produce
-    # events for 10s after startup, so we'd expect between 2.5 and 8.5s of
-    # events from the app. We only need 0.5s, so this is a pretty good safety
-    # margin.
-    sleep(7.5)
+    # app outputs events for 4 seconds, and takes under a second to start
+    sleep(1)
 
     # shouldn't've seen any events yet
     assert [] == list(h.all_seen_events())
