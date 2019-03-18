@@ -25,12 +25,12 @@ reportIntervalMs=1000
 
     subprocess.check_output(['mvn', '-q', 'tomcat7:help'], cwd='java-goof')
 
-    victim = subprocess.Popen(['mvn', 'tomcat7:run'], env={
-        'MAVEN_OPTS': '-javaagent:{}=file://{}'.format(
-            path.join(os.getcwd(), 'build/libs/snyk-java-runtime-agent.jar'),
-            h.config_path
-        )
-    }, cwd='java-goof')
+    opts_env = os.environ.copy()
+    opts_env['MAVEN_OPTS'] = '-javaagent:{}=file://{}'.format(
+        path.join(os.getcwd(), 'build/libs/snyk-java-runtime-agent.jar'),
+        h.config_path
+    )
+    victim = subprocess.Popen(['mvn', 'tomcat7:run'], env=opts_env, cwd='java-goof')
 
     atexit.register(lambda: victim.kill())
 
@@ -62,8 +62,8 @@ reportIntervalMs=1000
 
     # wait for an agent report
     sleep(2)
-
     victim.terminate()
+    sleep(1)
 
     # this segment is purely for documentation generation
     shown_events = False
