@@ -2,6 +2,7 @@ package io.snyk.agent.filter;
 
 import io.snyk.agent.logic.Config;
 import io.snyk.agent.util.Log;
+import io.snyk.agent.util.org.apache.maven.artifact.versioning.VersionRange;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -11,11 +12,13 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class FilterList {
-    /** className -> methodName -> group:artifact -> versions */
-    private final Map<String, Map<String, Map<String, Set<String>>>> classMethodGaVersions;
+    /**
+     * className -> methodName -> group:artifact -> versionRange
+     */
+    private final Map<String, Map<String, Map<String, VersionRange>>> classMethodGaVersions;
     public final Instant generated;
 
-    private FilterList(Map<String, Map<String, Map<String, Set<String>>>> classMethodGaVersions, Instant generated) {
+    private FilterList(Map<String, Map<String, Map<String, VersionRange>>> classMethodGaVersions, Instant generated) {
         this.classMethodGaVersions = classMethodGaVersions;
         this.generated = generated;
     }
@@ -58,7 +61,7 @@ public class FilterList {
                     .put(command, value);
         });
 
-        final Map<String, Map<String, Map<String, Set<String>>>> classMethodGaVersions = new HashMap<>();
+        final Map<String, Map<String, Map<String, VersionRange>>> classMethodGaVersions = new HashMap<>();
 
         configFile.forEach((name, entry) -> {
             final String classAndMethod = entry.get("paths");
@@ -81,10 +84,15 @@ public class FilterList {
                 throw new IllegalStateException("method required");
             }
 
+            if (!mavenGroupArtifact.startsWith("maven:")) {
+                throw new IllegalStateException("invalid locator: " + mavenGroupArtifact);
+            }
+
+            final String groupArtifact = mavenGroupArtifact.substring("maven:".length());
+
             classMethodGaVersions.computeIfAbsent(internalClass, (_class) -> new HashMap<>())
                     .computeIfAbsent(method, (_method) -> new HashMap<>())
-                    .computeIfAbsent(mavenGroupArtifact, (_artifact) -> new HashSet<>())
-                    .addAll(Arrays.asList(versions.split("\\s+")));
+                    .put(groupArtifact, VersionRange.createFromVersionSpec(versions));
         });
 
         return new FilterList(classMethodGaVersions, created);
@@ -111,7 +119,29 @@ public class FilterList {
         return classMethodGaVersions.keySet();
     }
 
-    public Collection<String> methodsToInstrumentInClass(String className) {
-        return classMethodGaVersions.getOrDefault(className, Collections.emptyMap()).keySet();
+    public Collection<String> methodsToInstrumentInClass(String className, Collection<String> goodLocators) {
+        final Map<String, Map<String, VersionRange>> methodGaVersions = classMethodGaVersions.get(className);
+        // This should not be empty, only null (i.e. no map entry)
+        if (null == methodGaVersions || methodGaVersions.isEmpty()) {
+            return Collections.emptySet();
+        }
+
+        final List<GroupArtifactVersion> mavenLocators = goodLocators.stream()
+                .filter(locator -> locator.startsWith("maven:"))
+                .map(locator -> {
+                    // maven:group:artifact:version
+                    final String[] parts = locator.split(":", 4);
+                    return new GroupArtifactVersion(parts[1] + ":" + parts[2], parts[3]);
+                })
+                .collect(Collectors.toList());
+
+        if (mavenLocators.isEmpty()) {
+            return methodGaVersions.keySet();
+        }
+
+        return methodGaVersions.entrySet().stream()
+                .filter(en -> VersionMatch.check(en.getValue(), mavenLocators))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
     }
 }

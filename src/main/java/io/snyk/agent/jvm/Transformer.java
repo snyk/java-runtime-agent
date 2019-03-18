@@ -83,7 +83,7 @@ class Transformer implements ClassFileTransformer {
 
         final ClassInfo.ExtraInfo info = dataTracker.classInfo.findSourceInfo(loader, className, classfileBuffer);
 
-        final Collection<String> instrumentMethods = config.filters.get().methodsToInstrumentInClass(className);
+        final Collection<String> instrumentMethods = config.filters.get().methodsToInstrumentInClass(className, info.extra);
         if (instrumentMethods.isEmpty()) {
             return null;
         }
