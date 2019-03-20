@@ -6,6 +6,7 @@ import io.snyk.agent.util.org.apache.maven.artifact.versioning.VersionRange;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.time.Instant;
 import java.util.*;
@@ -107,8 +108,11 @@ public class FilterList {
     }
 
     private static List<String> loadResourceAsLines(String resourceName) {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(FilterList.class.getResourceAsStream(
-                resourceName)))) {
+        final InputStream resource = FilterList.class.getResourceAsStream(resourceName);
+        if (null == resource) {
+            throw new IllegalArgumentException("no such resource: " + resourceName);
+        }
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(resource))) {
             return reader.lines().collect(Collectors.toList());
         } catch (IOException e) {
             throw new IllegalStateException(e);
