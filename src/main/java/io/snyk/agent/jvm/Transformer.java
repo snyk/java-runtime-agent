@@ -1,5 +1,6 @@
 package io.snyk.agent.jvm;
 
+import io.snyk.agent.filter.FilterList;
 import io.snyk.agent.logic.*;
 import io.snyk.agent.util.Log;
 import io.snyk.asm.ClassReader;
@@ -83,12 +84,16 @@ class Transformer implements ClassFileTransformer {
 
         final ClassInfo.ExtraInfo info = dataTracker.classInfo.findSourceInfo(loader, className, classfileBuffer);
 
-        final Collection<String> instrumentMethods = config.filters.get().methodsToInstrumentInClass(className, info.extra);
+        final FilterList filters = config.filters.get();
+        final Collection<String> instrumentMethods = filters.methodsToInstrumentInClass(className, info.extra);
         if (instrumentMethods.isEmpty()) {
             return null;
         }
 
         return new Rewriter(LandingZone.class, LandingZone.SEEN_SET::add, info.toLocation(), config, log)
-                .rewrite(reader, instrumentMethods);
+                .rewrite(
+                        reader,
+                        instrumentMethods,
+                        (clazz, method) -> filters.instrumented(clazz, method.name, info.extra));
     }
 }

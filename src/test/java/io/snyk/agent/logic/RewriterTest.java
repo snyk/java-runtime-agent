@@ -60,6 +60,6 @@ class RewriterTest {
                         Arrays.asList("filter.foo.paths=ignored/due/to/List#below",
                                 "filter.foo.artifact = maven:nah:nah",
                                 "filter.foo.version = [4,5)")
-                ), new TestLogger()).rewrite(cr, allMethods);
+                ), new TestLogger()).rewrite(cr, allMethods, (_class, _method) -> {});
     }
 }

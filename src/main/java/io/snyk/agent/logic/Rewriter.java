@@ -35,7 +35,14 @@ public class Rewriter {
         this.log = log;
     }
 
-    public byte[] rewrite(ClassReader reader, Collection<String> methods) {
+    @FunctionalInterface
+    public interface InstrumentedMethod {
+        void instrumented(String className, MethodNode methodName);
+    }
+
+    public byte[] rewrite(ClassReader reader,
+                          Collection<String> methods,
+                          InstrumentedMethod instrumentedMethod) {
         final ClassNode cn = AsmUtil.parse(reader);
         for (MethodNode method : cn.methods) {
             if (!methods.contains(method.name)) {
@@ -69,6 +76,7 @@ public class Rewriter {
 
             log.info("rewrite: " + logName);
             rewriteMethod(cn.name, method);
+            instrumentedMethod.instrumented(cn.name, method);
         }
 
         return AsmUtil.byteArray(cn);

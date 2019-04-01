@@ -9,6 +9,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 public class FilterList {
@@ -16,6 +19,7 @@ public class FilterList {
      * className -> methodName -> group:artifact -> versionRange
      */
     private final Map<String, Map<String, Map<String, VersionRange>>> classMethodGaVersions;
+    public final ConcurrentMap<HomebaseKnownFunction, AtomicLong> instrumented = new ConcurrentHashMap<>();
     public final Instant generated;
 
     private FilterList(Map<String, Map<String, Map<String, VersionRange>>> classMethodGaVersions, Instant generated) {
@@ -143,5 +147,17 @@ public class FilterList {
                 .filter(en -> VersionMatch.check(en.getValue(), mavenLocators))
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toSet());
+    }
+
+    public void instrumented(String clazz, String methodName, Collection<String> artifacts) {
+        for (String artifact : artifacts) {
+            if (!artifact.startsWith("maven:")) {
+                continue;
+            }
+
+            instrumented.computeIfAbsent(new HomebaseKnownFunction(artifact, clazz, methodName),
+                    _key -> new AtomicLong())
+                    .incrementAndGet();
+        }
     }
 }

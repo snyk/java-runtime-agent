@@ -285,7 +285,20 @@ public class ReportingWorker implements Runnable {
 
     private StringBuilder buildMeta() {
         final StringBuilder msg = new StringBuilder(1024);
-        msg.append("\"loadedSources\":{\n");
+        msg.append("\"filters\":[\n");
+        config.filters.get().instrumented.forEach((function, count) -> {
+            msg.append("{\"artifact\":");
+            Json.appendString(msg, function.artifact);
+            msg.append(",\"matches\":");
+            msg.append(count.longValue());
+            msg.append(",\"paths\":[{\"className\":");
+            Json.appendString(msg, function.className);
+            msg.append(",\"methodName\":");
+            Json.appendString(msg, function.methodName);
+            msg.append("}]},");
+        });
+        trimRightCommaSpacing(msg);
+        msg.append("],\"loadedSources\":{\n");
 
         dataTracker.classInfo.all()
                 .entrySet().stream().sorted(Comparator.comparing(Map.Entry::getKey)).forEachOrdered(entry -> {
