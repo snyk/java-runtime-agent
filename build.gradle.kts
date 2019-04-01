@@ -11,7 +11,7 @@ plugins {
 }
 
 dependencies {
-    compile(files("$projectDir/tools/repack/asm-re-7.0.jar"))
+    compile(files("$projectDir/tools/repack/asm-re-7.1.jar"))
     testCompile("org.apache.commons:commons-text:1.6")
     testCompile("com.google.code.gson:gson:2.8.5")
     testCompile("com.google.guava:guava:27.0.1-jre")

@@ -4,10 +4,10 @@ P="$(pwd)"
 T="$(mktemp -d)"
 cd "$T"
 
-V=7.0
+V=7.1
 
-jar xf ~/.gradle/caches/modules-2/files-2.?/org.ow2.asm/asm/${V}/*/asm-${V}.jar
-jar xf ~/.gradle/caches/modules-2/files-2.?/org.ow2.asm/asm-tree/${V}/*/asm-tree-${V}.jar
+jar xf ~/.m2/repository/org/ow2/asm/asm/${V}/asm-${V}.jar
+jar xf ~/.m2/repository/org/ow2/asm/asm-tree/${V}/asm-tree-${V}.jar
 
 jar -cMf asm.jar org
 
