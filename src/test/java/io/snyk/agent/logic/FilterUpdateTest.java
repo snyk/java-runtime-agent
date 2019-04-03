@@ -31,7 +31,10 @@ class FilterUpdateTest {
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Last-Modified", "Wed, 21 Oct 2015 07:28:00 GMT")
-                        .withBody("filter.test-1.paths = foo/bar#quux")));
+                        .withBody(
+                                "filter.test-1.paths = foo/bar#quux\n" +
+                                        "filter.test-1.version = [5,6)\n" +
+                                        "filter.test-1.artifact = maven:a:b")));
 
         wireMock.stubFor(get(urlEqualTo(TEST_URL))
                 .withHeader("If-Modified-Since", equalTo("Wed, 21 Oct 2015 07:28:00 GMT"))
@@ -40,7 +43,7 @@ class FilterUpdateTest {
                         .withBody("")));
 
 
-        assertEquals(Collections.emptyList(), filters.get().filters);
+        assertEquals(Collections.emptySet(), filters.get().knownClasses());
 
         final FilterUpdate filterUpdate = new FilterUpdate(
                 new TestLogger(),
@@ -52,9 +55,9 @@ class FilterUpdateTest {
                 1);
 
         assertTrue(filterUpdate.fetchUpdatedAnything(), "server has newer file, so we update");
-        assertEquals(1, filters.get().filters.size(), "update picked up the new rule");
+        assertEquals(1, filters.get().numberOfClasses(), "update picked up the new rule");
         assertFalse(filterUpdate.fetchUpdatedAnything(), "server has the same file, so we don't update");
-        assertEquals(1, filters.get().filters.size(), "same rules as before");
+        assertEquals(1, filters.get().numberOfClasses(), "same rules as before");
 
         wireMock.stop();
     }

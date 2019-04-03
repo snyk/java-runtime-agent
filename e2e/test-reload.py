@@ -51,6 +51,8 @@ reportIntervalMs=1000
     new_filters = ''
     for i, wanted in enumerate(expected_paths + also_try):
         new_filters += 'filter.up-{}.paths = {}\n'.format(i, wanted)
+        new_filters += 'filter.up-{}.artifact = maven:ignored:ignored\n'.format(i)
+        new_filters += 'filter.up-{}.version = [1,3)\n'.format(i)
 
     h.write_update(new_filters)
 

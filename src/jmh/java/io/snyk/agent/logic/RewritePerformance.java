@@ -48,7 +48,10 @@ public class RewritePerformance {
                         Collections.singleton("projectId=ab95b1fb-4fe0-497d-aba0-5a1d85db0827"),
                         Collections.emptyList()),
                 new NullLogger())
-                .rewrite(classReaderBlackHole);
+                .rewrite(
+                        classReaderBlackHole,
+                        Collections.emptySet(),
+                        (_class, _method) -> {});
     }
 
     @Benchmark
@@ -59,7 +62,11 @@ public class RewritePerformance {
                 ConfigTest.makeConfig(
                         Collections.singleton("projectId=ab95b1fb-4fe0-497d-aba0-5a1d85db0827"),
                         Collections.emptyList()),
-                new NullLogger()).rewrite(new ClassReader(classBlackHole));
+                new NullLogger())
+                .rewrite(
+                        new ClassReader(classBlackHole),
+                        Collections.emptySet(),
+                        (_class, _method) -> {});
     }
 
 

@@ -2,32 +2,36 @@ package io.snyk.agent.filter;
 
 import io.snyk.agent.logic.Config;
 import io.snyk.agent.util.Log;
+import io.snyk.agent.util.org.apache.maven.artifact.versioning.VersionRange;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class FilterList {
-    public final List<Filter> filters;
+    /**
+     * className -> methodName -> group:artifact -> versionRange
+     */
+    private final Map<String, Map<String, Map<String, VersionRange>>> classMethodGaVersions;
+    public final ConcurrentMap<HomebaseKnownFunction, AtomicLong> instrumented = new ConcurrentHashMap<>();
     public final Instant generated;
 
-    // @GuardedBy("this")
-    private final Set<List<String>> bannedGavs = new HashSet<>();
-
-    // @VisibleForTesting
-    FilterList(List<Filter> filters, Instant generated) {
-        this.filters = Collections.unmodifiableList(filters);
+    private FilterList(Map<String, Map<String, Map<String, VersionRange>>> classMethodGaVersions, Instant generated) {
+        this.classMethodGaVersions = classMethodGaVersions;
         this.generated = generated;
     }
 
-    public static FilterList loadBuiltInFilters(Log log) {
+    public static FilterList loadBuiltInBolos(Log log) {
         try {
             log.debug("loading built-in filters from bundled snapshot");
-            return loadFiltersFrom(log,
+            return loadBolosFrom(log,
                     loadResourceAsLines("/methods.bundled.properties"),
                     Instant.EPOCH);
         } catch (RuntimeException error) {
@@ -35,13 +39,13 @@ public class FilterList {
             log.stackTrace(error);
         }
 
-        return loadFiltersFrom(log,
+        return loadBolosFrom(log,
                 loadResourceAsLines("/methods.properties"),
                 Instant.EPOCH);
     }
 
-    public static FilterList loadFiltersFrom(Log log, Iterable<String> lines, Instant created) {
-        final Map<String, Filter.Builder> filters = new HashMap<>();
+    public static FilterList loadBolosFrom(Log log, Iterable<String> lines, Instant created) {
+        final Map<String, Map<String, String>> configFile = new HashMap<>();
 
         Config.parsePropertiesFile(lines).forEach((key, value) -> {
             if (!key.startsWith("filter.")) {
@@ -55,113 +59,109 @@ public class FilterList {
                 return;
             }
 
-            final String filterName = parts[1];
-            final String filterCommand = parts[2];
+            final String name = parts[1];
+            final String command = parts[2];
 
-            final Filter.Builder filter = filters.computeIfAbsent(filterName, Filter.Builder::new);
-
-            switch (filterCommand) {
-                case "artifact":
-                    filter.artifact = value;
-                    break;
-                case "version":
-                    filter.version = value;
-                    break;
-                case "paths":
-                    filter.addPathsFrom(value);
-                    break;
-                default:
-                    log.warn("unrecognised filter command: " + key);
-            }
+            configFile.computeIfAbsent(name, (_name) -> new HashMap<>())
+                    .put(command, value);
         });
 
-        if (filters.isEmpty()) {
-            throw new IllegalStateException("filter files must not be empty");
-        }
+        final Map<String, Map<String, Map<String, VersionRange>>> classMethodGaVersions = new HashMap<>();
 
-        return new FilterList(filters.values().stream()
-                .map(Filter.Builder::build)
-                .collect(Collectors.toList()),
-                created);
+        configFile.forEach((name, entry) -> {
+            final String classAndMethod = entry.get("paths");
+            final String mavenGroupArtifact = entry.get("artifact");
+            final String versions = entry.get("version");
+
+            if (null == versions || null == classAndMethod || null == mavenGroupArtifact) {
+                throw new IllegalStateException("invalid config block: " + entry);
+            }
+
+            final String[] parts = classAndMethod.split("#", 2);
+            if (2 != parts.length) {
+                throw new IllegalStateException("invalid classAndMethod: " + classAndMethod);
+            }
+
+            final String internalClass = parts[0];
+            final String method = parts[1];
+
+            if (null == method || method.isEmpty()) {
+                throw new IllegalStateException("method required");
+            }
+
+            if (!mavenGroupArtifact.startsWith("maven:")) {
+                throw new IllegalStateException("invalid locator: " + mavenGroupArtifact);
+            }
+
+            final String groupArtifact = mavenGroupArtifact.substring("maven:".length());
+
+            classMethodGaVersions.computeIfAbsent(internalClass, (_class) -> new HashMap<>())
+                    .computeIfAbsent(method, (_method) -> new HashMap<>())
+                    .put(groupArtifact, VersionRange.createFromVersionSpec(versions));
+        });
+
+        return new FilterList(classMethodGaVersions, created);
     }
 
     public static FilterList empty() {
-        return new FilterList(Collections.emptyList(), Instant.EPOCH);
+        return new FilterList(Collections.emptyMap(), Instant.EPOCH);
     }
 
-    private synchronized boolean isBanned(List<String> gav) {
-        return bannedGavs.contains(gav);
-    }
-
-    private synchronized void ban(List<String> gav) {
-        bannedGavs.add(gav);
-    }
-
-    public boolean shouldProcessClass(Log log, List<String> gavs, String className) {
-        // if we don't know anything about this jar, then just filter on the class name
-        if (gavs.isEmpty()) {
-            return filters.stream().anyMatch(filter -> filter.testClassName(className));
+    private static List<String> loadResourceAsLines(String resourceName) {
+        final InputStream resource = FilterList.class.getResourceAsStream(resourceName);
+        if (null == resource) {
+            throw new IllegalArgumentException("no such resource: " + resourceName);
         }
-
-        if (isBanned(gavs)) {
-            return false;
-        }
-
-        boolean classMatched = false;
-        boolean gavMatch = false;
-
-        for (final Filter filter : filters) {
-            // if the filter doesn't have any artifact data,
-            // match only on the class name
-            if (!filter.artifact.isPresent()) {
-                if (filter.testClassName(className)) {
-                    classMatched = true;
-                    break;
-                } else {
-                    // some filter is naughty, so we must always do all the work
-                    gavMatch = true;
-                    continue;
-                }
-            }
-
-            final String wanted = filter.artifact.get() + ":";
-            Stream<String> matching = gavs.stream()
-                    .filter(gav -> gav.startsWith(wanted));
-
-            if (filter.version.isPresent()) {
-                final VersionFilter vf = filter.version.get();
-                matching = matching.filter(gav -> {
-                    // maven:$group:$artifact:$version
-                    final String[] parts = gav.split(":", 4);
-                    return vf.test(parts[3]);
-                });
-            }
-
-            if (matching.findAny().isPresent()) {
-                gavMatch = true;
-                if (filter.testClassName(className)) {
-                    classMatched = true;
-                    break;
-                }
-            }
-        }
-
-        if (!gavMatch) {
-            log.debug("archive has no matching filters: " + gavs);
-            ban(gavs);
-        }
-
-        return classMatched;
-    }
-
-    static List<String> loadResourceAsLines(String resourceName) {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(FilterList.class.getResourceAsStream(
-                resourceName)))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(resource))) {
             return reader.lines().collect(Collectors.toList());
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
     }
 
+    public int numberOfClasses() {
+        return classMethodGaVersions.size();
+    }
 
+    public Set<String> knownClasses() {
+        return classMethodGaVersions.keySet();
+    }
+
+    public Collection<String> methodsToInstrumentInClass(String className, Collection<String> goodLocators) {
+        final Map<String, Map<String, VersionRange>> methodGaVersions = classMethodGaVersions.get(className);
+        // This should not be empty, only null (i.e. no map entry)
+        if (null == methodGaVersions || methodGaVersions.isEmpty()) {
+            return Collections.emptySet();
+        }
+
+        final List<GroupArtifactVersion> mavenLocators = goodLocators.stream()
+                .filter(locator -> locator.startsWith("maven:"))
+                .map(locator -> {
+                    // maven:group:artifact:version
+                    final String[] parts = locator.split(":", 4);
+                    return new GroupArtifactVersion(parts[1] + ":" + parts[2], parts[3]);
+                })
+                .collect(Collectors.toList());
+
+        if (mavenLocators.isEmpty()) {
+            return methodGaVersions.keySet();
+        }
+
+        return methodGaVersions.entrySet().stream()
+                .filter(en -> VersionMatch.check(en.getValue(), mavenLocators))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
+    }
+
+    public void instrumented(String clazz, String methodName, Collection<String> artifacts) {
+        for (String artifact : artifacts) {
+            if (!artifact.startsWith("maven:")) {
+                continue;
+            }
+
+            instrumented.computeIfAbsent(new HomebaseKnownFunction(artifact, clazz, methodName),
+                    _key -> new AtomicLong())
+                    .incrementAndGet();
+        }
+    }
 }

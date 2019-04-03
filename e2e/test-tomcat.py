@@ -66,26 +66,32 @@ reportIntervalMs=1000
     sleep(1)
 
     # this segment is purely for documentation generation
-    shown_events = False
-    shown_heartbeat = False
-    shown_metadata = False
+    doc_events = dict()
+    doc_heartbeat = dict()
+    doc_metadata = dict()
+
     for doc in h.all_seen_docs():
-        if not shown_events and 'eventsToSend' in doc:
+        if 'eventsToSend' in doc:
             print()
-            print('\n\n>>> events document:')
-            shown_events = True
+            doc_events = doc
             json.dump(doc, sys.stdout)
 
-        if not shown_heartbeat and 'heartbeat' in doc:
+        if 'heartbeat' in doc:
             print()
-            print('\n\n>>> heartbeat document:')
-            shown_heartbeat = True
+            doc_heartbeat = doc
             json.dump(doc, sys.stdout)
 
-        if not shown_metadata and 'loadedSources' in doc:
-            print('\n\n>>> metadata document:')
-            shown_metadata = True
-            json.dump(doc, sys.stdout)
+        if 'loadedSources' in doc:
+            doc_metadata = doc
+
+    print('\n\n>>> events document:')
+    json.dump(doc_events, sys.stdout)
+
+    print('\n\n>>> heartbeat document:')
+    json.dump(doc_heartbeat, sys.stdout)
+
+    print('\n\n>>> metadata document:')
+    json.dump(doc_metadata, sys.stdout)
 
     success = False
     for event in h.all_seen_events():

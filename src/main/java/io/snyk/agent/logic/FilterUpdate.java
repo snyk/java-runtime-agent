@@ -1,6 +1,5 @@
 package io.snyk.agent.logic;
 
-import io.snyk.agent.filter.Filter;
 import io.snyk.agent.filter.FilterList;
 import io.snyk.agent.util.Log;
 
@@ -18,6 +17,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -37,7 +37,8 @@ public class FilterUpdate implements Runnable {
         this(log,
                 instrumentation,
                 onAttempted,
-                config.homeBaseUrl.resolve("v2/snapshot/" + config.projectId + "/java").toURL(), config.filters,
+                config.homeBaseUrl.resolve("v2/snapshot/" + config.projectId + "/java").toURL(),
+                config.filters,
                 config.filterUpdateIntervalMs);
     }
 
@@ -111,17 +112,17 @@ public class FilterUpdate implements Runnable {
         }
 
         final Instant created = Instant.ofEpochMilli(conn.getHeaderFieldDate("Last-Modified", 0));
-        final FilterList newList = FilterList.loadFiltersFrom(log, lines, created);
+        final FilterList newList = FilterList.loadBolosFrom(log, lines, created);
         filters.set(newList);
         log.info("filters updated," +
-                " new count: " + newList.filters.size() +
+                " new class count: " + newList.numberOfClasses() +
                 ", new date: " + DateTimeFormatter.ISO_DATE_TIME.format(inUtc(newList.generated)));
 
         return true;
     }
 
     private void reTransform() {
-        final List<Filter> filters = this.filters.get().filters;
+        final Set<String> classes = this.filters.get().knownClasses();
 
         for (Class someClass : instrumentation.getAllLoadedClasses()) {
             if (!instrumentation.isModifiableClass(someClass)) {
@@ -129,8 +130,7 @@ public class FilterUpdate implements Runnable {
             }
 
             final String candidateName = someClass.getName().replace('.', '/');
-            if (filters.stream()
-                    .noneMatch(f -> f.testClassName(candidateName))) {
+            if (!classes.contains(candidateName)) {
                 continue;
             }
 

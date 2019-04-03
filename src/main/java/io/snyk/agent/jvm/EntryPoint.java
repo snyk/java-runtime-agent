@@ -43,7 +43,7 @@ class EntryPoint {
         InitLog.flushToInstance(log);
 
         if (!config.skipBuiltInRules) {
-            config.filters.set(FilterList.loadBuiltInFilters(log));
+            config.filters.set(FilterList.loadBuiltInBolos(log));
         }
 
         log.info("loading config complete, projectId:" + config.projectId);

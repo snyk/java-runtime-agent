@@ -286,29 +286,16 @@ public class ReportingWorker implements Runnable {
     private StringBuilder buildMeta() {
         final StringBuilder msg = new StringBuilder(1024);
         msg.append("\"filters\":[\n");
-        config.filters.get().filters.forEach(filter -> {
-            msg.append("{\"name\":");
-            Json.appendString(msg, filter.name);
-            filter.artifact.ifPresent(artifact -> {
-                msg.append(",\"artifact\":");
-                Json.appendString(msg, artifact);
-            });
+        config.filters.get().instrumented.forEach((function, count) -> {
+            msg.append("{\"artifact\":");
+            Json.appendString(msg, function.artifact);
             msg.append(",\"matches\":");
-            msg.append(filter.matches.longValue());
-            msg.append(",\"paths\":[");
-            filter.pathFilters.forEach(pathFilter -> {
-                msg.append("{\"className\":");
-                Json.appendString(msg, pathFilter.className);
-                pathFilter.methodName.ifPresent(methodName -> {
-                    msg.append(",\"methodName\":");
-                    Json.appendString(msg, methodName);
-                });
-                msg.append(",\"classNameIsPrefix\":");
-                msg.append(pathFilter.classNameIsPrefix);
-                msg.append("},");
-            });
-            trimRightCommaSpacing(msg);
-            msg.append("]},");
+            msg.append(count.longValue());
+            msg.append(",\"paths\":[{\"className\":");
+            Json.appendString(msg, function.className);
+            msg.append(",\"methodName\":");
+            Json.appendString(msg, function.methodName);
+            msg.append("}]},");
         });
         trimRightCommaSpacing(msg);
         msg.append("],\"loadedSources\":{\n");

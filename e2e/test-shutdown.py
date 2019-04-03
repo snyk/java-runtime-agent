@@ -22,7 +22,11 @@ heartBeatIntervalMs=500
 reportIntervalMs=100000000
 """)
 
-    h.write_update('filter.pre-1.paths=demo/CalledFromExecutor#run')
+    h.write_update(
+        'filter.pre-1.paths=demo/CalledFromExecutor#run\n'
+        'filter.pre-1.artifact = maven:ignored:ignored\n'
+        'filter.pre-1.version = [3,5)\n'
+    )
 
     victim = subprocess.Popen([
         'java',
