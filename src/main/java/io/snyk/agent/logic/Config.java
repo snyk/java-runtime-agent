@@ -19,6 +19,7 @@ public class Config {
     public final AtomicReference<FilterList> filters;
     public final URI homeBaseUrl;
     public final long homeBasePostLimit;
+    public final boolean allowUnknownCA;
     public final long startupDelayMs;
     public final long heartBeatIntervalMs;
     public final long reportIntervalMs;
@@ -38,6 +39,7 @@ public class Config {
     Config(String projectId,
            String homeBaseUrl,
            Long homeBasePostLimit,
+           boolean allowUnknownCA,
            long startupDelayMs,
            long heartBeatIntervalMs,
            long reportIntervalMs,
@@ -60,6 +62,7 @@ public class Config {
         } else {
             this.homeBasePostLimit = homeBasePostLimit;
         }
+        this.allowUnknownCA = allowUnknownCA;
         this.startupDelayMs = startupDelayMs;
         this.heartBeatIntervalMs = heartBeatIntervalMs;
         this.reportIntervalMs = reportIntervalMs;
@@ -152,6 +155,10 @@ public class Config {
 
                 case "homeBaseUrl":
                     builder.homeBaseUrl = value;
+                    return;
+
+                case "allowUnknownCA":
+                    builder.allowUnknownCA = Boolean.parseBoolean(value);
                     return;
 
                 case "skipBuiltInRules":
