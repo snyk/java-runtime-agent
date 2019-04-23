@@ -1,5 +1,6 @@
 package io.snyk.agent.logic;
 
+import io.snyk.agent.jvm.CrippleSSL;
 import io.snyk.agent.jvm.LandingZone;
 import io.snyk.agent.jvm.MachineInfo;
 import io.snyk.agent.jvm.Version;
@@ -64,7 +65,7 @@ public class ReportingWorker implements Runnable {
                 return new DirectoryWritingPoster(config.homeBaseUrl);
             default:
                 try {
-                    return new StdLibHttpPoster(log, config.homeBaseUrl.resolve("v1/beacon").toURL());
+                    return new StdLibHttpPoster(log, config.homeBaseUrl.resolve("v1/beacon").toURL(), config.allowUnknownCA);
                 } catch (MalformedURLException e) {
                     throw new IllegalStateException("invalid beacon url", e);
                 }
@@ -357,11 +358,13 @@ public class ReportingWorker implements Runnable {
 
         private final Log log;
         private final URL destination;
+        private final boolean allowUnknownCA;
         private HttpURLConnection lastConnection = null;
 
-        StdLibHttpPoster(Log log, URL destination) {
+        StdLibHttpPoster(Log log, URL destination, boolean allowUnknownCA) {
             this.log = log;
             this.destination = destination;
+            this.allowUnknownCA = allowUnknownCA;
         }
 
         @Override
@@ -371,6 +374,9 @@ public class ReportingWorker implements Runnable {
 
             final HttpURLConnection conn = (HttpURLConnection)
                     destination.openConnection();
+            if (allowUnknownCA) {
+                CrippleSSL.cripple(conn);
+            }
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
             conn.setFixedLengthStreamingMode(totalLen);

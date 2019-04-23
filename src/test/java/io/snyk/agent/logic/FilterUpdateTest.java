@@ -52,6 +52,7 @@ class FilterUpdateTest {
                 },
                 new URL("http://localhost:" + wireMock.port() + TEST_URL),
                 filters,
+                false,
                 1);
 
         assertTrue(filterUpdate.fetchUpdatedAnything(), "server has newer file, so we update");

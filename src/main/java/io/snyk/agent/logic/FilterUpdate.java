@@ -1,8 +1,10 @@
 package io.snyk.agent.logic;
 
 import io.snyk.agent.filter.FilterList;
+import io.snyk.agent.jvm.CrippleSSL;
 import io.snyk.agent.util.Log;
 
+import javax.net.ssl.HttpsURLConnection;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -27,6 +29,7 @@ public class FilterUpdate implements Runnable {
     private final Runnable onAttempted;
     private final URL homeBaseSnapshots;
     private final AtomicReference<FilterList> filters;
+    private final boolean allowUnknownCA;
     private final long filterUpdateIntervalMs;
 
     public FilterUpdate(
@@ -39,6 +42,7 @@ public class FilterUpdate implements Runnable {
                 onAttempted,
                 config.homeBaseUrl.resolve("v2/snapshot/" + config.projectId + "/java").toURL(),
                 config.filters,
+                config.allowUnknownCA,
                 config.filterUpdateIntervalMs);
     }
 
@@ -48,12 +52,14 @@ public class FilterUpdate implements Runnable {
             Runnable onAttempted,
             URL homeBaseSnapshots,
             AtomicReference<FilterList> filters,
+            boolean allowUnknownCA,
             long filterUpdateIntervalMs) {
         this.log = log;
         this.instrumentation = instrumentation;
         this.onAttempted = onAttempted;
         this.homeBaseSnapshots = homeBaseSnapshots;
         this.filters = filters;
+        this.allowUnknownCA = allowUnknownCA;
         this.filterUpdateIntervalMs = filterUpdateIntervalMs;
     }
 
@@ -89,6 +95,11 @@ public class FilterUpdate implements Runnable {
 
     boolean fetchUpdatedAnything() throws IOException {
         final URLConnection conn = homeBaseSnapshots.openConnection();
+
+        if (allowUnknownCA) {
+            CrippleSSL.cripple(conn);
+        }
+
         conn.setRequestProperty("Accept", "text/vnd.snyk.filters");
         conn.setRequestProperty("If-Modified-Since", httpDateFormat(filters.get().generated));
         conn.connect();

@@ -9,6 +9,7 @@ class ConfigBuilder {
     String projectId;
     String homeBaseUrl;
     Long homeBasePostLimit;
+    boolean allowUnknownCA = false;
     long startupDelayMs = 1_000;
     long heartBeatIntervalMs = MINUTE_MS / 2;
     long reportIntervalMs = MINUTE_MS;
@@ -26,7 +27,7 @@ class ConfigBuilder {
 
     Config build() {
         return new Config(projectId, homeBaseUrl, homeBasePostLimit,
-                startupDelayMs, heartBeatIntervalMs, reportIntervalMs,
+                allowUnknownCA, startupDelayMs, heartBeatIntervalMs, reportIntervalMs,
                 filterUpdateIntervalMs, filterUpdateInitialDelayMs,
                 trackClassLoading, trackAccessors, trackBranchingMethods,
                 logTo, debugLoggingEnabled, skipBuiltInRules, skipMetaPosts,
