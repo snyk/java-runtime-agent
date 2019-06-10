@@ -3,9 +3,10 @@ import groovy.lang.Closure
 
 plugins {
     id("com.github.johnrengelman.shadow") version "2.0.4"
-    id("me.champeau.gradle.jmh") version "0.4.7"
+    id("me.champeau.gradle.jmh") version "0.4.8"
     // 0.12*rc* drops requirement on native git, which might be useful
     id("com.palantir.git-version") version "0.12.0-rc2"
+    id("com.github.ben-manes.versions") version "0.21.0"
     java
     distribution
 }
@@ -14,13 +15,13 @@ dependencies {
     compile(files("$projectDir/tools/repack/asm-re-7.1.jar"))
     testCompile("org.apache.commons:commons-text:1.6")
     testCompile("com.google.code.gson:gson:2.8.5")
-    testCompile("com.google.guava:guava:27.0.1-jre")
-    testCompile("org.mockito:mockito-core:2.23.4")
-    testCompile("com.github.tomakehurst:wiremock:2.20.0")
-    testCompile("org.junit.jupiter:junit-jupiter-api:5.3.2")
-    testCompile("org.junit.jupiter:junit-jupiter-params:5.3.2")
-    testRuntime("org.junit.jupiter:junit-jupiter-engine:5.3.2")
-    jmh("com.google.guava:guava:27.0.1-jre")
+    testCompile("com.google.guava:guava:27.1-jre")
+    testCompile("org.mockito:mockito-core:2.28.2")
+    testCompile("com.github.tomakehurst:wiremock:2.23.2")
+    testCompile("org.junit.jupiter:junit-jupiter-api:5.4.2")
+    testCompile("org.junit.jupiter:junit-jupiter-params:5.4.2")
+    testRuntime("org.junit.jupiter:junit-jupiter-engine:5.4.2")
+    jmh("com.google.guava:guava:27.1-jre")
 }
 
 fun extendedVersion(): String {
@@ -121,6 +122,6 @@ repositories {
 }
 
 tasks.withType<Wrapper> {
-    gradleVersion = "5.2.1"
+    gradleVersion = "5.4.1"
     distributionType = Wrapper.DistributionType.ALL
 }
