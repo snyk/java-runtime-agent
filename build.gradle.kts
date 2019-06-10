@@ -1,3 +1,4 @@
+import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import groovy.lang.Closure
 
@@ -124,4 +125,25 @@ repositories {
 tasks.withType<Wrapper> {
     gradleVersion = "5.4.1"
     distributionType = Wrapper.DistributionType.ALL
+}
+
+// https://github.com/ben-manes/gradle-versions-plugin#revisions
+tasks.named<DependencyUpdatesTask>("dependencyUpdates") {
+    resolutionStrategy {
+        componentSelection {
+            all {
+                val rejected = listOf("alpha", "beta", "rc", "cr", "m", "preview", "b", "ea").any { qualifier ->
+                    candidate.version.matches(Regex("(?i).*[.-]$qualifier[.\\d-+]*"))
+                }
+                if (rejected) {
+                    reject("Release candidate")
+                }
+            }
+        }
+    }
+    // optional parameters
+    checkForGradleUpdate = true
+    outputFormatter = "json"
+    outputDir = "build/dependencyUpdates"
+    reportfileName = "report"
 }
