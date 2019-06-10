@@ -6,7 +6,7 @@ jdk:
 script:
 - pyenv global 3.6
 - curl $SNAPSHOT_URL > src/main/resources/methods.bundled.properties
-- ./gradlew build test distZip
+- ./gradlew build test distZip dependencyUpdates
 - make test
 branches:
   only:
