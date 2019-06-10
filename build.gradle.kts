@@ -3,7 +3,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import groovy.lang.Closure
 
 plugins {
-    id("com.github.johnrengelman.shadow") version "2.0.4"
+    id("com.github.johnrengelman.shadow") version "5.0.0"
     id("me.champeau.gradle.jmh") version "0.4.8"
     // 0.12*rc* drops requirement on native git, which might be useful
     id("com.palantir.git-version") version "0.12.0-rc2"
