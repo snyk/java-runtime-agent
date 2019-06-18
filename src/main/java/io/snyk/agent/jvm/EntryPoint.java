@@ -1,14 +1,12 @@
 package io.snyk.agent.jvm;
 
 import io.snyk.agent.filter.FilterList;
-import io.snyk.agent.logic.Config;
-import io.snyk.agent.logic.DataTracker;
-import io.snyk.agent.logic.FilterUpdate;
-import io.snyk.agent.logic.ReportingWorker;
+import io.snyk.agent.logic.*;
 import io.snyk.agent.util.*;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
+import java.net.MalformedURLException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -16,20 +14,41 @@ import java.util.concurrent.TimeUnit;
  * The entry point for the agent. Load and install our plugins.
  */
 class EntryPoint {
+    public static void agentmain(
+            String arguments,
+            Instrumentation instrumentation) throws Exception {
+        beforeConfig();
+        final ConfigBuilder builder = new ConfigBuilder();
+        builder.projectId = "2d77851a-6716-419e-a95f-494f39f0cc10";
+        builder.logTo = "stderr";
+        final Config config = builder.build();
+        initialise(instrumentation, config, null);
+    }
+
     public static void premain(
             String agentArguments,
             Instrumentation instrumentation) throws Exception {
-        InitLog.loading("startup: " + Version.extendedVersionInfo());
-        InitLog.loading("If you have any issues during this beta, please contact runtime@snyk.io");
+        beforeConfig();
 
         final File configFile = ConfigSearch.find(agentArguments);
 
         final Config config = Config.loadConfigFromFile(configFile.getAbsolutePath());
+        final File logLocation = configFile.getParentFile();
 
+        initialise(instrumentation, config, logLocation);
+    }
+
+    private static void beforeConfig() {
+        InitLog.loading("startup: " + Version.extendedVersionInfo());
+        InitLog.loading("If you have any issues during this beta, please contact runtime@snyk.io");
+    }
+
+    private static void initialise(Instrumentation instrumentation, Config config, File logLocation)
+            throws MalformedURLException, InterruptedException {
         final Log log;
         switch (config.logTo) {
             case FILE:
-                log = new FileLog(configFile.getParentFile(), config.debugLoggingEnabled);
+                log = new FileLog(logLocation, config.debugLoggingEnabled);
                 break;
             case STDERR:
                 log = new StdErrLog(config.debugLoggingEnabled);

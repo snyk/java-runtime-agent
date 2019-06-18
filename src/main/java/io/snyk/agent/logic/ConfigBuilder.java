@@ -3,10 +3,10 @@ package io.snyk.agent.logic;
 /**
  * Helper builder for {@link Config}, only used internally.
  */
-class ConfigBuilder {
+public class ConfigBuilder {
     private static final int MINUTE_MS = 60_000;
 
-    String projectId;
+    public String projectId;
     String homeBaseUrl;
     Long homeBasePostLimit;
     boolean allowUnknownCA = false;
@@ -20,12 +20,12 @@ class ConfigBuilder {
     boolean trackClassLoading;
     boolean trackAccessors;
     boolean trackBranchingMethods;
-    String logTo;
+    public String logTo;
     boolean debugLoggingEnabled;
     boolean skipBuiltInRules;
     boolean skipMetaPosts;
 
-    Config build() {
+    public Config build() {
         return new Config(projectId, homeBaseUrl, homeBasePostLimit,
                 allowUnknownCA, startupDelayMs, heartBeatIntervalMs, reportIntervalMs,
                 filterUpdateIntervalMs, filterUpdateInitialDelayMs,

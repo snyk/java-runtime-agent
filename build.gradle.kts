@@ -14,6 +14,7 @@ plugins {
 
 dependencies {
     compile(files("$projectDir/tools/repack/asm-re-7.1.jar"))
+    compile(files(System.getProperty("java.home") + "/../lib/tools.jar"))
     testCompile("org.apache.commons:commons-text:1.6")
     testCompile("com.google.code.gson:gson:2.8.5")
     testCompile("com.google.guava:guava:27.1-jre")
@@ -67,6 +68,7 @@ tasks.withType<Jar> {
         attributes(mapOf(
             "Extended-Version-Info" to extendedVersion(),
             "Premain-Class" to "io.snyk.agent.jvm.EntryPoint",
+            "Agent-Class" to "io.snyk.agent.jvm.EntryPoint",
             "Can-Retransform-Classes" to true
         ))
     }
