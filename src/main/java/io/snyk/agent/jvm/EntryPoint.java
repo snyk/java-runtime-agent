@@ -16,6 +16,17 @@ import java.util.concurrent.TimeUnit;
  * The entry point for the agent. Load and install our plugins.
  */
 class EntryPoint {
+    public static void main(String... args) throws Exception {
+        if (2 == args.length && "network-test".equals(args[0])) {
+            NetworkTest.run(args[1]);
+            return;
+        }
+
+        System.err.println("This is not an executable jar.");
+        System.err.println();
+        System.err.println("Please refer to the installation instructions.");
+    }
+
     public static void premain(
             String agentArguments,
             Instrumentation instrumentation) throws Exception {
