@@ -67,6 +67,7 @@ tasks.withType<Jar> {
         attributes(mapOf(
             "Extended-Version-Info" to extendedVersion(),
             "Premain-Class" to "io.snyk.agent.jvm.EntryPoint",
+            "Main-Class" to "io.snyk.agent.jvm.EntryPoint",
             "Can-Retransform-Classes" to true
         ))
     }
