@@ -1,10 +1,24 @@
+dist: bionic
+sudo: false
 language: java
-jdk:
-- oraclejdk8
-- oraclejdk11
-- openjdk11
+matrix:
+  include:
+  - jdk: oraclejdk11
+  - jdk: openjdk11
+  - env:
+    - DEPLOY_IT=true
+    - JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+    - PATH=$JAVA_HOME/bin:$JAVA_HOME/jre/bin:$PATH
+    sudo: true
+    before_install:
+    - sudo apt-get remove -y openjdk-11-jre-headless
+    - sudo apt-get install -y openjdk-8-jdk-headless openjdk-11-jre-headless- ca-certificates-java
+    addons:
+      apt:
+        update: true
 script:
-- pyenv global 3.6
+- hash -r
+- java -version
 - curl $SNAPSHOT_URL > src/main/resources/methods.bundled.properties
 - ./gradlew build test distZip dependencyUpdates
 - make test
@@ -25,7 +39,7 @@ cache:
 deploy:
   on:
     branch: master
-    jdk: oraclejdk8
+    condition: $DEPLOY_IT=true
   provider: s3
   access_key_id: $AWS_ACCESS_KEY_ID
   secret_access_key: $AWS_SECRET_ACCESS_KEY
