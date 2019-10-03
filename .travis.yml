@@ -20,7 +20,6 @@ script:
 - java -version
 - javac -version
 - $JAVA_HOME/bin/java -version
-- pyenv global 3.7
 - curl $SNAPSHOT_URL > src/main/resources/methods.bundled.properties
 - ./gradlew build test distZip dependencyUpdates
 - make test
