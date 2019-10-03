@@ -11,8 +11,8 @@ matrix:
     - PATH=$JAVA_HOME/bin:$JAVA_HOME/jre/bin:$PATH
     sudo: true
     before_install:
-    - sudo apt-get remove openjdk-11-jre-headless
-    - sudo apt-get install -y openjdk-8-jdk-headless ca-certificates-java
+    - sudo apt-get remove -y openjdk-11-jre-headless
+    - sudo apt-get install -y openjdk-8-jdk-headless openjdk-11-jre-headless- ca-certificates-java
     addons:
       apt:
         update: true
