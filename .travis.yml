@@ -7,6 +7,8 @@ matrix:
   - jdk: openjdk11
   - env:
     - DEPLOY_IT=true
+    - JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+    - PATH=$JAVA_HOME/bin:$JAVA_HOME/jre/bin:$PATH
     sudo: true
     before_install:
     - sudo apt-get install -y openjdk-8-jdk-headless openjdk-11-jre-headless-
@@ -14,8 +16,10 @@ matrix:
       apt:
         update: true
 script:
+- echo $PATH
 - java -version
 - javac -version
+- $JAVA_HOME/bin/java -version
 - pyenv global 3.6
 - curl $SNAPSHOT_URL > src/main/resources/methods.bundled.properties
 - ./gradlew build test distZip dependencyUpdates
