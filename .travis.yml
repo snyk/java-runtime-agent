@@ -16,14 +16,9 @@ matrix:
       apt:
         update: true
 script:
-- echo $PATH
 - which java
-- which javac
-- java -version
-- javac -version
-- PATH=$JAVA_HOME/bin:$JAVA_HOME/jre/bin:$PATH sh -c 'java -version'
-- $JAVA_HOME/bin/java -version
 - curl $SNAPSHOT_URL > src/main/resources/methods.bundled.properties
+- env PATH=$JAVA_HOME/bin:$JAVA_HOME/jre/bin:$PATH sh -c 'java -version'
 - env PATH=$JAVA_HOME/bin:$JAVA_HOME/jre/bin:$PATH ./gradlew build test distZip dependencyUpdates
 - env PATH=$JAVA_HOME/bin:$JAVA_HOME/jre/bin:$PATH make test
 branches:
@@ -43,7 +38,7 @@ cache:
 deploy:
   on:
     branch: master
-    condition: $DEPLOY_IT = true
+    condition: $DEPLOY_IT=true
   provider: s3
   access_key_id: $AWS_ACCESS_KEY_ID
   secret_access_key: $AWS_SECRET_ACCESS_KEY
