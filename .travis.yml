@@ -7,11 +7,12 @@ matrix:
   - jdk: openjdk11
   - env:
     - DEPLOY_IT=true
+    sudo: true
+    before_install:
+    - sudo apt-get install -y openjdk-8-jdk-headless openjdk-11-jre-headless-
     addons:
       apt:
         update: true
-        packages:
-          - openjdk-8-jdk-headless
 script:
 - java -version
 - javac -version
