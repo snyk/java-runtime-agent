@@ -17,7 +17,7 @@ matrix:
       apt:
         update: true
 script:
-- rehash
+- hash -r
 - java -version
 - curl $SNAPSHOT_URL > src/main/resources/methods.bundled.properties
 - ./gradlew build test distZip dependencyUpdates
