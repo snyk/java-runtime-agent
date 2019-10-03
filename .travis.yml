@@ -17,12 +17,15 @@ matrix:
         update: true
 script:
 - echo $PATH
+- which java
+- which javac
 - java -version
 - javac -version
+- PATH=$JAVA_HOME/bin:$JAVA_HOME/jre/bin:$PATH sh -c 'java -version'
 - $JAVA_HOME/bin/java -version
 - curl $SNAPSHOT_URL > src/main/resources/methods.bundled.properties
-- ./gradlew build test distZip dependencyUpdates
-- make test
+- env PATH=$JAVA_HOME/bin:$JAVA_HOME/jre/bin:$PATH ./gradlew build test distZip dependencyUpdates
+- env PATH=$JAVA_HOME/bin:$JAVA_HOME/jre/bin:$PATH make test
 branches:
   only:
   - master
