@@ -1,11 +1,20 @@
 dist: bionic
 sudo: false
 language: java
-jdk:
-- openjdk8
-- oraclejdk11
-- openjdk11
+matrix:
+  include:
+  - jdk: oraclejdk11
+  - jdk: openjdk11
+  - env:
+    - DEPLOY_IT=true
+    addons:
+      apt:
+        update: true
+        packages:
+          - openjdk-8-jdk-headless
 script:
+- java -version
+- javac -version
 - pyenv global 3.6
 - curl $SNAPSHOT_URL > src/main/resources/methods.bundled.properties
 - ./gradlew build test distZip dependencyUpdates
@@ -27,7 +36,7 @@ cache:
 deploy:
   on:
     branch: master
-    jdk: oraclejdk8
+    condition: $DEPLOY_IT = true
   provider: s3
   access_key_id: $AWS_ACCESS_KEY_ID
   secret_access_key: $AWS_SECRET_ACCESS_KEY
