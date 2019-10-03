@@ -5,6 +5,8 @@ matrix:
   include:
   - jdk: oraclejdk11
   - jdk: openjdk11
+  - jdk: openjdk12
+  - jdk: openjdk13
   - env:
     - DEPLOY_IT=true
     - JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
