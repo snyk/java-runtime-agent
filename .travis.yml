@@ -11,11 +11,14 @@ matrix:
     - PATH=$JAVA_HOME/bin:$JAVA_HOME/jre/bin:$PATH
     sudo: true
     before_install:
-    - sudo apt-get install -y openjdk-8-jdk-headless openjdk-11-jre-headless-
+    - sudo apt-get remove openjdk-11-jre-headless
+    - sudo apt-get install -y openjdk-8-jdk-headless ca-certificates-java
     addons:
       apt:
         update: true
 script:
+- declare -F
+- alias
 - which java
 - curl $SNAPSHOT_URL > src/main/resources/methods.bundled.properties
 - env PATH=$JAVA_HOME/bin:$JAVA_HOME/jre/bin:$PATH sh -c 'java -version'
