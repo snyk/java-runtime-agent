@@ -17,6 +17,9 @@ matrix:
       apt:
         update: true
 script:
+- type java
+- java -version
+- which java
 - curl $SNAPSHOT_URL > src/main/resources/methods.bundled.properties
 - env PATH=$JAVA_HOME/bin:$JAVA_HOME/jre/bin:$PATH sh -c 'java -version'
 - env PATH=$JAVA_HOME/bin:$JAVA_HOME/jre/bin:$PATH sh -c './gradlew build test distZip dependencyUpdates'
