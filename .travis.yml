@@ -17,13 +17,10 @@ matrix:
       apt:
         update: true
 script:
-- declare -F
-- alias
-- which java
 - curl $SNAPSHOT_URL > src/main/resources/methods.bundled.properties
 - env PATH=$JAVA_HOME/bin:$JAVA_HOME/jre/bin:$PATH sh -c 'java -version'
-- env PATH=$JAVA_HOME/bin:$JAVA_HOME/jre/bin:$PATH ./gradlew build test distZip dependencyUpdates
-- env PATH=$JAVA_HOME/bin:$JAVA_HOME/jre/bin:$PATH make test
+- env PATH=$JAVA_HOME/bin:$JAVA_HOME/jre/bin:$PATH sh -c './gradlew build test distZip dependencyUpdates'
+- env PATH=$JAVA_HOME/bin:$JAVA_HOME/jre/bin:$PATH sh -c 'make test'
 branches:
   only:
   - master
