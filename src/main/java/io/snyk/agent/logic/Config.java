@@ -51,7 +51,7 @@ public class Config {
            boolean skipBuiltInRules,
            boolean skipMetaPosts,
            boolean addShutdownHook) {
-        if (null == projectId) {
+        if (null == projectId || projectId.trim().equals("")) {
             throw new IllegalStateException("projectId is required");
         }
         this.projectId = projectId;
